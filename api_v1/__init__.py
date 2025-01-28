@@ -7,4 +7,3 @@ router = APIRouter()
 router.include_router(router=chats_router, prefix="/chats")
 router.include_router(router=users_router, prefix="/users")
 router.include_router(router=groups_router, prefix="/groups")
-

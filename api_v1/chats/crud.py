@@ -2,7 +2,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from core.models import ChatsOrm
 from sqlalchemy.engine import Result
 from sqlalchemy import select
-from .schemas import ChatCreate
+from .schemas import ChatCreate, ChatUpdate, ChatUpdatePartial
 
 
 async def get_chats(session: AsyncSession) -> list[ChatsOrm]:
@@ -23,4 +23,19 @@ async def create_chat(session: AsyncSession, chat_in: ChatCreate) -> ChatsOrm:
     await session.refresh(chat)
     return chat
 
-# async def delete_chat(session: AsyncSession, chat_id: int) -> Chat
+
+async def update_chat(
+    session: AsyncSession,
+    chat: ChatsOrm,
+    chat_update: ChatUpdate | ChatUpdatePartial,
+    partial: bool = False,
+) -> ChatsOrm:
+    for name, value in chat_update.model_dump(exclude_unset=partial).items():
+        setattr(chat, name, value)
+    await session.commit()
+    return chat
+
+
+async def delete_chat(session: AsyncSession, chat: ChatsOrm) -> None:
+    await session.delete(chat)
+    await session.commit()

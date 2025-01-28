@@ -1,23 +1,23 @@
 from pydantic import BaseModel, ConfigDict
 from datetime import datetime
 
-class MessageBase(BaseModel):
+# class MessageBase(BaseModel):
 
-    text: str
-    created_at: datetime
-    updated_at: datetime
-    chat_id: int
-    user_id: int
-    is_deleted: bool
-    is_anonyumus: bool
+#     text: str
+#     created_at: datetime
+#     updated_at: datetime
+#     chat_id: int
+#     user_id: int
+#     is_deleted: bool
+#     is_anonyumus: bool
 
-class Message(MessageBase):
-    model_config  = ConfigDict(from_attributes=True)
+# class Message(MessageBase):
+#     model_config  = ConfigDict(from_attributes=True)
 
-    id: int
+#     id: int
 
-class MessageCreate(MessageBase):
-    pass
+# class MessageCreate(MessageBase):
+#     pass
 
 
 class ChatBase(BaseModel):
@@ -27,10 +27,22 @@ class ChatBase(BaseModel):
     institute: int
     # office_id: Mapped[int]
 
+
 class Chat(ChatBase):
-    model_config  = ConfigDict(from_attributes=True)
+    model_config = ConfigDict(from_attributes=True)
 
     id: int
 
+
 class ChatCreate(ChatBase):
     pass
+
+
+class ChatUpdate(ChatCreate):
+    pass
+
+
+class ChatUpdatePartial(ChatCreate):
+    name: str | None = None
+    type: str | None = None
+    institute: int | None = None

@@ -1,9 +1,10 @@
 from fastapi import APIRouter, HTTPException, status, Depends
 import logging
 from . import crud
-from .schemas import UserCreate, User
+from .schemas import UserCreate, User, UserUpdatePartial, UserUpdate
 from core.models import db_helper
 from sqlalchemy.ext.asyncio import AsyncSession
+from .dependencies import user_by_id
 
 
 router = APIRouter(tags=["Users"])
@@ -16,24 +17,51 @@ async def get_users(
     return await crud.get_users(session=session)
 
 
-@router.post("/", response_model=User)
+@router.post("/", response_model=User, status_code=status.HTTP_201_CREATED)
 async def create_user(
     user_in: UserCreate,
-    session: AsyncSession = Depends(db_helper.scoped_session_dependency), 
+    session: AsyncSession = Depends(db_helper.scoped_session_dependency),
 ):
     return await crud.create_user(session=session, user_in=user_in)
 
 
 @router.get("/{user_id}/", response_model=User)
 async def get_users(
-    user_id: int, 
+    user_id: int,
     session: AsyncSession = Depends(db_helper.scoped_session_dependency),
 ):
     user = await crud.get_user(session=session, user_id=user_id)
     if user is not None:
         return user
-    
+
     raise HTTPException(
-        status_code=status.HTTP_404_NOT_FOUND,
-        detail=f"User {user_id} not found"
+        status_code=status.HTTP_404_NOT_FOUND, detail=f"User {user_id} not found"
     )
+
+
+@router.put("/{user_id}/", response_model=User)
+async def update_user(
+    user_update: UserUpdate,
+    user=Depends(user_by_id),
+    session: AsyncSession = Depends(db_helper.session_dependency),
+):
+    return await crud.update_user(session=session, user=user, user_update=user_update)
+
+
+@router.patch("/{user_id}/", response_model=User)
+async def update_user(
+    user_update: UserUpdatePartial,
+    user=Depends(user_by_id),
+    session: AsyncSession = Depends(db_helper.session_dependency),
+):
+    return await crud.update_user(
+        session=session, user=user, user_update=user_update, partial=True
+    )
+
+
+@router.delete("/{user_id}/", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_user(
+    user: User = Depends(user_by_id),
+    session: AsyncSession = Depends(db_helper.session_dependency),
+) -> None:
+    await crud.delete_user(user=user, session=session)

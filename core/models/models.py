@@ -9,6 +9,7 @@ class Role(enum.Enum):
     teacher = "teacher"
     headman = "headman"
 
+
 class ChatType(enum.Enum):
     default = "default"
 
@@ -19,17 +20,15 @@ class UsersOrm(Base):
     first_name: Mapped[str] = mapped_column(String(20))
     last_name: Mapped[str] = mapped_column(String(20))
     bio: Mapped[str] = mapped_column(String(256))
-    email: Mapped[str]  #TODO email check
+    email: Mapped[str]  # TODO email check
     password: Mapped[str]
     course: Mapped[int]
     group_id: Mapped[int] = mapped_column(ForeignKey("groups.id", ondelete="CASCADE"))
     institute: Mapped[int]
-    # role: Mapped[Role]
+    role: Mapped[str]
     # json_settings: Mapped[JSON]
 
-    messages: Mapped[list["MessagesOrm"]] = relationship(
-        back_populates="user"
-        )
+    messages: Mapped[list["MessagesOrm"]] = relationship(back_populates="user")
 
 
 class GroupsOrm(Base):
@@ -49,15 +48,13 @@ class MessagesOrm(Base):
     is_deleted: Mapped[bool]
     is_anonyumus: Mapped[bool]
 
-    user: Mapped["UsersOrm"] = relationship(
-        back_populates="messages"
-    )
+    user: Mapped["UsersOrm"] = relationship(back_populates="messages")
 
 
 class ChatsOrm(Base):
     __tablename__ = "chats"
 
     name: Mapped[str] = mapped_column(String(50))
-    type: Mapped[ChatType]
+    type: Mapped[str]
     institute: Mapped[int]
     # office_id: Mapped[int]

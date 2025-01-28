@@ -1,7 +1,7 @@
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.responses import HTMLResponse
 from api_v1 import router as router_v1
-from api_v1.websockets import router as websockets_router 
+from api_v1.websockets import router as websockets_router
 from contextlib import asynccontextmanager
 from core.models import Base, db_helper
 import uvicorn
@@ -52,13 +52,14 @@ html = """
 
 """
 
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     async with db_helper.engine.begin() as conn:
-        await conn.run_sync(Base.metadata.drop_all)
         await conn.run_sync(Base.metadata.create_all)
-    
+
     yield
+
 
 app = FastAPI(lifespan=lifespan)
 app.include_router(router=router_v1, prefix="/api/v1")
@@ -72,4 +73,3 @@ async def get():
 
 if __name__ == "__main__":
     uvicorn.run("main:app", reload=True)
-
