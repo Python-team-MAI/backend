@@ -1,10 +1,10 @@
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
-from fastapi.responses import HTMLResponse
 import logging
 
 router = APIRouter(prefix="/ws", tags=["Websockets"])
 
 logger = logging.Logger(__name__)
+
 
 class ConnectionManager:
     def __init__(self):
@@ -27,6 +27,7 @@ class ConnectionManager:
 
 
 manager = ConnectionManager()
+
 
 @router.websocket("/{client_id}")
 async def websocket_endpoint(websocket: WebSocket, client_id: int):

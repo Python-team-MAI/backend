@@ -21,14 +21,14 @@ class UsersOrm(Base):
     bio: Mapped[str] = mapped_column(String(256))
     email: Mapped[str]  #TODO email check
     password: Mapped[str]
-    course: Mapped[str]
+    course: Mapped[int]
     group_id: Mapped[int] = mapped_column(ForeignKey("groups.id", ondelete="CASCADE"))
     institute: Mapped[int]
-    role: Mapped[Role]
+    # role: Mapped[Role]
     # json_settings: Mapped[JSON]
 
     messages: Mapped[list["MessagesOrm"]] = relationship(
-        back_populates="users"
+        back_populates="user"
         )
 
 

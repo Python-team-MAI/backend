@@ -1,34 +1,5 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, ConfigDict
 from datetime import datetime
-
-
-
-class UserBase(BaseModel):
-    first_name: str 
-    last_name: str
-    bio: str
-    email: EmailStr
-    password: str
-    course: int
-    group_id: int
-    institute: int
-    role: str
-    # json_settings: str
-
-class User(UserBase):
-    id: int
-
-class UserCreate(UserBase):
-    pass
-
-class GroupBase(BaseModel):
-    name: str
-
-class Group(GroupBase):
-    id: int
-
-class GroupCreate(GroupBase):
-    pass
 
 class MessageBase(BaseModel):
 
@@ -41,6 +12,8 @@ class MessageBase(BaseModel):
     is_anonyumus: bool
 
 class Message(MessageBase):
+    model_config  = ConfigDict(from_attributes=True)
+
     id: int
 
 class MessageCreate(MessageBase):
@@ -55,7 +28,9 @@ class ChatBase(BaseModel):
     # office_id: Mapped[int]
 
 class Chat(ChatBase):
+    model_config  = ConfigDict(from_attributes=True)
+
     id: int
 
 class ChatCreate(ChatBase):
-    id: int
+    pass

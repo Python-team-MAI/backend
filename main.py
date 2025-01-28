@@ -1,10 +1,10 @@
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.responses import HTMLResponse
-from webchat.websockets import router as websockets_router
+from api_v1 import router as router_v1
+from api_v1.websockets import router as websockets_router 
 from contextlib import asynccontextmanager
 from core.models import Base, db_helper
 import uvicorn
-from users import UsersOrm
 
 
 html = """
@@ -61,7 +61,9 @@ async def lifespan(app: FastAPI):
     yield
 
 app = FastAPI(lifespan=lifespan)
-app.include_router(websockets_router)
+app.include_router(router=router_v1, prefix="/api/v1")
+app.include_router(router=websockets_router)
+
 
 @app.get("/")
 async def get():

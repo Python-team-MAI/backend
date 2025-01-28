@@ -22,3 +22,5 @@ async def create_chat(session: AsyncSession, chat_in: ChatCreate) -> ChatsOrm:
     await session.commit()
     await session.refresh(chat)
     return chat
+
+# async def delete_chat(session: AsyncSession, chat_id: int) -> Chat
