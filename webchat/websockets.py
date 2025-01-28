@@ -1,8 +1,10 @@
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 from fastapi.responses import HTMLResponse
+import logging
 
 router = APIRouter(prefix="/ws", tags=["Websockets"])
-active_connections = []
+
+logger = logging.Logger(__name__)
 
 class ConnectionManager:
     def __init__(self):
@@ -32,6 +34,7 @@ async def websocket_endpoint(websocket: WebSocket, client_id: int):
     try:
         while True:
             data = await websocket.receive_text()
+            logger.error(data)
             await manager.send_personal_message(f"You: {data}", websocket)
             await manager.broadcast(f"Client#{client_id} says: {data}", author=websocket)
 
