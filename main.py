@@ -1,9 +1,11 @@
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.responses import HTMLResponse
 from webchat.websockets import router as websockets_router
+from contextlib import asynccontextmanager
+from core.models import Base, db_helper
+import uvicorn
+from users import UsersOrm
 
-app = FastAPI()
-app.include_router(websockets_router)
 
 html = """
 <!DOCTYPE html>
@@ -47,7 +49,19 @@ html = """
         </script>
     </body>
 </html>
+
 """
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    async with db_helper.engine.begin() as conn:
+        await conn.run_sync(Base.metadata.drop_all)
+        await conn.run_sync(Base.metadata.create_all)
+    
+    yield
+
+app = FastAPI(lifespan=lifespan)
+app.include_router(websockets_router)
 
 @app.get("/")
 async def get():
@@ -55,5 +69,5 @@ async def get():
 
 
 if __name__ == "__main__":
-    import uvicorn
     uvicorn.run("main:app", reload=True)
+
