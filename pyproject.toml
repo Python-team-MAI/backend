@@ -1,0 +1,20 @@
+[tool.poetry]
+name = "backend"
+version = "0.1.0"
+description = ""
+authors = ["VolosnjovFA <feodor.a.v.03@gamil.com>"]
+license = "MAI"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+fastapi = "^0.115.7"
+uvicorn = {extras = ["standart"], version = "^0.34.0"}
+websockets = "^14.2"
+asyncpg = "^0.30.0"
+sqlalchemy = "^2.0.37"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
