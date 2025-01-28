@@ -44,7 +44,9 @@ async def update_group(
     group=Depends(group_by_id),
     session: AsyncSession = Depends(db_helper.session_dependency),
 ):
-    return await crud.update_group(session=session, group=group, group_update=group_update)
+    return await crud.update_group(
+        session=session, group=group, group_update=group_update
+    )
 
 
 @router.patch("/{group_id}/", response_model=Group)

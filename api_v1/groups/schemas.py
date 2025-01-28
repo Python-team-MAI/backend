@@ -21,4 +21,3 @@ class GroupUpdate(GroupCreate):
 
 class GroupUpdatePartial(GroupCreate):
     name: str | None = None
-
