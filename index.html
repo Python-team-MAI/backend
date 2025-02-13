@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>WebSocket Chat</title>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    </head>
+    <body>
+        <div class="container mt-3">
+            <h1>FastAPI WebSocket Chat</h1>
+            <div class="mb-3">
+                <label for="user_id" class="form-label">Your User ID:</label>
+                <input type="text" id="user_id" class="form-control" placeholder="Enter your user ID">
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Select Chat:</label>
+                <select id="chat_id" class="form-select">
+                    <option value="1">Chat 1</option>
+                    <option value="1">Chat 2</option>
+                    <option value="chat_3">Chat 3</option>
+                    <option value="chat_4">Chat 4</option>
+                    <option value="chat_5">Chat 5</option>
+                </select>
+            </div>
+            <button class="btn btn-success mb-3" onclick="connectWebSocket()">Connect</button>
+            <span id="connection_status" class="text-success ms-2"></span>
+            <h2>Connected Chat: <span id="connected_chat">None</span></h2>
+            <form action="" onsubmit="sendMessage(event)">
+                <input type="text" class="form-control" id="message_input" autocomplete="off" placeholder="Type your message"/>
+                <button class="btn btn-outline-primary mt-2">Send</button>
+            </form>
+            <h3 class="mt-4">Messages</h3>
+            <ul id='messages_container' class="mt-2"></ul>
+        </div>
+        <script type="application/javascript" src="websocket_client.js"></script>
+    </body>
+</html>

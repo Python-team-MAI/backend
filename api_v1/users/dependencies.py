@@ -9,10 +9,24 @@ async def user_by_id(
     user_id: Annotated[int, Path],
     session: AsyncSession = Depends(db_helper.session_dependency),
 ) -> UsersOrm:
-    user = await crud.get_user(session=session, user_id=user_id)
+    user = await crud.get_user_by_id(session=session, user_id=user_id)
     if user is not None:
         return user
 
     raise HTTPException(
         status_code=status.HTTP_404_NOT_FOUND, detail=f"User {user_id} not found"
+    )
+
+
+async def user_by_email(
+    email: Annotated[str, Path],
+    session: AsyncSession = Depends(db_helper.session_dependency),
+) -> UsersOrm:
+    user = await crud.get_user_by_email(session=session, email=email)
+    if user is not None:
+        return user
+
+    raise HTTPException(
+        status_code=status.HTTP_404_NOT_FOUND,
+        detail=f"User with email {email} not found",
     )

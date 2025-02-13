@@ -6,8 +6,8 @@ class UserBase(BaseModel):
     first_name: str
     last_name: str
     bio: str
-    email: EmailStr
-    password: str
+    email: EmailStr | None = None
+    password: bytes
     course: int
     group_id: int
     institute: int

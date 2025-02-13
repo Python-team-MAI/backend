@@ -13,6 +13,7 @@ class Role(enum.Enum):
     teacher = "teacher"
     headman = "headman"
 
+
 class UsersOrm(Base):
     __tablename__ = "users"
 
@@ -20,7 +21,7 @@ class UsersOrm(Base):
     last_name: Mapped[str] = mapped_column(String(20))
     bio: Mapped[str] = mapped_column(String(256))
     email: Mapped[str]  # TODO email check
-    password: Mapped[str]
+    password: Mapped[bytes]
     course: Mapped[int]
     group_id: Mapped[int] = mapped_column(ForeignKey("groups.id", ondelete="CASCADE"))
     institute: Mapped[int]

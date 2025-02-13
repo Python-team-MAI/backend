@@ -1,7 +1,7 @@
 """users chats groups
 
 Revision ID: 0e818a7a1a55
-Revises: 
+Revises:
 Create Date: 2025-01-29 00:43:50.260934
 
 """

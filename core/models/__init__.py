@@ -13,4 +13,7 @@ __all__ = (
 
 from .base import Base, idpk, created_at, updated_at
 from .db_helper import db_helper, DatabaseHelper
-from .models import UsersOrm, MessagesOrm, GroupsOrm, ChatsOrm
+from .users import UsersOrm
+from .chats import ChatsOrm
+from .groups import GroupsOrm
+from .messages import MessagesOrm
