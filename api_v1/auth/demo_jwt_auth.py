@@ -79,6 +79,8 @@ async def auth_github(
             )
         resp = await oauth.github.get('https://api.github.com/user', token=token)
         user = resp.json()
+        print(user)
+        
     except OAuthError as e:
         print(f"OAuthError: {e}")
         raise HTTPException(
