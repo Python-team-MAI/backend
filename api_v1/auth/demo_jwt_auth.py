@@ -80,7 +80,7 @@ async def auth_github(
 
         email_resp = await oauth.github.get('https://api.github.com/user/emails', token=token)
         emails = email_resp.json()
-        print(emails[])
+        # print(emails[])
 
     except OAuthError as e:
         print(f"OAuthError: {e}")
