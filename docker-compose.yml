@@ -1,0 +1,53 @@
+services:
+  app:
+    build: .
+    env_file:
+      - .env.local
+      - .env
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+    networks:
+      - mai_network
+
+  postgres:
+    image: postgres:13-alpine
+    env_file:
+      - .env
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - mai_network
+
+
+  redis:
+    image: redis:6-alpine
+    command: redis-server --requirepass redispass
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    ports:
+      - "6379:6379"
+    networks:
+      - mai_network
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  mai_network:

@@ -6,16 +6,18 @@ BASE_DIR = Path(__file__).parent.parent
 
 
 class DBSettings(BaseSettings):
-    DB_HOST: str
-    DB_PORT: int
-    DB_USER: str
-    DB_PASS: str
-    DB_NAME: str
+    POSTGRES_HOST: str
+    POSTGRES_PORT: int
+    POSTGRES_USER: str
+    POSTGRES_PASSWORD: str
+    POSTGRES_DB: str
+
+    REDIS_URL: str
 
     @property
     def DATABASE_URL_asyncpg(self):
         # DSN
-        return f"postgresql+asyncpg://{self.DB_USER}:{self.DB_PASS}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
+        return f"postgresql+asyncpg://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@{self.POSTGRES_HOST}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
 
     model_config = SettingsConfigDict(env_file=".env")
 
@@ -34,7 +36,7 @@ class Oauth2(BaseSettings):
     AUTH_GOOGLE_API_KEY: str
     AUTH_GOOGLE_IOS_ID: str
     AUTH_SECRET: str
-    
+
     AUTH_VK_ID: str
     AUTH_VK_SECRET: str
 
@@ -61,4 +63,3 @@ class Settings(BaseSettings):
 
 
 settings = Settings()
-
