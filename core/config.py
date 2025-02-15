@@ -28,6 +28,28 @@ class AuthJWT(BaseModel):
     refresh_token_expire_days: int = 30  # days
 
 
+class Oauth2(BaseSettings):
+    AUTH_GOOGLE_ID: str
+    AUTH_GOOGLE_SECRET: str
+    AUTH_GOOGLE_API_KEY: str
+    AUTH_GOOGLE_IOS_ID: str
+    AUTH_SECRET: str
+    
+    AUTH_VK_ID: str
+    AUTH_VK_SECRET: str
+
+    AUTH_GITHUB_ID: str
+    AUTH_GITHUB_SECRET: str
+
+    AUTH_YANDEX_ID: str
+    AUTH_YANDEX_SECRET: str
+
+    BACKEND_HOST: str
+    FRONTEND_HOST: str
+
+    model_config = SettingsConfigDict(env_file=".env.local")
+
+
 class Settings(BaseSettings):
     api_v1_prefix: str = "/api/v1"
 
@@ -35,5 +57,8 @@ class Settings(BaseSettings):
 
     auth_jwt: AuthJWT = AuthJWT()
 
+    oauth2: Oauth2 = Oauth2()
+
 
 settings = Settings()
+

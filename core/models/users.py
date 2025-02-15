@@ -22,6 +22,7 @@ class UsersOrm(Base):
     bio: Mapped[str] = mapped_column(String(256))
     email: Mapped[str]  # TODO email check
     password: Mapped[bytes]
+    auth_type: Mapped[str]
     course: Mapped[int]
     group_id: Mapped[int] = mapped_column(ForeignKey("groups.id", ondelete="CASCADE"))
     institute: Mapped[int]
