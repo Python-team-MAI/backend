@@ -49,3 +49,4 @@ volumes:
 
 networks:
     mai_network:
+        driver: bridge
