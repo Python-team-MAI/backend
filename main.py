@@ -24,7 +24,7 @@ SECRET_KEY = settings.oauth2.AUTH_SECRET
 
 # logging.basicConfig(level=logging.DEBUG, format="%(asctime)s - %(levelname)s - %(message)s")
 
-app = FastAPI(lifespan=lifespan)
+app = FastAPI(lifespan=lifespan, root_path="/api")
 app.include_router(router=router_v1, prefix="/api/v1")
 app.mount("/", app=sio_app)
 origins = ["*"]
