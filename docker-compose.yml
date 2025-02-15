@@ -26,7 +26,7 @@ services:
     depends_on:
       - app
     networks:
-      - backend
+      - mai_network
 
   certbot:
     image: certbot/certbot
@@ -35,8 +35,8 @@ services:
       - ./certbot/conf:/etc/letsencrypt
     entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
     networks:
-      - backend
-      
+      - mai_network
+
   postgres:
     image: postgres:13-alpine
     env_file:

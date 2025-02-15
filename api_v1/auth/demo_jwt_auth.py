@@ -77,10 +77,11 @@ async def auth_github(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Токен не получен.",
             )
-        resp = await oauth.github.get('https://api.github.com/user', token=token)
-        user = resp.json()
-        print(user)
-        
+
+        email_resp = await oauth.github.get('https://api.github.com/user/emails', token=token)
+        emails = email_resp.json()
+        print(emails[])
+
     except OAuthError as e:
         print(f"OAuthError: {e}")
         raise HTTPException(
