@@ -25,16 +25,16 @@ SECRET_KEY = settings.oauth2.AUTH_SECRET
 # logging.basicConfig(level=logging.DEBUG, format="%(asctime)s - %(levelname)s - %(message)s")
 
 app = FastAPI(lifespan=lifespan, root_path="/api")
-app.include_router(router=router_v1, prefix="/api/v1")
+app.include_router(router=router_v1, prefix="/v1")
 app.mount("/", app=sio_app)
 origins = ["*"]
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+# app.add_middleware(
+#     CORSMiddleware,
+#     allow_origins=origins,
+#     allow_credentials=True,
+#     allow_methods=["*"],
+#     allow_headers=["*"],
+# )
 app.add_middleware(SessionMiddleware, secret_key=SECRET_KEY)
 # app.include_router(router=websockets_router)
 # app.mount("/", StaticFiles(directory=".", html=True), name="static")
@@ -46,4 +46,4 @@ async def get():
 
 
 if __name__ == "__main__":
-    uvicorn.run("main:app", reload=True)
+    uvicorn.run("main:app", host="localhost", reload=True)

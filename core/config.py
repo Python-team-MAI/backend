@@ -53,7 +53,7 @@ class Oauth2(BaseSettings):
 
 
 class Settings(BaseSettings):
-    api_v1_prefix: str = "/api/v1"
+    api_v1_prefix: str = "/v1"
 
     db: DBSettings = DBSettings()
 
@@ -63,3 +63,5 @@ class Settings(BaseSettings):
 
 
 settings = Settings()
+
+
