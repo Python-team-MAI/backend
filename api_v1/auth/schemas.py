@@ -7,7 +7,6 @@ class TokenInfo(BaseModel):
     token_type: str = "Bearer"
 
 
-class YandexOauthUser(BaseModel):
-    first_name: str
-    last_name: str
+class OauthUser(BaseModel):
+    username: str
     email: EmailStr

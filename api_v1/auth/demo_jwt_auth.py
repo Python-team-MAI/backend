@@ -9,7 +9,7 @@ from api_v1.auth.validation import (
 from core.config import settings
 from core.models import db_helper
 from sqlalchemy.ext.asyncio import AsyncSession
-from .schemas import TokenInfo, YandexOauthUser
+from .schemas import TokenInfo, OauthUser
 from fastapi import APIRouter, Depends, Request, status, HTTPException
 from fastapi.security import OAuth2PasswordRequestForm
 
@@ -57,7 +57,6 @@ async def auth_google(
         )
 
     user_info = user_response.get("user_info")
-
     print(user_info)
 
 
@@ -77,10 +76,11 @@ async def auth_github(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Токен не получен.",
             )
-
+        users_resp = await oauth.github.get('https://api.github.com/user', token=token)
+        user = users_resp.json()
         email_resp = await oauth.github.get('https://api.github.com/user/emails', token=token)
         emails = email_resp.json()
-        print(emails[0])
+        return OauthUser(username=user["login"], email=emails[0]["email"])
 
     except OAuthError as e:
         print(f"OAuthError: {e}")
@@ -110,8 +110,8 @@ async def auth_yandex(request: Request):
         # Получение информации о пользователе
         resp = await oauth.yandex.get('https://login.yandex.ru/info', token=token)
         user = resp.json()
-        return YandexOauthUser(first_name=user["first_name"], 
-                               last_name=user["last_name"],
+        print(user)
+        return OauthUser(username=user["first_name"], 
                                email=user["default_email"])
     except OAuthError as e:
         print(f"OAuthError: {e}")
