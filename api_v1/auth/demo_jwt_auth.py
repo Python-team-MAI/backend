@@ -60,10 +60,12 @@ async def auth_google(
     user_info = user_response.get("userinfo")
     email = user_info["email"]
     user = await get_user_by_email(session=session, email=email)
-    token = await create_register_token(email=email, auth_type="google")
     if user:
-        return RedirectResponse(f"{settings.oauth2.BACKEND_HOST}/api/v1/?token={token}")
+        token = await create_access_token(user=user)
+        return RedirectResponse(f"{settings.oauth2.BACKEND_HOST}/api/v1/auth/?token={token}")
     else:
+        token = await create_register_token(email=email, auth_type="google")
+        
         return RedirectResponse(f"{settings.oauth2.BACKEND_HOST}/api/v1/auth/register/info?token={token}")
 
 @router.get("/github/")
@@ -87,10 +89,11 @@ async def auth_github(
         email_resp = await oauth.github.get('https://api.github.com/user/emails', token=token)
         email = email_resp.json()[0]["email"]
         user = await get_user_by_email(session=session, email=email)
-        token = await create_register_token(email=email, auth_type="github")
         if user:
+            token = await create_access_token(user=user)
             return RedirectResponse(f"{settings.oauth2.FRONTEND_HOST}/?token={token}")
         else:
+            token = await create_register_token(email=email, auth_type="github")
             return RedirectResponse(f"{settings.oauth2.FRONTEND_HOST}/register/info?token={token}")
 
     except OAuthError as e:
@@ -123,10 +126,11 @@ async def auth_yandex(request: Request, session: AsyncSession = Depends(db_helpe
         user_info = resp.json()
         email = user_info["default_email"]
         user = await get_user_by_email(session=session, email=email)
-        token = await create_register_token(email=email, auth_type="yandex")
         if user:
+            token = await create_access_token(user=user)
             return RedirectResponse(f"{settings.oauth2.FRONTEND_HOST}/?token={token}")
         else:
+            token = await create_register_token(email=email, auth_type="yandex")
             return RedirectResponse(f"{settings.oauth2.FRONTEND_HOST}/register/info?token={token}")
     except OAuthError as e:
         print(f"OAuthError: {e}")
@@ -164,3 +168,8 @@ async def auth_user_check_self_info(
 @router.get("/register/info")
 async def register_info(new_email: str = Depends(get_email_from_token)):
     return new_email
+
+
+@router.get("/")
+async def test(token):
+    return token
