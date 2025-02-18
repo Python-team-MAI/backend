@@ -27,7 +27,6 @@ YANDEX_CLIENT_ID=settings.oauth2.AUTH_YANDEX_ID
 YANDEX_CLIENT_SECRET=settings.oauth2.AUTH_YANDEX_SECRET
 
 
-GOOGLE_REDIRECT_URI = "http://localhost:8000/api/v1/auth/callback/google/"
 if GOOGLE_CLIENT_ID is None or GOOGLE_CLIENT_SECRET is None:
     raise Exception("Missing env variables")
 
@@ -51,11 +50,9 @@ oauth.register(
     client_id=GOOGLE_CLIENT_ID,
     client_secret=GOOGLE_CLIENT_SECRET,
     client_kwargs={
-        "scope": "openid email profile",
-        "redirect_url": GOOGLE_REDIRECT_URI,
+        "scope": "openid email profile"
     },
 )
-
 # Регистрация GitHub
 oauth.register(
     name="github",

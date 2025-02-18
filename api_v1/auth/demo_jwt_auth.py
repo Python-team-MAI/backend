@@ -55,9 +55,8 @@ async def auth_google(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Could not validate credentials",
         )
-    
-    user_info = user_response.get("user_info")
-    print(user_info )
+    user_info = user_response.get("userinfo")
+    return OauthUser(username=user_info["name"], email=user_info["email"])
 
 @router.get("/github/")
 async def login_github(request: Request):
