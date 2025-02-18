@@ -5,6 +5,7 @@ from api_v1.auth.helpers import (
     ACCESS_TOKEN_TOKEN_TYPE,
     REFRESH_TOKEN_TOKEN_TYPE,
 )
+from api_v1.auth.schemas import Role
 from core.config import settings
 from core.models import db_helper
 from starlette.config import Config
@@ -99,6 +100,18 @@ async def validate_token_type(payload: dict, token_type: str) -> bool:
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail=f"invalid token type {current_token_type!r} expected {token_type!r}",
     )
+
+def role_required(required_role: Role):
+    async def check_role(token: str = Depends(oauth2_scheme)):
+        
+        user = get_user_from_token(token)  # Твоя функция для получения пользователя из токена
+        if user.role != required_role:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You don't have permission to access this resource",
+            )
+        return user
+    return check_role
 
 
 async def get_user_by_token_sub(payload: dict, session) -> User:

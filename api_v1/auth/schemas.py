@@ -1,4 +1,5 @@
 from pydantic import BaseModel, EmailStr
+from enum import Enum
 
 
 class TokenInfo(BaseModel):
@@ -9,3 +10,9 @@ class TokenInfo(BaseModel):
 
 class OauthUser(BaseModel):
     email: EmailStr
+
+
+class Role(str, Enum):
+    ADMIN = "admin"
+    STUDENT = "student"
+    HEAD = "head"

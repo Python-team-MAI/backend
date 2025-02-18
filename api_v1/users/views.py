@@ -32,6 +32,11 @@ async def get_user(
 ):
     return user
 
+@router.get("/{user_id}/", response_model=User)
+async def get_user(
+    user=Depends(user_by_id),
+):
+    return user
 
 @router.put("/{user_id}/", response_model=User)
 async def update_user(

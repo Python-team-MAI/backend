@@ -37,8 +37,6 @@ FRONTEND_HOST = settings.oauth2.FRONTEND_HOST
 GOOGLE_REDIRECT_URI = f"{BACKEND_HOST}/api/v1/auth/callback/google/"
 GITHUB_REDIRECT_URI = f"{BACKEND_HOST}/api/v1/auth/callback/github/"
 YANDEX_REDIRECT_URI = f"{BACKEND_HOST}/api/v1/auth/callback/yandex/"
-FRONTEND_URL = "http://localhost:5173/"
-
 
 @router.get("/google/")
 async def login_google(request: Request):
@@ -59,7 +57,7 @@ async def auth_google(
         )
     user_info = user_response.get("userinfo")
     print(user_response)
-    email = user_info["email"]
+    email = user_info["email"].lower()
     user = await get_user_by_email(session=session, email=email)
     if user:
         token = await create_access_token(user=user)
@@ -88,7 +86,7 @@ async def auth_github(
         users_resp = await oauth.github.get('https://api.github.com/user', token=token)
         user = users_resp.json()
         email_resp = await oauth.github.get('https://api.github.com/user/emails', token=token)
-        email = email_resp.json()[0]["email"]
+        email = email_resp.json()[0]["email"].lower()
         user = await get_user_by_email(session=session, email=email)
         if user:
             token = await create_access_token(user=user)
@@ -125,8 +123,8 @@ async def auth_yandex(request: Request, session: AsyncSession = Depends(db_helpe
         # Получение информации о пользователе
         resp = await oauth.yandex.get('https://login.yandex.ru/info', token=token)
         user_info = resp.json()
-        email = user_info["default_email"]
-        print(user_info)
+        email = user_info["default_email"].lower()
+
         user = await get_user_by_email(session=session, email=email)
         if user:
             token = await create_access_token(user=user)
