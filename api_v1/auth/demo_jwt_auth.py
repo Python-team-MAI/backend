@@ -58,6 +58,7 @@ async def auth_google(
             detail="Could not validate credentials",
         )
     user_info = user_response.get("userinfo")
+    print(user_response)
     email = user_info["email"]
     user = await get_user_by_email(session=session, email=email)
     if user:
@@ -91,10 +92,10 @@ async def auth_github(
         user = await get_user_by_email(session=session, email=email)
         if user:
             token = await create_access_token(user=user)
-            return RedirectResponse(f"{settings.oauth2.FRONTEND_HOST}/?token={token}")
+            return RedirectResponse(f"{settings.oauth2.FRONTEND_HOST}/ru/?token={token}")
         else:
             token = await create_register_token(email=email, auth_type="github")
-            return RedirectResponse(f"{settings.oauth2.FRONTEND_HOST}/register/info?token={token}")
+            return RedirectResponse(f"{settings.oauth2.FRONTEND_HOST}/ru/register/info?token={token}")
 
     except OAuthError as e:
         print(f"OAuthError: {e}")
@@ -125,13 +126,14 @@ async def auth_yandex(request: Request, session: AsyncSession = Depends(db_helpe
         resp = await oauth.yandex.get('https://login.yandex.ru/info', token=token)
         user_info = resp.json()
         email = user_info["default_email"]
+        print(user_info)
         user = await get_user_by_email(session=session, email=email)
         if user:
             token = await create_access_token(user=user)
-            return RedirectResponse(f"{settings.oauth2.FRONTEND_HOST}/?token={token}")
+            return RedirectResponse(f"{settings.oauth2.FRONTEND_HOST}/ru/?token={token}")
         else:
             token = await create_register_token(email=email, auth_type="yandex")
-            return RedirectResponse(f"{settings.oauth2.FRONTEND_HOST}/register/info?token={token}")
+            return RedirectResponse(f"{settings.oauth2.FRONTEND_HOST}/ru/register/info?token={token}")
     except OAuthError as e:
         print(f"OAuthError: {e}")
         raise HTTPException(
