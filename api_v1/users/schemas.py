@@ -7,11 +7,12 @@ class UserBase(BaseModel):
     last_name: str
     bio: str
     email: EmailStr | None = None
-    password: bytes
+    password: bytes | None
     course: int
     group_id: int
     institute: int
     role: str
+    auth_type: str
     # json_settings: str
 
 
@@ -38,3 +39,4 @@ class UserUpdatePartial(UserCreate):
     course: int | None = None
     group_id: int | None = None
     institute: int | None = None
+    auth_type: str | None = None

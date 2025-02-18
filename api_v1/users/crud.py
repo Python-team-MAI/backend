@@ -14,12 +14,10 @@ async def get_users(session: AsyncSession) -> list[UsersOrm]:
 
 
 async def get_user_by_id(session: AsyncSession, user_id: int) -> UsersOrm | None:
-    print(session)
     return await session.get(UsersOrm, user_id)
 
 
 async def get_user_by_email(session: AsyncSession, email: str) -> UsersOrm | None:
-    print(session)
     query = select(UsersOrm).where(UsersOrm.email == email)
     res = await session.execute(query)
 

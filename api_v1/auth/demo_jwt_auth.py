@@ -1,10 +1,12 @@
 from api_v1.users.schemas import User
-from api_v1.auth.helpers import create_access_token, create_refresh_token
+from api_v1.users.crud import get_user_by_email
+from api_v1.auth.helpers import create_access_token, create_refresh_token, create_register_token
 from api_v1.auth.validation import (
     http_bearer,
     validate_auth_user,
     get_current_auth_user,
     get_current_auth_user_for_refresh,
+    get_email_from_token
 )
 from core.config import settings
 from core.models import db_helper
@@ -56,7 +58,13 @@ async def auth_google(
             detail="Could not validate credentials",
         )
     user_info = user_response.get("userinfo")
-    return OauthUser(username=user_info["name"], email=user_info["email"])
+    email = user_info["email"]
+    user = await get_user_by_email(session=session, email=email)
+    token = await create_register_token(email=email, auth_type="google")
+    if user:
+        return RedirectResponse(f"{settings.oauth2.BACKEND_HOST}/api/v1/?token={token}")
+    else:
+        return RedirectResponse(f"{settings.oauth2.BACKEND_HOST}/api/v1/auth/register/info?token={token}")
 
 @router.get("/github/")
 async def login_github(request: Request):
@@ -77,8 +85,13 @@ async def auth_github(
         users_resp = await oauth.github.get('https://api.github.com/user', token=token)
         user = users_resp.json()
         email_resp = await oauth.github.get('https://api.github.com/user/emails', token=token)
-        emails = email_resp.json()
-        return OauthUser(username=user["login"], email=emails[0]["email"])
+        email = email_resp.json()[0]["email"]
+        user = await get_user_by_email(session=session, email=email)
+        token = await create_register_token(email=email, auth_type="github")
+        if user:
+            return RedirectResponse(f"{settings.oauth2.FRONTEND_HOST}/?token={token}")
+        else:
+            return RedirectResponse(f"{settings.oauth2.FRONTEND_HOST}/register/info?token={token}")
 
     except OAuthError as e:
         print(f"OAuthError: {e}")
@@ -95,7 +108,7 @@ async def login_github(request: Request):
 
 
 @router.get("/callback/yandex/")
-async def auth_yandex(request: Request):
+async def auth_yandex(request: Request, session: AsyncSession = Depends(db_helper.session_dependency)):
     try:
         token = await oauth.yandex.authorize_access_token(request)
 
@@ -107,10 +120,14 @@ async def auth_yandex(request: Request):
         
         # Получение информации о пользователе
         resp = await oauth.yandex.get('https://login.yandex.ru/info', token=token)
-        user = resp.json()
-        print(user)
-        return OauthUser(username=user["first_name"], 
-                               email=user["default_email"])
+        user_info = resp.json()
+        email = user_info["default_email"]
+        user = await get_user_by_email(session=session, email=email)
+        token = await create_register_token(email=email, auth_type="yandex")
+        if user:
+            return RedirectResponse(f"{settings.oauth2.FRONTEND_HOST}/?token={token}")
+        else:
+            return RedirectResponse(f"{settings.oauth2.FRONTEND_HOST}/register/info?token={token}")
     except OAuthError as e:
         print(f"OAuthError: {e}")
         raise HTTPException(
@@ -142,3 +159,8 @@ async def auth_user_check_self_info(
         "last_name": user.last_name,
         "email": user.email,
     }
+
+
+@router.get("/register/info")
+async def register_info(new_email: str = Depends(get_email_from_token)):
+    return new_email

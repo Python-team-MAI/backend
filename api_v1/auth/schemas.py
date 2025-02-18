@@ -8,5 +8,4 @@ class TokenInfo(BaseModel):
 
 
 class OauthUser(BaseModel):
-    username: str
     email: EmailStr

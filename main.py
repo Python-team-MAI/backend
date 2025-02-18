@@ -27,7 +27,7 @@ SECRET_KEY = settings.oauth2.AUTH_SECRET
 app = FastAPI(lifespan=lifespan, root_path="/api")
 app.include_router(router=router_v1, prefix="/v1")
 app.mount("/", app=sio_app)
-origins = ["*"]
+origins = []
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
@@ -46,4 +46,4 @@ async def get():
 
 
 if __name__ == "__main__":
-    uvicorn.run("main:app", host="localhost", reload=True)
+    uvicorn.run("main:app", host="0.0.0.0", port="8000", reload=True)

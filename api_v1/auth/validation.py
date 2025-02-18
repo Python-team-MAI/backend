@@ -111,6 +111,10 @@ async def get_user_by_token_sub(payload: dict, session) -> User:
         status_code=status.HTTP_404_NOT_FOUND, detail=f"User {user_id} not found"
     )
 
+async def get_email_from_token(token: str):
+    payload = auth_utils.decode_jwt(token=token)
+    return {"email": payload["sub"], "auth_type": payload["auth_typ"]}
+
 
 async def get_current_token_payload(token: str = Depends(oauth2_scheme)) -> dict:
     try:
