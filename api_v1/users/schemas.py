@@ -1,6 +1,5 @@
 from pydantic import BaseModel, EmailStr, ConfigDict
 import enum
-from fastapi_users import schemas
 
 class UserBase(BaseModel):
     first_name: str
