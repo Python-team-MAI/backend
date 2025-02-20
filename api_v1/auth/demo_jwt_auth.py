@@ -68,6 +68,7 @@ async def auth_google(
         
         return RedirectResponse(f"{settings.oauth2.FRONTEND_HOST}/api/v1/auth/callback?token={token}")
 
+
 @router.get("/github/")
 async def login_github(request: Request):
     return await oauth.github.authorize_redirect(request, GITHUB_REDIRECT_URI)
@@ -102,7 +103,6 @@ async def auth_github(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Could not validate credentials",
         )
-
 
 
 @router.get("/yandex/")
@@ -165,7 +165,7 @@ async def auth_user_check_self_info(
 
 @router.get("/register/")
 async def register_user(register_info = Body()):
-    pass
+    print(register_info)
 
 # @router.get("/")
 # async def test(token):
