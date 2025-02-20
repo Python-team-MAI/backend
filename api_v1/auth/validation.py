@@ -1,4 +1,4 @@
-from api_v1.users.schemas import User
+from api_v1.users.schemas import UserRead
 from api_v1.users.crud import get_user_by_email, get_user_by_id
 from api_v1.auth.helpers import (
     TOKEN_TYPE_FIELD,
@@ -82,6 +82,7 @@ async def validate_auth_user(
         status_code=status.HTTP_401_UNAUTHORIZED, detail="invalid password or username"
     )
     user = await get_user_by_email(session=session, email=form_data.username)
+    print(user)
     if not user:
         raise unauthed_exc
     if auth_utils.validate_password(
@@ -102,9 +103,8 @@ async def validate_token_type(payload: dict, token_type: str) -> bool:
     )
 
 def role_required(required_role: Role):
-    async def check_role(token: str = Depends(oauth2_scheme)):
-        
-        user = get_user_from_token(token)  # Твоя функция для получения пользователя из токена
+    async def check_role(user: str = Depends(get_current_auth_user)):
+         # Твоя функция для получения пользователя из токена
         if user.role != required_role:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
@@ -114,7 +114,7 @@ def role_required(required_role: Role):
     return check_role
 
 
-async def get_user_by_token_sub(payload: dict, session) -> User:
+async def get_user_by_token_sub(payload: dict, session) -> UserRead:
     user_id = int(payload.get("sub"))
     user = await get_user_by_id(session=session, user_id=user_id)
     if user is not None:

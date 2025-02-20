@@ -1,10 +1,13 @@
 from pydantic import BaseModel, EmailStr, ConfigDict
 import enum
-
+from fastapi_users import schemas
 
 class UserBase(BaseModel):
     first_name: str
     last_name: str
+    is_active: bool = True
+    is_superuser: bool = False
+    is_verified: bool = False
     bio: str
     email: EmailStr | None = None
     password: bytes | None
@@ -16,7 +19,7 @@ class UserBase(BaseModel):
     # json_settings: str
 
 
-class User(UserBase):
+class UserRead(UserBase):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
@@ -33,6 +36,9 @@ class UserUpdate(UserCreate):
 class UserUpdatePartial(UserCreate):
     first_name: str | None = None
     last_name: str | None = None
+    is_active: bool | None = True
+    is_superuser: bool | None = False
+    is_verified: bool | None = False
     bio: str | None = None
     email: EmailStr | None = None
     password: str | None = None
@@ -40,3 +46,4 @@ class UserUpdatePartial(UserCreate):
     group_id: int | None = None
     institute: int | None = None
     auth_type: str | None = None
+    role: str | None = None

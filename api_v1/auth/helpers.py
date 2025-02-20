@@ -1,5 +1,5 @@
 import api_v1.auth.utils as auth_utils
-from api_v1.users.schemas import User
+from api_v1.users.schemas import UserRead
 from core.config import settings
 from datetime import timedelta
 
@@ -25,7 +25,7 @@ async def create_jwt(
     )
 
 
-async def create_access_token(user: User) -> str:
+async def create_access_token(user: UserRead) -> str:
     jwt_payload = {
         "sub": str(user.id),  # subject
         "email": user.email,
@@ -37,7 +37,7 @@ async def create_access_token(user: User) -> str:
     )
 
 
-async def create_refresh_token(user: User) -> str:
+async def create_refresh_token(user: UserRead) -> str:
     jwt_payload = {"sub": str(user.id)}
     return await create_jwt(
         token_type=REFRESH_TOKEN_TOKEN_TYPE,

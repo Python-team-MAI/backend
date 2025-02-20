@@ -1,4 +1,4 @@
-from api_v1.users.schemas import User
+from api_v1.users.schemas import UserRead
 from api_v1.users.crud import get_user_by_email
 from api_v1.auth.helpers import create_access_token, create_refresh_token, create_register_token
 from api_v1.auth.validation import (
@@ -12,7 +12,7 @@ from core.config import settings
 from core.models import db_helper
 from sqlalchemy.ext.asyncio import AsyncSession
 from .schemas import TokenInfo, OauthUser
-from fastapi import APIRouter, Depends, Request, status, HTTPException
+from fastapi import APIRouter, Depends, Request, status, HTTPException, Body
 from fastapi.security import OAuth2PasswordRequestForm
 
 import logging
@@ -59,13 +59,14 @@ async def auth_google(
     print(user_response)
     email = user_info["email"].lower()
     user = await get_user_by_email(session=session, email=email)
+    print(request.url)
     if user:
         token = await create_access_token(user=user)
-        return RedirectResponse(f"{settings.oauth2.BACKEND_HOST}/api/v1/auth/?token={token}")
+        return RedirectResponse(f"{settings.oauth2.FRONTEND_HOST}/api/v1/auth/callback?token={token}")
     else:
         token = await create_register_token(email=email, auth_type="google")
         
-        return RedirectResponse(f"{settings.oauth2.BACKEND_HOST}/api/v1/auth/register/info?token={token}")
+        return RedirectResponse(f"{settings.oauth2.FRONTEND_HOST}/api/v1/auth/callback?token={token}")
 
 @router.get("/github/")
 async def login_github(request: Request):
@@ -90,10 +91,10 @@ async def auth_github(
         user = await get_user_by_email(session=session, email=email)
         if user:
             token = await create_access_token(user=user)
-            return RedirectResponse(f"{settings.oauth2.FRONTEND_HOST}/ru/?token={token}")
+            return RedirectResponse(f"{settings.oauth2.FRONTEND_HOST}/api/v1/auth/callback?token={token}")
         else:
             token = await create_register_token(email=email, auth_type="github")
-            return RedirectResponse(f"{settings.oauth2.FRONTEND_HOST}/ru/register/info?token={token}")
+            return RedirectResponse(f"{settings.oauth2.FRONTEND_HOST}/api/v1/auth/callback?token={token}")
 
     except OAuthError as e:
         print(f"OAuthError: {e}")
@@ -128,12 +129,12 @@ async def auth_yandex(request: Request, session: AsyncSession = Depends(db_helpe
         user = await get_user_by_email(session=session, email=email)
         if user:
             token = await create_access_token(user=user)
-            return RedirectResponse(f"{settings.oauth2.FRONTEND_HOST}/ru/?token={token}")
+            return RedirectResponse(f"{settings.oauth2.FRONTEND_HOST}/api/v1/auth/callback?token={token}")
         else:
             token = await create_register_token(email=email, auth_type="yandex")
-            return RedirectResponse(f"{settings.oauth2.FRONTEND_HOST}/ru/register/info?token={token}")
+            return RedirectResponse(f"{settings.oauth2.FRONTEND_HOST}/api/v1/auth/callback?token={token}")
+        
     except OAuthError as e:
-        print(f"OAuthError: {e}")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Could not validate credentials",
@@ -141,14 +142,16 @@ async def auth_yandex(request: Request, session: AsyncSession = Depends(db_helpe
 
 
 @router.post("/refresh/", response_model=TokenInfo, response_model_exclude_none=True)
-async def auth_refresh_jwt(user: User = Depends(get_current_auth_user_for_refresh)):
+async def auth_refresh_jwt(user: UserRead = Depends(get_current_auth_user_for_refresh)):
     access_token = await create_access_token(user)
 
     return TokenInfo(access_token=access_token)
 
 
 @router.post("/login/", response_model=TokenInfo)
-async def auth_user_issue_jwt(user: User = Depends(validate_auth_user)):
+async def auth_user_issue_jwt(user: UserRead = Depends(validate_auth_user)):
+    print("fff")
+    print(user)
     access_token = await create_access_token(user=user)
     refresh_token = await create_refresh_token(user=user)
     return TokenInfo(access_token=access_token, refresh_token=refresh_token)
@@ -156,20 +159,14 @@ async def auth_user_issue_jwt(user: User = Depends(validate_auth_user)):
 
 @router.get("/users/me/")
 async def auth_user_check_self_info(
-    user: User = Depends(get_current_auth_user),
+    user: UserRead = Depends(get_current_auth_user),
 ):
-    return {
-        "first_name": user.first_name,
-        "last_name": user.last_name,
-        "email": user.email,
-    }
+    return user
 
+@router.get("/register/")
+async def register_user(register_info = Body()):
+    pass
 
-@router.get("/register/info")
-async def register_info(new_email: str = Depends(get_email_from_token)):
-    return new_email
-
-
-@router.get("/")
-async def test(token):
-    return token
+# @router.get("/")
+# async def test(token):
+#     return token

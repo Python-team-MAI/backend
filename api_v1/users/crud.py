@@ -2,7 +2,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from core.models import UsersOrm
 from sqlalchemy.engine import Result
 from sqlalchemy import select
-from .schemas import UserCreate, UserUpdate, UserUpdatePartial
+from .schemas import UserCreate, UserUpdate, UserRead
 from api_v1.auth.utils import hash_password
 
 
@@ -36,7 +36,7 @@ async def create_user(session: AsyncSession, user_in: UserCreate) -> UsersOrm:
 async def update_user(
     session: AsyncSession,
     user: UsersOrm,
-    user_update: UserUpdate | UserUpdatePartial,
+    user_update: UserUpdate,
     partial: bool = False,
 ) -> UsersOrm:
     for name, value in user_update.model_dump(exclude_unset=partial).items():
