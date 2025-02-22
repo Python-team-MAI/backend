@@ -82,7 +82,7 @@ async def validate_auth_user(
     unauthed_exc = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED, detail="invalid password or username"
     )
-    user = await get_user_by_email(session=session, email=user.email)
+    user = await get_user_by_email(session=session, email=user_in.email)
     
     if not user:
         raise unauthed_exc
