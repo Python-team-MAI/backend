@@ -11,6 +11,11 @@ class TokenInfo(BaseModel):
 class OauthUser(BaseModel):
     email: EmailStr
 
+class NewUserDefault(BaseModel):
+    email: EmailStr
+    password: str
+    auth_type: str = "default"
+
 
 class Role(str, Enum):
     ADMIN = "admin"

@@ -1,22 +1,18 @@
-from api_v1.users.schemas import UserRead
-from api_v1.users.crud import get_user_by_email
+from api_v1.users.schemas import UserRead, UserCreate
+from api_v1.users.crud import get_user_by_email, create_user
 from api_v1.auth.helpers import create_access_token, create_refresh_token, create_register_token
 from api_v1.auth.validation import (
     http_bearer,
     validate_auth_user,
     get_current_auth_user,
     get_current_auth_user_for_refresh,
-    get_email_from_token
 )
 from core.config import settings
 from core.models import db_helper
 from sqlalchemy.ext.asyncio import AsyncSession
-from .schemas import TokenInfo, OauthUser
-from fastapi import APIRouter, Depends, Request, status, HTTPException, Body
-from fastapi.security import OAuth2PasswordRequestForm
+from .schemas import TokenInfo, NewUserDefault
+from fastapi import APIRouter, Depends, Request, status, HTTPException
 
-import logging
-import api_v1.auth.utils as auth_utils
 from .validation import oauth
 from fastapi.responses import RedirectResponse
 from authlib.integrations.base_client import OAuthError
@@ -56,10 +52,9 @@ async def auth_google(
             detail="Could not validate credentials",
         )
     user_info = user_response.get("userinfo")
-    print(user_response)
     email = user_info["email"].lower()
     user = await get_user_by_email(session=session, email=email)
-    print(request.url)
+
     if user:
         token = await create_access_token(user=user)
         return RedirectResponse(f"{settings.oauth2.FRONTEND_HOST}/api/v1/auth/callback?token={token}")
@@ -163,9 +158,13 @@ async def auth_user_check_self_info(
 ):
     return user
 
-@router.get("/register/")
-async def register_user(register_info = Body()):
-    print(register_info)
+@router.post("/register/")
+async def register_user(new_user: NewUserDefault, session: AsyncSession = Depends(db_helper.scoped_session_dependency)):
+    if await get_user_by_email(session=session, email=new_user.email):
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="User with this email already exist")
+    #TODO some validation
+    user = UserCreate()
+    await create_user(session=session, )
 
 # @router.get("/")
 # async def test(token):

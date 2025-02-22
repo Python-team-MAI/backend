@@ -2,19 +2,19 @@ from pydantic import BaseModel, EmailStr, ConfigDict
 import enum
 
 class UserBase(BaseModel):
-    first_name: str
-    last_name: str
+    first_name: str | None = None
+    last_name: str | None = None
     is_active: bool = True
     is_superuser: bool = False
     is_verified: bool = False
-    bio: str
-    email: EmailStr | None = None
+    bio: str | None = None
+    email: EmailStr 
     password: bytes | None
-    course: int
-    group_id: int
-    institute: int
-    role: str
-    auth_type: str
+    course: int | None = None
+    group_id: int | None = None
+    institute: int | None = None
+    role: str | None = None
+    auth_type: str | None = None
     # json_settings: str
 
 
