@@ -145,8 +145,7 @@ async def auth_refresh_jwt(user: UserRead = Depends(get_current_auth_user_for_re
 
 @router.post("/login/", response_model=TokenInfo)
 async def auth_user_issue_jwt(user: UserRead = Depends(validate_auth_user)):
-    print("fff")
-    print(user)
+
     access_token = await create_access_token(user=user)
     refresh_token = await create_refresh_token(user=user)
     return TokenInfo(access_token=access_token, refresh_token=refresh_token)

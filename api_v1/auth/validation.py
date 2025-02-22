@@ -5,6 +5,7 @@ from api_v1.auth.helpers import (
     ACCESS_TOKEN_TOKEN_TYPE,
     REFRESH_TOKEN_TOKEN_TYPE,
 )
+from .schemas import UserLogin
 from api_v1.users.schemas import Role
 from core.config import settings
 from core.models import db_helper
@@ -75,18 +76,18 @@ oauth.register(
 )
 
 async def validate_auth_user(
-    form_data: OAuth2PasswordRequestForm = Depends(),
+    user: UserLogin,
     session=Depends(db_helper.session_dependency),
 ):
     unauthed_exc = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED, detail="invalid password or username"
     )
-    user = await get_user_by_email(session=session, email=form_data.username)
-    print(user)
+    user = await get_user_by_email(session=session, email=user.email)
+    
     if not user:
         raise unauthed_exc
     if auth_utils.validate_password(
-        password=form_data.password, hashed_password=user.password
+        password=user.password, hashed_password=user.password
     ):
         return user
 

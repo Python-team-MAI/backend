@@ -11,7 +11,7 @@ class TokenInfo(BaseModel):
 class OauthUser(BaseModel):
     email: EmailStr
 
-class NewUserDefault(BaseModel):
+class UserLogin(BaseModel):
     email: EmailStr
     password: str
 
