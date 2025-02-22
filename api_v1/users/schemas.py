@@ -1,6 +1,11 @@
 from pydantic import BaseModel, EmailStr, ConfigDict
 import enum
 
+class Role(str, enum.Enum):
+    ADMIN = "admin"
+    STUDENT = "student"
+    HEAD = "head"
+
 class UserBase(BaseModel):
     first_name: str | None = None
     last_name: str | None = None
@@ -13,7 +18,7 @@ class UserBase(BaseModel):
     course: int | None = None
     group_id: int | None = None
     institute: int | None = None
-    role: str | None = None
+    role: Role | None = None
     auth_type: str | None = None
     # json_settings: str
 
@@ -45,4 +50,4 @@ class UserUpdatePartial(UserCreate):
     group_id: int | None = None
     institute: int | None = None
     auth_type: str | None = None
-    role: str | None = None
+    role: Role | None = None

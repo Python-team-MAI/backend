@@ -14,10 +14,4 @@ class OauthUser(BaseModel):
 class NewUserDefault(BaseModel):
     email: EmailStr
     password: str
-    auth_type: str = "default"
 
-
-class Role(str, Enum):
-    ADMIN = "admin"
-    STUDENT = "student"
-    HEAD = "head"
