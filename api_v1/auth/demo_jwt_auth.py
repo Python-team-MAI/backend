@@ -10,7 +10,7 @@ from api_v1.auth.validation import (
 from core.config import settings
 from core.models import db_helper
 from sqlalchemy.ext.asyncio import AsyncSession
-from .schemas import TokenInfo, NewUserDefault
+from .schemas import TokenInfo
 from fastapi import APIRouter, Depends, Request, status, HTTPException, Body
 
 from .validation import oauth

@@ -11,7 +11,7 @@ from core.config import settings
 from core.models import db_helper
 from starlette.config import Config
 from fastapi import HTTPException, status, Depends, Form
-from fastapi.security import HTTPBearer, OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from fastapi.security import HTTPBearer, OAuth2PasswordBearer
 from authlib.integrations.starlette_client import OAuth
 import api_v1.auth.utils as auth_utils
 from jwt import InvalidTokenError
