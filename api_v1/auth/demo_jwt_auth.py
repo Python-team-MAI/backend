@@ -163,8 +163,11 @@ async def register_user(new_user: NewUserDefault, session: AsyncSession = Depend
     if await get_user_by_email(session=session, email=new_user.email):
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="User with this email already exist")
     #TODO some validation
-    user = UserCreate()
-    await create_user(session=session, )
+    user = UserCreate(email=new_user.email, password=new_user.password, auth_type=new_user.auth_type)
+    await create_user(session=session, user_in=user)
+    access_token = await create_access_token(user=user)
+    refresh_token = await create_refresh_token(user=user)
+    return TokenInfo(access_token=access_token, refresh_token=refresh_token)
 
 # @router.get("/")
 # async def test(token):
