@@ -17,7 +17,7 @@ from .validation import oauth
 from fastapi.responses import RedirectResponse
 from authlib.integrations.base_client import OAuthError
 from authlib.oauth2.rfc6749 import OAuth2Token
-
+import json
 
 router = APIRouter(prefix="/auth", tags=["Auth"], dependencies=[Depends(http_bearer)])
 
@@ -161,6 +161,7 @@ async def auth_user_check_self_info(
 @router.post("/register/")
 async def register_user(string: str = Body(), session: AsyncSession = Depends(db_helper.scoped_session_dependency)):
     print(string)
+    print(type(string))
     # if await get_user_by_email(session=session, email=new_user.email):
     #     raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="User with this email already exist")
     # #TODO some validation
