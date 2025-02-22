@@ -5,7 +5,7 @@ from api_v1.auth.helpers import (
     ACCESS_TOKEN_TOKEN_TYPE,
     REFRESH_TOKEN_TOKEN_TYPE,
 )
-from api_v1.auth.schemas import Role
+from api_v1.users.schemas import Role
 from core.config import settings
 from core.models import db_helper
 from starlette.config import Config
