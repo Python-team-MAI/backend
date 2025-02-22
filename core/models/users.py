@@ -17,22 +17,22 @@ class Role(enum.Enum):
 
 class UsersOrm(Base):
     __tablename__ = "users"
-    first_name: Mapped[str] = mapped_column(String(20), nullable=False)
-    last_name: Mapped[str] = mapped_column(String(20), nullable=False)
-    bio: Mapped[str] = mapped_column(String(256))
+    first_name: Mapped[str] = mapped_column(String(20), nullable=True)
+    last_name: Mapped[str] = mapped_column(String(20), nullable=True)
+    bio: Mapped[str] = mapped_column(String(256), nullable=True)
     email: Mapped[str]  = mapped_column(nullable=False)
     password: Mapped[bytes] = mapped_column(nullable=True)
-    auth_type: Mapped[str] = mapped_column(nullable=False)
+    auth_type: Mapped[str] = mapped_column(nullable=True)
     course: Mapped[int] = mapped_column(nullable=True)
     group_id: Mapped[int] = mapped_column(ForeignKey("groups.id", ondelete="CASCADE"), nullable=True)
     institute: Mapped[int] = mapped_column(nullable=True)
     role: Mapped[str] = mapped_column(nullable=True)
-    is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     is_superuser: Mapped[bool] = mapped_column(
-        Boolean, default=False, nullable=False
+        Boolean, default=False
     )
     is_verified: Mapped[bool] = mapped_column(
-        Boolean, default=False, nullable=False
+        Boolean, default=False
     )
     # json_settings: Mapped[JSON]
 
