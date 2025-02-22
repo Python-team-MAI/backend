@@ -10,7 +10,7 @@ from api_v1.auth.validation import (
 from core.config import settings
 from core.models import db_helper
 from sqlalchemy.ext.asyncio import AsyncSession
-from .schemas import TokenInfo
+from .schemas import TokenInfo, UserLogin
 from fastapi import APIRouter, Depends, Request, status, HTTPException, Body
 
 from .validation import oauth
@@ -158,9 +158,8 @@ async def auth_user_check_self_info(
     return user
 
 @router.post("/register/")
-async def register_user(string: str = Body(), session: AsyncSession = Depends(db_helper.scoped_session_dependency)):
-    print(string)
-    print(type(string))
+async def register_user(user: UserLogin, session: AsyncSession = Depends(db_helper.scoped_session_dependency)):
+    print(user, user.email, user.password)
     # if await get_user_by_email(session=session, email=new_user.email):
     #     raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="User with this email already exist")
     # #TODO some validation
