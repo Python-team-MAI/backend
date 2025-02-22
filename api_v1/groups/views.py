@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, status, Depends
 from . import crud
 from .schemas import GroupCreate, Group, GroupUpdatePartial, GroupUpdate
-from core.models import db_helper
+from core.helpers import db_helper
 from sqlalchemy.ext.asyncio import AsyncSession
 from .dependencies import group_by_id
 

@@ -8,7 +8,7 @@ from api_v1.auth.validation import (
     get_current_auth_user_for_refresh,
 )
 from core.config import settings
-from core.models import db_helper
+from core.helpers import db_helper
 from sqlalchemy.ext.asyncio import AsyncSession
 from .schemas import TokenInfo, UserLogin
 from fastapi import APIRouter, Depends, Request, status, HTTPException, Body
@@ -162,9 +162,10 @@ async def register_user(user: UserLogin, session: AsyncSession = Depends(db_help
     
     if await get_user_by_email(session=session, email=user.email):
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="User with this email already exist")
+    
     #TODO some validation
     user = UserCreate(email=user.email, password=user.password, auth_type="default")
-    await create_user(session=session, user_in=user)
+    user = await create_user(session=session, user_in=user)
     access_token = await create_access_token(user=user)
     refresh_token = await create_refresh_token(user=user)
     return TokenInfo(access_token=access_token, refresh_token=refresh_token)

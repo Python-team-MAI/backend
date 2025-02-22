@@ -1,6 +1,7 @@
 from fastapi import Depends, HTTPException, status, Path
 from typing import Annotated
-from core.models import db_helper, UsersOrm
+from core.models import UsersOrm
+from core.helpers import db_helper
 from sqlalchemy.ext.asyncio import AsyncSession
 from . import crud
 

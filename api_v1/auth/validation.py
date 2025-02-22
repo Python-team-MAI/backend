@@ -8,7 +8,7 @@ from api_v1.auth.helpers import (
 from .schemas import UserLogin
 from api_v1.users.schemas import Role
 from core.config import settings
-from core.models import db_helper
+from core.helpers import db_helper
 from starlette.config import Config
 from fastapi import HTTPException, status, Depends, Form
 from fastapi.security import HTTPBearer, OAuth2PasswordBearer

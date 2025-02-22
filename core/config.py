@@ -12,13 +12,16 @@ class DBSettings(BaseSettings):
     POSTGRES_PASSWORD: str
     POSTGRES_DB: str
 
-    REDIS_URL: str
+    REDIS_HOST: str
+    REDIS_PORT: str
+    REDIS_DB: str
+    EXPIRE_TIME_DAYS: int
 
     @property
     def DATABASE_URL_asyncpg(self):
         # DSN
         return f"postgresql+asyncpg://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@{self.POSTGRES_HOST}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
-
+    
     model_config = SettingsConfigDict(env_file=".env")
 
 

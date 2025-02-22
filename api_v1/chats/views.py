@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException, status, Depends
 from . import crud
 from .schemas import ChatCreate, Chat, ChatUpdate, ChatUpdatePartial
 from .dependencies import chat_by_id
-from core.models import db_helper
+from core.helpers import db_helper
 from sqlalchemy.ext.asyncio import AsyncSession
 
 
