@@ -76,7 +76,7 @@ oauth.register(
 )
 
 async def validate_auth_user(
-    user: UserLogin,
+    user_in: UserLogin,
     session=Depends(db_helper.session_dependency),
 ):
     unauthed_exc = HTTPException(
@@ -87,7 +87,7 @@ async def validate_auth_user(
     if not user:
         raise unauthed_exc
     if auth_utils.validate_password(
-        password=user.password, hashed_password=user.password
+        password=user_in.password, hashed_password=user.password
     ):
         return user
 
