@@ -11,7 +11,7 @@ from core.config import settings
 from core.models import db_helper
 from sqlalchemy.ext.asyncio import AsyncSession
 from .schemas import TokenInfo, NewUserDefault
-from fastapi import APIRouter, Depends, Request, status, HTTPException
+from fastapi import APIRouter, Depends, Request, status, HTTPException, Body
 
 from .validation import oauth
 from fastapi.responses import RedirectResponse
@@ -159,15 +159,16 @@ async def auth_user_check_self_info(
     return user
 
 @router.post("/register/")
-async def register_user(new_user: NewUserDefault, session: AsyncSession = Depends(db_helper.scoped_session_dependency)):
-    if await get_user_by_email(session=session, email=new_user.email):
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="User with this email already exist")
-    #TODO some validation
-    user = UserCreate(email=new_user.email, password=new_user.password, auth_type="default")
-    await create_user(session=session, user_in=user)
-    access_token = await create_access_token(user=user)
-    refresh_token = await create_refresh_token(user=user)
-    return TokenInfo(access_token=access_token, refresh_token=refresh_token)
+async def register_user(string: str = Body(), session: AsyncSession = Depends(db_helper.scoped_session_dependency)):
+    print(string)
+    # if await get_user_by_email(session=session, email=new_user.email):
+    #     raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="User with this email already exist")
+    # #TODO some validation
+    # user = UserCreate(email=new_user.email, password=new_user.password, auth_type="default")
+    # await create_user(session=session, user_in=user)
+    # access_token = await create_access_token(user=user)
+    # refresh_token = await create_refresh_token(user=user)
+    # return TokenInfo(access_token=access_token, refresh_token=refresh_token)
 
 # @router.get("/")
 # async def test(token):
