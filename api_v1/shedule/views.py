@@ -3,6 +3,7 @@ import json
 from .utils import logger, get_group_hash, fetch_schedule_from_mai
 from redis import asyncio as redis
 from core.config import settings
+from api_v1.auth.validation import require_role
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import JSONResponse
 import datetime
@@ -13,6 +14,7 @@ router = APIRouter(tags=["Shedule"])
 
 
 @router.get("/{group_name}")
+
 async def get_schedule(
     group_name: str, redis_client: redis.Redis = Depends(redis_helper.get_redis_client)
 ):

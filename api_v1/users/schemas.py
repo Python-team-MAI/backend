@@ -18,7 +18,7 @@ class UserBase(BaseModel):
     course: int | None = None
     group_id: int | None = None
     institute: int | None = None
-    role: Role | None = None
+    role: Role | None = Role.STUDENT
     auth_type: str | None = None
     # json_settings: str
 

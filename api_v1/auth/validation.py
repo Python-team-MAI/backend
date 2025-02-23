@@ -10,7 +10,7 @@ from api_v1.users.schemas import Role
 from core.config import settings
 from core.helpers import db_helper
 from starlette.config import Config
-from fastapi import HTTPException, status, Depends, Form
+from fastapi import HTTPException, status, Depends, Form, Request
 from fastapi.security import HTTPBearer, OAuth2PasswordBearer
 from authlib.integrations.starlette_client import OAuth
 import api_v1.auth.utils as auth_utils
@@ -18,7 +18,7 @@ from jwt import InvalidTokenError
 
 http_bearer = HTTPBearer(auto_error=False)
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login/")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login")
 
 
 GOOGLE_CLIENT_ID = settings.oauth2.AUTH_GOOGLE_ID
@@ -103,16 +103,14 @@ async def validate_token_type(payload: dict, token_type: str) -> bool:
         detail=f"invalid token type {current_token_type!r} expected {token_type!r}",
     )
 
-def role_required(required_role: Role):
-    async def check_role(user: str = Depends(get_current_auth_user)):
-         # Твоя функция для получения пользователя из токена
-        if user.role != required_role:
+def require_role(required_role: str):
+    async def role_checker(role: str = Depends(get_current_user_role)):
+        if role != required_role:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail="You don't have permission to access this resource",
+                detail=f"Access denied. Required role: {required_role}",
             )
-        return user
-    return check_role
+    return role_checker
 
 
 async def get_user_by_token_sub(payload: dict, session) -> UserRead:
@@ -129,9 +127,24 @@ async def get_email_from_token(token: str):
     payload = auth_utils.decode_jwt(token=token)
     return {"email": payload["sub"], "auth_type": payload["auth_typ"]}
 
+async def get_token_from_cookie_or_header(request: Request) -> str:
+    token = request.cookies.get("access_token")
+    if not token:
+        authorization_header = request.headers.get("Authorization")
+        if authorization_header:
+            token = authorization_header.replace("Bearer ", "")
+        else:
+            
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Not authenticated",
+            )
+    
+    return token
 
-async def get_current_token_payload(token: str = Depends(oauth2_scheme)) -> dict:
+async def get_current_token_payload(token: str = Depends(get_token_from_cookie_or_header)) -> dict:
     try:
+
         payload = auth_utils.decode_jwt(token=token)
     except InvalidTokenError as e:
 
@@ -140,6 +153,16 @@ async def get_current_token_payload(token: str = Depends(oauth2_scheme)) -> dict
             detail="invalid token error. Not enough segments",
         )
     return payload
+
+async def get_current_user_role(payload: dict = Depends(get_current_token_payload)) -> str:
+    print(payload)
+    role = payload.get("role")
+    if not role:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Role not found in token",
+        )
+    return role
 
 
 def get_auth_user_from_token_of_type(token_type: str):

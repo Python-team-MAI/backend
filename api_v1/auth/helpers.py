@@ -29,6 +29,7 @@ async def create_access_token(user: UserRead) -> str:
     jwt_payload = {
         "sub": str(user.id),  # subject
         "email": user.email,
+        "role": user.role
     }
     return await create_jwt(
         token_type=ACCESS_TOKEN_TOKEN_TYPE,

@@ -26,7 +26,7 @@ class UsersOrm(Base):
     course: Mapped[int] = mapped_column(nullable=True)
     group_id: Mapped[int] = mapped_column(ForeignKey("groups.id", ondelete="CASCADE"), nullable=True)
     institute: Mapped[int] = mapped_column(nullable=True)
-    role: Mapped[str] = mapped_column(nullable=True)
+    role: Mapped[str] = mapped_column(nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     is_superuser: Mapped[bool] = mapped_column(
         Boolean, default=False
