@@ -11,7 +11,7 @@ from core.config import settings
 from core.helpers import db_helper
 from sqlalchemy.ext.asyncio import AsyncSession
 from .schemas import TokenInfo, UserLogin
-from fastapi import APIRouter, Depends, Request, status, HTTPException, Body
+from fastapi import APIRouter, Depends, Request, status, HTTPException, Body, Response
 
 from .validation import oauth
 from fastapi.responses import RedirectResponse
@@ -141,13 +141,42 @@ async def auth_refresh_jwt(user: UserRead = Depends(get_current_auth_user_for_re
     access_token = await create_access_token(user)
 
     return TokenInfo(access_token=access_token)
+@router.post("/refresh/", response_model=TokenInfo, response_model_exclude_none=True)
+async def auth_refresh_jwt(
+    response: Response, user: UserRead = Depends(get_current_auth_user_for_refresh)
+):
+    access_token = await create_access_token(user)
+    response.set_cookie(
+        "access_token",
+        access_token,
+        expires=settings.auth_jwt.access_token_expire_minutes * 60,
+        samesite="strict",
+        httponly=True,
+    )
+
+    return TokenInfo(access_token=access_token)
 
 
 @router.post("/login/", response_model=TokenInfo)
-async def auth_user_issue_jwt(user: UserRead = Depends(validate_auth_user)):
-
+async def auth_user_issue_jwt(
+    response: Response, user: UserRead = Depends(validate_auth_user)
+):
     access_token = await create_access_token(user=user)
     refresh_token = await create_refresh_token(user=user)
+    response.set_cookie(
+        "access_token",
+        access_token,
+        expires=settings.auth_jwt.access_token_expire_minutes * 60,
+        samesite="strict",
+        httponly=True,
+    )
+    response.set_cookie(
+        "refresh_token",
+        refresh_token,
+        expires=settings.auth_jwt.refresh_token_expire_days * 24 * 60 * 60,
+        samesite="strict",
+        httponly=True,
+    )
     return TokenInfo(access_token=access_token, refresh_token=refresh_token)
 
 
@@ -157,19 +186,37 @@ async def auth_user_check_self_info(
 ):
     return user
 
+
 @router.post("/register/")
-async def register_user(user: UserLogin, session: AsyncSession = Depends(db_helper.scoped_session_dependency)):
-    
+async def register_user(
+    response: Response,
+    user: UserLogin,
+    session: AsyncSession = Depends(db_helper.scoped_session_dependency),
+):
+
     if await get_user_by_email(session=session, email=user.email):
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="User with this email already exist")
-    
-    #TODO some validation
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="User with this email already exist",
+        )
+    # TODO some validation
     user = UserCreate(email=user.email, password=user.password, auth_type="default")
     user = await create_user(session=session, user_in=user)
     access_token = await create_access_token(user=user)
     refresh_token = await create_refresh_token(user=user)
+    response.set_cookie(
+        "access_token",
+        access_token,
+        expires=settings.auth_jwt.access_token_expire_minutes * 60,
+        samesite="strict",
+        httponly=True,
+    )
+    response.set_cookie(
+        "refresh_token",
+        refresh_token,
+        expires=settings.auth_jwt.refresh_token_expire_days * 24 * 60 * 60,
+        samesite="strict",
+        httponly=True,
+    )
+    
     return TokenInfo(access_token=access_token, refresh_token=refresh_token)
-
-# @router.get("/")
-# async def test(token):
-#     return token
