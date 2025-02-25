@@ -1,0 +1,45 @@
+name: CI/CD Pipeline
+
+on:
+    push:
+        branches: [main]
+
+jobs:
+    # test:
+    #     runs-on: ubuntu-latest
+
+    #     steps:
+    #         - name: Checkout code
+    #           uses: actions/checkout@v4
+
+    #         - name: Setup Node.js and Yarn
+    #           uses: actions/setup-node@v4
+    #           with:
+    #               node-version: 20
+    #         - run: corepack enable
+
+    #         - name: Install dependencies
+    #           run: yarn install --frozen-lockfile
+
+    #         - name: Run tests
+    #           run: yarn test
+    deploy:
+        # needs: test
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Deploy to Server
+              uses: appleboy/ssh-action@master
+              with:
+                  host: ${{ secrets.SERVER_HOST }}
+                  username: ${{ secrets.SERVER_USER }}
+                  password: ${{ secrets.SERVER_PASSWORD }}
+                  script: |
+                      cd ${{ secrets.BACKEND_PATH }}
+                      git pull origin main
+                      docker compose down
+                      docker compose up -d --build
+                      docker image prune -f
