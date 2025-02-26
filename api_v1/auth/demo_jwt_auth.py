@@ -1,5 +1,5 @@
-from api_v1.users.schemas import UserRead, UserCreate
-from api_v1.users.crud import get_user_by_email, create_user
+from api_v1.users.schemas import UserRead, UserCreate, UserUpdate
+from api_v1.users.crud import get_user_by_email, create_user, update_user
 from api_v1.auth.helpers import create_access_token, create_refresh_token, create_register_token
 from api_v1.auth.validation import (
     http_bearer,
@@ -13,7 +13,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from .schemas import TokenInfo, UserLogin
 from fastapi import APIRouter, Depends, Request, status, HTTPException, Body, Response
 
-from .validation import oauth, require_role
+from .validation import oauth, require_role, validate_token
 from fastapi.responses import RedirectResponse
 from authlib.integrations.base_client import OAuthError
 from authlib.oauth2.rfc6749 import OAuth2Token
@@ -131,10 +131,17 @@ async def auth_yandex(request: Request, session: AsyncSession = Depends(db_helpe
         
     except OAuthError as e:
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
+        status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Could not validate credentials",
         )
+    
 
+@router.post("/token-validate")
+async def token_validate(token: str | bytes, token_type: str):
+    print(token, token_type)
+    res = await validate_token(token=token, token_type=token_type)
+    return res
+    
 
 @router.post("/refresh", response_model=TokenInfo, response_model_exclude_none=True)
 async def auth_refresh_jwt(
@@ -175,11 +182,21 @@ async def auth_user_issue_jwt(
     return TokenInfo(access_token=access_token, refresh_token=refresh_token)
 
 
-@router.get("/users/me")
+@router.get("/me")
 async def auth_user_check_self_info(
     user: UserRead = Depends(get_current_auth_user),
 ):
     return user
+
+@router.patch("/me", response_model=UserRead)
+async def update_user(
+    user_update: UserUpdate,
+    user: UserRead = Depends(get_current_auth_user),
+    session: AsyncSession = Depends(db_helper.session_dependency),
+):
+    return await update_user(
+        session=session, user=user, user_update=user_update, partial=True
+    )
 
 
 @router.post("/register")

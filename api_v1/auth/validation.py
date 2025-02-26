@@ -15,6 +15,7 @@ from fastapi.security import HTTPBearer, OAuth2PasswordBearer
 from authlib.integrations.starlette_client import OAuth
 import api_v1.auth.utils as auth_utils
 from jwt import InvalidTokenError
+from datetime import timedelta, datetime, timezone
 
 http_bearer = HTTPBearer(auto_error=False)
 
@@ -27,7 +28,6 @@ GITHUB_CLIENT_ID = settings.oauth2.AUTH_GITHUB_ID
 GITHUB_CLIENT_SECRET = settings.oauth2.AUTH_GITHUB_SECRET
 YANDEX_CLIENT_ID=settings.oauth2.AUTH_YANDEX_ID
 YANDEX_CLIENT_SECRET=settings.oauth2.AUTH_YANDEX_SECRET
-
 
 if GOOGLE_CLIENT_ID is None or GOOGLE_CLIENT_SECRET is None:
     raise Exception("Missing env variables")
@@ -102,6 +102,25 @@ async def validate_token_type(payload: dict, token_type: str) -> bool:
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail=f"invalid token type {current_token_type!r} expected {token_type!r}",
     )
+
+async def validate_token(token: str | bytes, token_type: str):
+    try:
+
+        payload = auth_utils.decode_jwt(token=token)
+        await validate_token_type(payload=payload, token_type=token_type)
+        print(payload)
+        if payload.exp < datetime.now(timezone.utc):
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail=f"token has expired",
+            )
+        
+        return {"success": True,
+                "error": None}
+    
+    except Exception as e:
+        return {"success": False,
+                "error": e}
 
 def require_role(required_role: str):
     async def role_checker(role: str = Depends(get_current_user_role)):

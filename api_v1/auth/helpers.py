@@ -7,7 +7,6 @@ from datetime import timedelta
 TOKEN_TYPE_FIELD = "type"
 ACCESS_TOKEN_TOKEN_TYPE = "access"
 REFRESH_TOKEN_TOKEN_TYPE = "refresh"
-REGISTER_TOKEN_TOKEN_TYPE = "register"
 
 
 async def create_jwt(
