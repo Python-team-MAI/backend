@@ -10,7 +10,7 @@ import datetime
 from core.helpers import redis_helper
 
 
-router = APIRouter(tags=["Shedule"])
+router = APIRouter(tags=["Schedule"])
 
 
 @router.get("/{group_name}")
