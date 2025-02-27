@@ -1,4 +1,4 @@
-from api_v1.users.schemas import UserRead, UserCreate, UserUpdate
+from api_v1.users.schemas import UserRead, UserCreate, UserUpdate, UserUpdatePartialMe
 from api_v1.users.crud import get_user_by_email, create_user, update_user
 from api_v1.auth.helpers import create_access_token, create_refresh_token, create_register_token
 from api_v1.auth.validation import (
@@ -189,8 +189,8 @@ async def auth_user_check_self_info(
     return user
 
 @router.patch("/me", response_model=UserRead)
-async def update_user(
-    user_update: UserUpdate,
+async def update_me(
+    user_update: UserUpdatePartialMe,
     user: UserRead = Depends(get_current_auth_user),
     session: AsyncSession = Depends(db_helper.session_dependency),
 ):
