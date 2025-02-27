@@ -37,7 +37,7 @@ class UserUpdate(UserCreate):
     pass
 
 
-class UserUpdatePartialMe(UserCreate):
+class UserUpdatePartialMe(BaseModel):
     first_name: str | None = None
     last_name: str | None = None
     bio: str | None = None
