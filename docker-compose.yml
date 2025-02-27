@@ -28,7 +28,7 @@ services:
         networks:
             - mai_network
         ports:
-          - 5432:5432
+          - '5433:5432'
 
     redis:
         image: redis:6-alpine
