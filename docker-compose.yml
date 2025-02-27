@@ -27,6 +27,8 @@ services:
             - postgres_data:/var/lib/postgresql/data
         networks:
             - mai_network
+        ports:
+          - 5432:5432
 
     redis:
         image: redis:6-alpine
