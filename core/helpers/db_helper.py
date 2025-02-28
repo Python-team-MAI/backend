@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import (
 from sqlalchemy.orm import sessionmaker
 from core.config import settings
 from asyncio import current_task
-
+from sqladmin import Admin
 
 class DatabaseHelper:
  
@@ -17,6 +17,7 @@ class DatabaseHelper:
         self.session_factory = async_sessionmaker(
             bind=self.engine, autoflush=False, autocommit=False, expire_on_commit=False
         )
+        self.admin: Admin = None
 
     def get_scoped_session(self):
         session = async_scoped_session(
@@ -24,6 +25,19 @@ class DatabaseHelper:
             scopefunc=current_task,
         )
         return session
+    
+    def create_admin(self, app, engine):
+        if self.admin is None:
+            return Admin(app=app, engine=engine)
+        return self.admin
+
+    def get_admin(self):
+        return self.admin
+        
+    def add_admin_view(self, view):
+        if self.admin is not None:
+            self.admin.add_view(view=view)
+        
 
     async def session_dependency(self) -> AsyncSession:
         async with self.session_factory() as session:

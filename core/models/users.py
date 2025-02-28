@@ -6,7 +6,7 @@ from sqlalchemy import String, ForeignKey, Boolean
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from .messages import MessagesOrm
+    from .chats import ChatsOrm
 
 
 class Role(enum.Enum):
@@ -36,5 +36,5 @@ class UsersOrm(Base):
     )
     # json_settings: Mapped[JSON]
 
-    messages: Mapped[list["MessagesOrm"]] = relationship(back_populates="user")
+    chats: Mapped[list["ChatsOrm"]] = relationship(back_populates="user")
 

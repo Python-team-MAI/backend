@@ -9,6 +9,7 @@ from api_v1.sockets import sio_app
 from core.config import settings
 from contextlib import asynccontextmanager
 from core.models import Base, db_helper
+from core.models.admin import UserAdmin
 from starlette.config import Config
 from authlib.integrations.starlette_client import OAuth
 import uvicorn
@@ -36,6 +37,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 app.add_middleware(SessionMiddleware, secret_key=SECRET_KEY)
+
+db_helper.create_admin(app=app, engine=db_helper.engine)
+db_helper.add_admin_view(view=UserAdmin)
 # app.include_router(router=websockets_router)
 # app.mount("/", StaticFiles(directory=".", html=True), name="static")
 

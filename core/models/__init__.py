@@ -3,6 +3,7 @@ __all__ = (
     "MessagesOrm",
     "GroupsOrm",
     "ChatsOrm",
+    "OfficeOrm",
     "DatabaseHelper",
     "Base",
     "idpk",
@@ -17,3 +18,4 @@ from .users import UsersOrm
 from .chats import ChatsOrm
 from .groups import GroupsOrm
 from .messages import MessagesOrm
+from .office import OfficeOrm

@@ -5,13 +5,13 @@ from datetime import datetime
 
 class MessageBase(BaseModel):
     text: str
-    created_at: datetime
-    updated_at: datetime
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
     chat_id: int
     # media_id: Mapped[int]
     user_id: int
-    is_deleted: bool
-    is_anonymous: bool
+    is_deleted: bool | False = False
+    is_anonymous: bool 
 
 
 class Message(MessageBase):
@@ -28,7 +28,7 @@ class MessageUpdate(MessageCreate):
     pass
 
 
-class MessageUpdatePartial(MessageCreate):
+class MessageUpdatePartial(BaseModel):
     text: str | None = None
     created_at: datetime | None = None
     updated_at: datetime | None = None
