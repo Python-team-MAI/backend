@@ -2,6 +2,7 @@ import api_v1.auth.utils as auth_utils
 from api_v1.users.schemas import UserRead
 from core.config import settings
 from datetime import timedelta
+from .schemas import TokenInfo
 
 
 TOKEN_TYPE_FIELD = "type"
@@ -46,10 +47,26 @@ async def create_refresh_token(user: UserRead) -> str:
     )
 
 
-async def create_register_token(email: str, auth_type: str) -> str:
-    jwt_payload = {"sub": email, "auth_typ": auth_type}
-    return await create_jwt(
-        token_type=REGISTER_TOKEN_TOKEN_TYPE,
-        token_data=jwt_payload,
-        expire_timedelta=timedelta(days=settings.auth_jwt.register_token_expire_minutes),
+
+async def setup_access_token(user, response):
+    access_token = await create_access_token(user)
+    response.set_cookie(
+        "access_token",
+        access_token,
+        expires=settings.auth_jwt.access_token_expire_minutes * 60,
+        samesite="strict",
+        httponly=True,
     )
+    return access_token
+
+
+async def setup_refresh_token(user, response):
+    refresh_token = await create_refresh_token(user)
+    response.set_cookie(
+        "refresh_token",
+        refresh_token,
+        expires=settings.auth_jwt.refresh_token_expire_days * 60 * 60 * 24,
+        samesite="strict",
+        httponly=True,
+    )
+    return refresh_token

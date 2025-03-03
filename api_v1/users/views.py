@@ -6,7 +6,7 @@ from core.helpers import db_helper
 from api_v1.auth.demo_jwt_auth import get_current_auth_user
 from api_v1.auth.validation import require_role
 from sqlalchemy.ext.asyncio import AsyncSession
-from .dependencies import user_by_id
+from .dependencies import user_by_id, user_by_email
 
 
 router = APIRouter(tags=["Users"], dependencies=[Depends(get_current_auth_user), Depends(require_role("admin"))])
@@ -33,9 +33,9 @@ async def get_user(
 ):
     return user
 
-@router.get("/{user_id}", response_model=UserRead)
+@router.get("/{user_email}", response_model=UserRead)
 async def get_user(
-    user=Depends(user_by_id),
+    user=Depends(user_by_email),
 ):
     return user
 

@@ -1,6 +1,6 @@
 from api_v1.users.schemas import UserRead, UserCreate, UserUpdate, UserUpdatePartialMe
 from api_v1.users.crud import get_user_by_email, create_user, update_user
-from api_v1.auth.helpers import create_access_token, create_refresh_token, create_register_token
+from api_v1.auth.helpers import create_access_token, create_refresh_token, setup_access_token, setup_refresh_token
 from api_v1.auth.validation import (
     http_bearer,
     validate_auth_user,
@@ -33,6 +33,8 @@ FRONTEND_HOST = settings.oauth2.FRONTEND_HOST
 GOOGLE_REDIRECT_URI = f"{BACKEND_HOST}/api/v1/auth/callback/google"
 GITHUB_REDIRECT_URI = f"{BACKEND_HOST}/api/v1/auth/callback/github"
 YANDEX_REDIRECT_URI = f"{BACKEND_HOST}/api/v1/auth/callback/yandex"
+
+
 
 @router.get("/google")
 async def login_google(request: Request):
@@ -123,11 +125,11 @@ async def auth_yandex(request: Request, session: AsyncSession = Depends(db_helpe
 
         user = await get_user_by_email(session=session, email=email)
         if user:
-            token = await create_access_token(user=user)
-            return RedirectResponse(f"{settings.oauth2.FRONTEND_HOST}/api/v1/auth/callback?token={token}")
+
+            return RedirectResponse(f"{settings.oauth2.FRONTEND_HOST}/api/v1/auth/callback")
         else:
-            token = await create_register_token(email=email, auth_type="yandex")
-            return RedirectResponse(f"{settings.oauth2.FRONTEND_HOST}/api/v1/auth/callback?token={token}")
+          
+            return RedirectResponse(f"{settings.oauth2.FRONTEND_HOST}/api/v1/auth/callback")
         
     except OAuthError as e:
         raise HTTPException(
@@ -138,7 +140,6 @@ async def auth_yandex(request: Request, session: AsyncSession = Depends(db_helpe
 
 @router.post("/token-validate")
 async def token_validate(token: str | bytes, token_type: str):
-    print(token, token_type)
     res = await validate_token(token=token, token_type=token_type)
     return res
     
@@ -147,14 +148,7 @@ async def token_validate(token: str | bytes, token_type: str):
 async def auth_refresh_jwt(
     response: Response, user: UserRead = Depends(get_current_auth_user_for_refresh)
 ):
-    access_token = await create_access_token(user)
-    response.set_cookie(
-        "access_token",
-        access_token,
-        expires=settings.auth_jwt.access_token_expire_minutes * 60,
-        samesite="strict",
-        httponly=True,
-    )
+    access_token = await setup_access_token(user=user, response=response)
 
     return TokenInfo(access_token=access_token)
 
@@ -163,22 +157,9 @@ async def auth_refresh_jwt(
 async def auth_user_issue_jwt(
     response: Response, user: UserRead = Depends(validate_auth_user)
 ):
-    access_token = await create_access_token(user=user)
-    refresh_token = await create_refresh_token(user=user)
-    response.set_cookie(
-        "access_token",
-        access_token,
-        expires=settings.auth_jwt.access_token_expire_minutes * 60,
-        samesite="strict",
-        httponly=True,
-    )
-    response.set_cookie(
-        "refresh_token",
-        refresh_token,
-        expires=settings.auth_jwt.refresh_token_expire_days * 24 * 60 * 60,
-        samesite="strict",
-        httponly=True,
-    )
+    access_token = await setup_access_token(user=user, response=response)
+    refresh_token = await setup_refresh_token(user=user, response=response)
+
     return TokenInfo(access_token=access_token, refresh_token=refresh_token)
 
 
@@ -190,13 +171,17 @@ async def auth_user_check_self_info(
 
 @router.patch("/me", response_model=UserRead)
 async def update_me(
+    response: Response,
     user_update: UserUpdatePartialMe,
     user: UserRead = Depends(get_current_auth_user),
     session: AsyncSession = Depends(db_helper.session_dependency),
 ):
-    return await update_user(
+    user = await update_user(
         session=session, user=user, user_update=user_update, partial=True
     )
+    access_token = await setup_access_token(user=user, response=response)
+    refresh_token = await setup_refresh_token(user=user, response=response)
+    return TokenInfo(access_token=access_token, refresh_token=refresh_token)
 
 
 @router.post("/register")
@@ -214,22 +199,9 @@ async def register_user(
     # TODO some validation
     user = UserCreate(email=user.email, password=user.password, auth_type="default")
     user = await create_user(session=session, user_in=user)
-    access_token = await create_access_token(user=user)
-    refresh_token = await create_refresh_token(user=user)
-    response.set_cookie(
-        "access_token",
-        access_token,
-        expires=settings.auth_jwt.access_token_expire_minutes * 60,
-        samesite="strict",
-        httponly=True,
-    )
-    response.set_cookie(
-        "refresh_token",
-        refresh_token,
-        expires=settings.auth_jwt.refresh_token_expire_days * 24 * 60 * 60,
-        samesite="strict",
-        httponly=True,
-    )
+
+    access_token = await setup_access_token(user=user, response=response)
+    refresh_token = await setup_refresh_token(user=user, response=response)
     
     return TokenInfo(access_token=access_token, refresh_token=refresh_token)
 

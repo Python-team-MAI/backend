@@ -31,6 +31,7 @@ async def connect(sid, environ, auth):
 
 @sio_server.event
 async def chat(sid, message, session: AsyncSession = Depends(db_helper.session_dependency)):
+    print(message)
     chat_id = message["chat_id"]
     await sio_server.emit("chat", {"sid": sid, "message": message}, room=chat_id)
 

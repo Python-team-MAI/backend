@@ -20,7 +20,6 @@ async def get_user_by_id(session: AsyncSession, user_id: int) -> UsersOrm | None
 async def get_user_by_email(session: AsyncSession, email: str) -> UsersOrm | None:
     query = select(UsersOrm).where(UsersOrm.email == email)
     res = await session.execute(query)
-
     return res.scalar()
 
 

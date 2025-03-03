@@ -10,7 +10,7 @@ class MessageBase(BaseModel):
     chat_id: int
     # media_id: Mapped[int]
     user_id: int
-    is_deleted: bool | False = False
+    is_deleted: bool | None = False
     is_anonymous: bool 
 
 

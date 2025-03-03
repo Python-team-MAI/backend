@@ -5,7 +5,7 @@ from sqlalchemy import String, ForeignKey
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from .users import UsersOrm
+    from .chats import ChatsOrm
 
 
 class MessagesOrm(Base):
@@ -20,4 +20,4 @@ class MessagesOrm(Base):
     is_deleted: Mapped[bool]
     is_anonymous: Mapped[bool]
 
-    user: Mapped["UsersOrm"] = relationship(back_populates="messages")
+    chat: Mapped["ChatsOrm"] = relationship(back_populates="messages")
