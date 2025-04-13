@@ -24,4 +24,4 @@ class ChatsOrm(Base):
 
     messages: Mapped[list["MessagesOrm"]] = relationship(back_populates="chat")
 
-    users: Mapped[list["UsersOrm"]] = relationship(back_populates="chats")
+    # users: Mapped[list["UsersOrm"]] = relationship(back_populates="chats")

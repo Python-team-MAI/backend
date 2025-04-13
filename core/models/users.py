@@ -36,5 +36,5 @@ class UsersOrm(Base):
     )
     # json_settings: Mapped[JSON]
 
-    chats: Mapped[list["ChatsOrm"]] = relationship(back_populates="user")
+    # chats: Mapped[list["ChatsOrm"]] = relationship(back_populates="user")
 

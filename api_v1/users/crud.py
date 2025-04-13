@@ -40,7 +40,7 @@ async def update_user(
 ) -> UsersOrm:
     for name, value in user_update.model_dump(exclude_unset=partial).items():
         setattr(user, name, value)
-    await session.commit()
+    await session.commit()  
     return user
 
 
