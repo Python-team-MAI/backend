@@ -5,7 +5,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from core.helpers import db_helper
 from fastapi import Depends
 
-# mgr = socketio.AsyncRedisManager('redis://')
 sio_server = socketio.AsyncServer(
     async_mode="asgi", cors_allowed_origins=[]
 )

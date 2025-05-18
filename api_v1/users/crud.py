@@ -24,7 +24,8 @@ async def get_user_by_email(session: AsyncSession, email: str) -> UsersOrm | Non
 
 
 async def create_user(session: AsyncSession, user_in: UserCreate) -> UsersOrm:
-    user_in.password = hash_password(user_in.password.decode())
+    if user_in.password:
+        user_in.password = hash_password(user_in.password.decode())
     user = UsersOrm(**user_in.model_dump())
     session.add(user)
     await session.commit()

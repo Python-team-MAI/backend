@@ -17,10 +17,10 @@ from .validation import oauth, require_role, validate_token
 from fastapi.responses import RedirectResponse
 from authlib.integrations.base_client import OAuthError
 from authlib.oauth2.rfc6749 import OAuth2Token
-
+import logging
 
 router = APIRouter(prefix="/auth", tags=["Auth"], dependencies=[Depends(http_bearer)])
-
+logger = logging.getLogger(__name__)
 
 GOOGLE_CLIENT_ID = settings.oauth2.AUTH_GOOGLE_ID
 GOOGLE_CLIENT_SECRET = settings.oauth2.AUTH_GOOGLE_SECRET
@@ -43,7 +43,7 @@ async def login_google(request: Request):
 
 @router.get("/callback/google")
 async def auth_google(
-    request: Request, session: AsyncSession = Depends(db_helper.session_dependency)
+    response: Response, request: Request, session: AsyncSession = Depends(db_helper.session_dependency)
 ):
     try:
         user_response: OAuth2Token = await oauth.google.authorize_access_token(request)
@@ -55,15 +55,16 @@ async def auth_google(
         )
     user_info = user_response.get("userinfo")
     email = user_info["email"].lower()
+    logger.info(f"Get user email from google: {email}")
     user = await get_user_by_email(session=session, email=email)
-
     if user:
-        token = await create_access_token(user=user)
-        return RedirectResponse(f"{settings.oauth2.FRONTEND_HOST}/api/v1/auth/callback?token={token}")
+        await setup_access_token(user=user, response=response)
+        return RedirectResponse(f"{settings.oauth2.FRONTEND_HOST}/api/v1/auth/callback")
     else:
-        token = await create_register_token(email=email, auth_type="google")
-        
-        return RedirectResponse(f"{settings.oauth2.FRONTEND_HOST}/api/v1/auth/callback?token={token}")
+        user = UserCreate(email=email, password=None, auth_type="google")
+        user = await create_user(session=session, user_in=user)
+        await setup_access_token(user=user, response=response)
+        return RedirectResponse(f"{settings.oauth2.FRONTEND_HOST}/api/v1/auth/callback")
 
 
 @router.get("/github")
@@ -88,11 +89,13 @@ async def auth_github(
         email = email_resp.json()[0]["email"].lower()
         user = await get_user_by_email(session=session, email=email)
         if user:
-            token = await create_access_token(user=user)
-            return RedirectResponse(f"{settings.oauth2.FRONTEND_HOST}/api/v1/auth/callback?token={token}")
+            setup_access_token(user=user)
+            return RedirectResponse(f"{settings.oauth2.FRONTEND_HOST}/api/v1/auth/callback")
         else:
-            token = await create_register_token(email=email, auth_type="github")
-            return RedirectResponse(f"{settings.oauth2.FRONTEND_HOST}/api/v1/auth/callback?token={token}")
+            user = UserCreate(email=email, password=None, auth_type="github")
+            user = await create_user(session=session, user_in=user)
+            setup_access_token(user=user)
+            return RedirectResponse(f"{settings.oauth2.FRONTEND_HOST}/api/v1/auth/callback")
 
     except OAuthError as e:
         print(f"OAuthError: {e}")
@@ -108,7 +111,7 @@ async def login_github(request: Request):
 
 
 @router.get("/callback/yandex")
-async def auth_yandex(request: Request, session: AsyncSession = Depends(db_helper.session_dependency)):
+async def auth_yandex(response: Response, request: Request, session: AsyncSession = Depends(db_helper.session_dependency)):
     try:
         token = await oauth.yandex.authorize_access_token(request)
 
@@ -125,10 +128,12 @@ async def auth_yandex(request: Request, session: AsyncSession = Depends(db_helpe
 
         user = await get_user_by_email(session=session, email=email)
         if user:
-
+            setup_access_token(user=user)
             return RedirectResponse(f"{settings.oauth2.FRONTEND_HOST}/api/v1/auth/callback")
         else:
-          
+            user = UserCreate(email=email, password=None, auth_type="yandex")
+            user = await create_user(session=session, user_in=user)
+            setup_access_token(user=user)
             return RedirectResponse(f"{settings.oauth2.FRONTEND_HOST}/api/v1/auth/callback")
         
     except OAuthError as e:

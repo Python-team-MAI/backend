@@ -26,8 +26,13 @@ GOOGLE_CLIENT_ID = settings.oauth2.AUTH_GOOGLE_ID
 GOOGLE_CLIENT_SECRET = settings.oauth2.AUTH_GOOGLE_SECRET
 GITHUB_CLIENT_ID = settings.oauth2.AUTH_GITHUB_ID
 GITHUB_CLIENT_SECRET = settings.oauth2.AUTH_GITHUB_SECRET
-YANDEX_CLIENT_ID=settings.oauth2.AUTH_YANDEX_ID
-YANDEX_CLIENT_SECRET=settings.oauth2.AUTH_YANDEX_SECRET
+YANDEX_CLIENT_ID = settings.oauth2.AUTH_YANDEX_ID
+YANDEX_CLIENT_SECRET = settings.oauth2.AUTH_YANDEX_SECRET
+BACKEND_HOST = settings.oauth2.BACKEND_HOST
+FRONTEND_HOST = settings.oauth2.FRONTEND_HOST
+GOOGLE_REDIRECT_URI = f"{BACKEND_HOST}/api/v1/auth/callback/google"
+GITHUB_REDIRECT_URI = f"{BACKEND_HOST}/api/v1/auth/callback/github"
+YANDEX_REDIRECT_URI = f"{BACKEND_HOST}/api/v1/auth/callback/yandex"
 
 if GOOGLE_CLIENT_ID is None or GOOGLE_CLIENT_SECRET is None:
     raise Exception("Missing env variables")
@@ -53,7 +58,7 @@ oauth.register(
     client_secret=GOOGLE_CLIENT_SECRET,
     client_kwargs={
         "scope": "openid email profile"
-    },
+    }
 )
 # Регистрация GitHub
 oauth.register(
