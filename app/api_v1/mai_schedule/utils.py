@@ -13,15 +13,11 @@ formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(messag
 handler.setFormatter(formatter)
 logger.addHandler(handler)
 
-# Клиент Redi
 
-
-# Функция получения хэша группы
 async def get_group_hash(group_name: str) -> str:
     return f"{hashlib.md5(group_name.encode('utf-8')).hexdigest()}.json"
 
 
-# Функция для получения данных из МАИ
 async def fetch_schedule_from_mai(group_hash: str) -> dict:
     url = f"https://public.mai.ru/schedule/data/{group_hash}"
 

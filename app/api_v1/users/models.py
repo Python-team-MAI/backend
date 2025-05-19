@@ -7,6 +7,8 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from app.api_v1.chats.models import ChatsOrm
+    from app.api_v1.deadlines.models import DeadlinesOrm
+    from app.api_v1.groups.models import GroupsOrm
 
 
 class Role(enum.Enum):
@@ -34,6 +36,5 @@ class UsersOrm(Base):
     is_verified: Mapped[bool] = mapped_column(
         Boolean, default=False
     )
-    # json_settings: Mapped[JSON]
-
-    # chats: Mapped[list["ChatsOrm"]] = relationship(back_populates="user")
+    deadlines: Mapped[list["DeadlinesOrm"]] = relationship(back_populates="user")
+    group: Mapped["GroupsOrm"] = relationship(back_populates="users")

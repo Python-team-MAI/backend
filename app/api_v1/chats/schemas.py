@@ -2,12 +2,12 @@ from pydantic import BaseModel, ConfigDict
 from datetime import datetime
 
 
-class Chats(BaseModel):
+class Chat(BaseModel):
     name: str
     type: str
     office_id: int
 
-class ChatsRead(Chats):
+class ChatRead(Chat):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
@@ -15,15 +15,15 @@ class ChatsRead(Chats):
     updated_at: datetime
 
 
-class ChatsCreate(Chats):
+class ChatCreate(Chat):
     pass
 
 
-class ChatsUpdate(ChatsCreate):
+class ChatUpdate(ChatCreate):
     pass
 
 
-class ChatsFilter(ChatsCreate):
+class ChatFilter(ChatCreate):
     id: int | None = None
     created_at: datetime | None = None
     updated_at: datetime | None = None

@@ -1,13 +1,14 @@
 from app.core.base.base_model import Base
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 import enum
-from sqlalchemy import String
+from sqlalchemy import String, ForeignKey
 from typing import TYPE_CHECKING
 
 
 if TYPE_CHECKING:
     from app.api_v1.messages.models import MessagesOrm
     from app.api_v1.users.models import UsersOrm
+    from app.api_v1.offices.models import OfficeOrm
 
 
 class ChatType(enum.Enum):
@@ -20,7 +21,9 @@ class ChatsOrm(Base):
 
     name: Mapped[str] = mapped_column(String(50))
     type: Mapped[str]
-    office_id: Mapped[int]
+    office_id: Mapped[int] = mapped_column(ForeignKey("offices.id", ondelete="CASCADE"))
+    
     messages: Mapped[list["MessagesOrm"]] = relationship(back_populates="chat")
 
+    office: Mapped["OfficeOrm"] = relationship(back_populates="chats")
     # users: Mapped[list["UsersOrm"]] = relationship(back_populates="chats")

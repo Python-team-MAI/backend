@@ -21,8 +21,6 @@ async def get_schedule(
     group_hash = await get_group_hash(group_name)
     cache_key = f"schedule:{group_hash}"
 
-
-    # Проверяем Redis
     try:
         async with redis_client as r:
             cached_schedule = await r.get(cache_key)
@@ -33,7 +31,7 @@ async def get_schedule(
     except Exception as e:
         logger.error(f"Ошибка при чтении из Redis: {e}")
 
-    # Получаем с МАИ
+ 
     try:
         schedule_data = await fetch_schedule_from_mai(group_hash)
 
