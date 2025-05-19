@@ -9,12 +9,12 @@ sio_server = socketio.AsyncServer(
     async_mode="asgi", cors_allowed_origins=[]
 )
 
-sio_app = socketio.ASGIApp(socketio_server=sio_server, socketio_path="sockets")
+sio_app = socketio.ASGIApp(socketio_server=sio_server)
 
 
 @sio_server.event
 async def connect(sid, environ, auth):
-    # print(auth)
+    print(auth)
     user_id = auth.get("user_id")
     chat_id = auth.get("chat_id")
     if not user_id or not chat_id:
