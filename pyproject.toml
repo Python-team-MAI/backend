@@ -27,6 +27,7 @@ httpx = "^0.28.1"
 itsdangerous = "^2.2.0"
 redis = "^5.2.1"
 sqladmin = "^0.20.1"
+pyyaml = "^6.0.2"
 
 
 [build-system]

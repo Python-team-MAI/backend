@@ -1,52 +1,85 @@
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, APIRouter
 from fastapi.responses import HTMLResponse, FileResponse
 from starlette.middleware.sessions import SessionMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
-from api_v1 import router as router_v1
-from api_v1.websockets import router as websockets_router
-from api_v1.sockets import sio_app
-from core.config import settings
+from app.api_v1 import router as router_v1
+from app.api_v1.websockets import router as websockets_router
+from app.api_v1.sockets import sio_app
+from app.core.config import settings
 from contextlib import asynccontextmanager
-from core.models import Base, db_helper
-from core.models.admin import UserAdmin
+from app.core.base.base_model import Base
+from app.api_v1.utils.setup_logging import setup_logging
 from starlette.config import Config
+from typing import AsyncGenerator
 from authlib.integrations.starlette_client import OAuth
 import uvicorn
 
+logger = setup_logging()
+
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
+async def lifespan(app: FastAPI) -> AsyncGenerator[dict, None]:
+    global logger
+    """
+    Управляет жизненным циклом планировщика приложения.
 
+    Args:
+        app (FastAPI): Экземпляр приложения FastAPI.
+    """
+
+    logger.info("Начало работы приложения...")
     yield
+    logger.info("Завершение работы приложения...")
 
 
-SECRET_KEY = settings.oauth2.AUTH_SECRET
+def create_app() -> FastAPI:
+    """
+    Создание и конфигурация FastAPI приложения.
 
-# logging.basicConfig(level=logging.DEBUG, format="%(asctime)s - %(levelname)s - %(message)s")
+    Returns:
+        Сконфигурированное приложение FastAPI
+    """
+    SECRET_KEY = settings.oauth2.AUTH_SECRET
+    app = FastAPI(
+        title="MAI API",
+        description=(
+            "python project"
+        ),
+        version="1.0.0",
+        lifespan=lifespan,
+        root_path="/api"
+    )
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["*"],
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+    app.add_middleware(SessionMiddleware, secret_key=SECRET_KEY)
 
-app = FastAPI(lifespan=lifespan, root_path="/api")
-app.include_router(router=router_v1, prefix="/v1")
-app.mount("/", app=sio_app)
-origins = ["*"]
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-app.add_middleware(SessionMiddleware, secret_key=SECRET_KEY)
+    register_routers(app)
 
-db_helper.create_admin(app=app, engine=db_helper.engine)
-db_helper.add_admin_view(view=UserAdmin)
-# app.include_router(router=websockets_router)
-# app.mount("/", StaticFiles(directory=".", html=True), name="static")
+    return app
 
 
-@app.get("/")
-async def get():
-    return FileResponse("index.html")
+
+def register_routers(app: FastAPI) -> None:
+    """Регистрация роутеров приложения."""
+    
+    root_router = APIRouter()
+
+    @root_router.get("/", tags=["root"])
+    def home_page():
+        return {
+            "message": "Hello",
+        }
+    app.include_router(router=router_v1, prefix="/v1")
+    app.mount("/", app=sio_app)
+    
+
+app = create_app()
 
 
 if __name__ == "__main__":

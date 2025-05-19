@@ -19,8 +19,12 @@ if config.config_file_name is not None:
 # add your model's MetaData object here
 # for 'autogenerate' support
 # from myapp import mymodel
-from core.models import Base
-from core.config import settings
+from app.api_v1.chats.models import ChatsOrm
+from app.api_v1.messages.models import MessagesOrm
+from app.api_v1.users.models import UsersOrm
+from app.api_v1.groups.models import GroupsOrm
+from app.core.base.base_model import Base
+from app.core.config import settings
 
 target_metadata = Base.metadata
 # other values from the config, defined by the needs of env.py,
