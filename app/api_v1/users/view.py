@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException, status, Depends
 import logging
 from .service import users_service
 from .schemas import UserCreate, UserRead, UserUpdate
-from app.api_v1.auth.demo_jwt_auth import get_current_auth_user
+from app.api_v1.auth.view import get_current_auth_user
 from app.api_v1.auth.validation import require_role
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.session_manager import SessionDep, TransactionSessionDep

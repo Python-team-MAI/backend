@@ -6,8 +6,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 class MessagesService(BaseService):
     def __init__(self, repository: MessagesRepo):
-        self.repository = repository
+        self.repository: MessagesRepo = repository
         super().__init__(repository=self.repository)
+
+    async def get_sorted_messages(self, session, chat_id, offset, limit):
+        return await self.repository.get_sorted_messages(session=session, chat_id=chat_id, offset=offset, limit=limit)
 
 
 messages_service: MessagesService = MessagesService(repository=messages_repo)

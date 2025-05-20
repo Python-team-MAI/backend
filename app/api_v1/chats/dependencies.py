@@ -8,15 +8,15 @@ from app.core.session_manager import SessionDep
 
 
 async def chat_by_id(
-    chats_id: Annotated[int, Path],
+    chat_id: Annotated[int, Path],
     session: AsyncSession = SessionDep,
 ) -> ChatsOrm:
-    chats = await chats_service.find_one_or_none(session=session, filters=ChatFilter(id=chats_id))
+    chats = await chats_service.find_one_or_none(session=session, filters=ChatFilter(id=chat_id))
     if chats is not None:
         return chats
 
     raise HTTPException(
-        status_code=status.HTTP_404_NOT_FOUND, detail=f"Chat {chats_id} not found"
+        status_code=status.HTTP_404_NOT_FOUND, detail=f"Chat {chat_id} not found"
     )
 
 

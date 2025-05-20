@@ -4,9 +4,10 @@ from .schemas import GroupCreate, Group, GroupFilter, GroupUpdate
 from .service import groups_service
 from sqlalchemy.ext.asyncio import AsyncSession
 from .dependencies import group_by_id
+from app.api_v1.auth.validation import require_role
 
 
-router = APIRouter(tags=["Groups"])
+router = APIRouter(tags=["Groups"], dependencies=[Depends(require_role("admin"))])
 
 
 @router.get("", response_model=list[Group])

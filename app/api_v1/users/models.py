@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from app.api_v1.groups.models import GroupsOrm
     from app.api_v1.deadlines.models import DeadlinesOrm
+    from app.api_v1.messages.models import MessagesOrm
 
 
 
@@ -38,3 +39,4 @@ class UsersOrm(Base):
     )
     deadlines: Mapped[list["DeadlinesOrm"]] = relationship("DeadlinesOrm", back_populates="author")
     group: Mapped["GroupsOrm"] = relationship(back_populates="users")
+    messages: Mapped["MessagesOrm"] = relationship(back_populates="user")

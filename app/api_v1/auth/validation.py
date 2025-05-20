@@ -82,6 +82,7 @@ oauth.register(
     client_kwargs={"scope": "login:email login:info"},
 )
 
+
 async def validate_auth_user(
     user_in: UserLogin,
     session=SessionDep,

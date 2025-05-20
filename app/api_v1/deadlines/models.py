@@ -3,7 +3,6 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 import enum
 from sqlalchemy import String, ForeignKey, Boolean
 from datetime import datetime
-
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -24,3 +23,4 @@ class DeadlinesOrm(Base):
   
     group: Mapped["GroupsOrm"] = relationship("GroupsOrm", back_populates="deadlines")
     author: Mapped["UsersOrm"] = relationship("UsersOrm", back_populates="deadlines")
+ 

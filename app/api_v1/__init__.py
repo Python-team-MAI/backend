@@ -6,7 +6,7 @@ from app.api_v1.messages.view import router as messages_router
 from app.api_v1.offices.view import router as office_router
 from app.api_v1.deadlines.view import router as deadlines_router
 from app.api_v1.mai_schedule.views import router as schedule_router
-from app.api_v1.auth.demo_jwt_auth import router as demo_jwt_auth_router
+from app.api_v1.auth.view import router as demo_jwt_auth_router
 
 router = APIRouter()
 router.include_router(router=chats_router, prefix="/chats")
