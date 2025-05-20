@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException, status, Depends
 import logging
 from .service import offices_service
 from .schemas import OfficeCreate, OfficeRead, OfficeUpdate
-from api_v1.auth.validation import require_role
+from app.api_v1.auth.validation import require_role
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.session_manager import SessionDep, TransactionSessionDep
 from .dependencies import office_by_id
@@ -45,7 +45,7 @@ async def update_office(
     return await offices_service.update(session=session, filters=office, values=office_update)
 
 
-@router.delete("/{office_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/{office_id}")
 async def delete_office(
     office: OfficeRead = Depends(office_by_id),
     session: AsyncSession = SessionDep,

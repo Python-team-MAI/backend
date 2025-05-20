@@ -9,14 +9,14 @@ from .dependencies import group_by_id
 router = APIRouter(tags=["Groups"])
 
 
-@router.get("/", response_model=list[Group])
+@router.get("", response_model=list[Group])
 async def get_groups(
     session: AsyncSession = SessionDep,
 ):
     return await groups_service.find_all(session=session)
 
 
-@router.post("/", response_model=Group, status_code=status.HTTP_201_CREATED)
+@router.post("", response_model=Group, status_code=status.HTTP_201_CREATED)
 async def create_group(
     group_in: GroupCreate,
     session: AsyncSession = SessionDep,

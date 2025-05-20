@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException, status, Depends
 import logging
 from .service import messages_service
 from .schemas import MessageCreate, MessageRead, MessageUpdate
-from api_v1.auth.validation import require_role
+from app.api_v1.auth.validation import require_role
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.session_manager import SessionDep, TransactionSessionDep
 from .dependencies import message_by_id
@@ -45,7 +45,7 @@ async def update_message(
     return await messages_service.update(session=session, filters=message, values=message_update)
 
 
-@router.delete("/{message_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/{message_id}")
 async def delete_message(
     message: MessageRead = Depends(message_by_id),
     session: AsyncSession = SessionDep,

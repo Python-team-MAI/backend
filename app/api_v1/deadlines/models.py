@@ -22,5 +22,5 @@ class DeadlinesOrm(Base):
     lesson: Mapped[str] = mapped_column(String(50), nullable=True)
     description: Mapped[str] = mapped_column(String(500), nullable=True)
   
-    group: Mapped["GroupsOrm"] = relationship(back_populates="deadlines")
-    author: Mapped["UsersOrm"] = relationship(back_populates="deadlines")
+    group: Mapped["GroupsOrm"] = relationship("GroupsOrm", back_populates="deadlines")
+    author: Mapped["UsersOrm"] = relationship("UsersOrm", back_populates="deadlines")

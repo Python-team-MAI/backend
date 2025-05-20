@@ -74,4 +74,4 @@ class Base(AsyncAttrs, DeclarativeBase):
 
     def __repr__(self) -> str:
         """Строковое представление объекта для удобства отладки."""
-        return f"<{self.__class__.__name__}(id={self.pid})>"
+        return f"<{self.__class__.__name__}(id={self.id})>"
