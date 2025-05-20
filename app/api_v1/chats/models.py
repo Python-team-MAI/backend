@@ -22,8 +22,6 @@ class ChatsOrm(Base):
     name: Mapped[str] = mapped_column(String(50))
     type: Mapped[str]
     office_id: Mapped[int] = mapped_column(ForeignKey("offices.id", ondelete="CASCADE"))
-    
     messages: Mapped[list["MessagesOrm"]] = relationship(back_populates="chat")
 
-    office: Mapped["OfficesOrm"] = relationship("OfficesOrm", back_populates="chats")
-    # users: Mapped[list["UsersOrm"]] = relationship(back_populates="chats")
+    office: Mapped["OfficesOrm"] = relationship("OfficesOrm", back_populates="chat")

@@ -13,5 +13,5 @@ class OfficesOrm(Base):
     __tablename__ = "offices"
     name: Mapped[str] = mapped_column(nullable=False)
     description: Mapped[str] = mapped_column(String(500), nullable=True)
-
-    chats: Mapped[list["ChatsOrm"]] = relationship("ChatsOrm", back_populates="office")
+    
+    chat: Mapped["ChatsOrm"] = relationship("ChatsOrm", back_populates="office")

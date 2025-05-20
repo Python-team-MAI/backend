@@ -10,6 +10,8 @@ from functools import wraps
 from app.core.base.base_model import async_session_maker
 
 
+logger = logging.getLogger(__name__)
+
 class DatabaseSessionManager:
     """
     Менеджер для работы с сессиями базы данных. Позволяет управлять сессиями,
@@ -56,8 +58,10 @@ class DatabaseSessionManager:
         Выходной тип: Асинхронный генератор.
         """
         try:
+            logger.debug("Транзакция начата")
             yield
             await session.commit()
+            logger.debug("Транзакция успешно завершена")
         except Exception as e:
             await session.rollback()
             self.logger.exception(f"Транзакция не удалась: {str(e)}")

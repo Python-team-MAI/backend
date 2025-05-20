@@ -6,7 +6,6 @@ from datetime import datetime
 class Office(BaseModel):
     name: str
     description: str | None 
-    chat_id: int
 
 
 class OfficeRead(Office):
@@ -29,4 +28,3 @@ class OfficeFilter(BaseModel):
     updated_at: datetime | None = None
     name: str | None = None
     description: str | None = None
-    chat_id: int | None = None

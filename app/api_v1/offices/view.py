@@ -22,7 +22,7 @@ async def get_offices(
 @router.post("", response_model=OfficeRead, status_code=status.HTTP_201_CREATED)
 async def create_office(
     office_in: OfficeCreate,
-    session: AsyncSession = SessionDep,
+    session: AsyncSession = TransactionSessionDep,
 ):
     """Create new office and return created office object"""
     return await offices_service.add(session=session, values=office_in)
@@ -40,7 +40,7 @@ async def get_office(
 async def update_office(
     office_update: OfficeUpdate,
     office=Depends(office_by_id),
-    session: AsyncSession = SessionDep,
+    session: AsyncSession = TransactionSessionDep,
 ):
     return await offices_service.update(session=session, filters=office, values=office_update)
 
@@ -48,6 +48,6 @@ async def update_office(
 @router.delete("/{office_id}")
 async def delete_office(
     office: OfficeRead = Depends(office_by_id),
-    session: AsyncSession = SessionDep,
+    session: AsyncSession = TransactionSessionDep,
 ) -> int:
     return await offices_service.delete(session=session, filters=office)

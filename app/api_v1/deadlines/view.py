@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException, status, Depends
-from app.core.session_manager import SessionDep
+from app.core.session_manager import SessionDep, TransactionSessionDep
 from .schemas import DeadlineCreate, Deadline, DeadlineFilter, DeadlineUpdate
 from .service import deadlines_service
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -19,7 +19,7 @@ async def get_deadlines(
 @router.post("/", response_model=Deadline, status_code=status.HTTP_201_CREATED)
 async def create_deadlines(
     deadlines_in: DeadlineCreate,
-    session: AsyncSession = SessionDep,
+    session: AsyncSession = TransactionSessionDep,
 ):
     return await deadlines_service.add(session=session, values=deadlines_in)
 
@@ -36,7 +36,7 @@ async def get_chat(
 async def update_deadlines(
     deadlines_update: DeadlineFilter,
     deadlines=Depends(deadline_by_id),
-    session: AsyncSession = SessionDep,
+    session: AsyncSession = TransactionSessionDep,
 ):
     return await deadlines_service.update(
         session=session, filters=deadlines, values=deadlines_update
@@ -46,6 +46,6 @@ async def update_deadlines(
 @router.delete("/{deadlines_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_deadlines(
     deadlines_id: int, 
-    session: AsyncSession = SessionDep,
+    session: AsyncSession = TransactionSessionDep,
 ) -> None:
     await deadlines_service.delete(session=session, filters=DeadlineFilter(id=deadlines_id))

@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException, status, Depends
-from app.core.session_manager import SessionDep
+from app.core.session_manager import SessionDep, TransactionSessionDep
 from .schemas import GroupCreate, Group, GroupFilter, GroupUpdate
 from .service import groups_service
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -20,7 +20,7 @@ async def get_groups(
 @router.post("", response_model=Group, status_code=status.HTTP_201_CREATED)
 async def create_group(
     group_in: GroupCreate,
-    session: AsyncSession = SessionDep,
+    session: AsyncSession = TransactionSessionDep,
 ):
     return await groups_service.add(session=session, values=group_in)
 
@@ -37,7 +37,7 @@ async def get_groups(
 async def update_group(
     group_update: GroupFilter,
     group=Depends(group_by_id),
-    session: AsyncSession = SessionDep,
+    session: AsyncSession = TransactionSessionDep,
 ):
     return await groups_service.update(
         session=session, filters=group, values=group_update
@@ -47,6 +47,6 @@ async def update_group(
 @router.delete("/{group_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_group(
     group_id: int, 
-    session: AsyncSession = SessionDep,
+    session: AsyncSession = TransactionSessionDep,
 ) -> None:
     await groups_service.delete(session=session, filters=GroupFilter(id=group_id))

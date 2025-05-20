@@ -8,9 +8,10 @@ from app.api_v1.auth.validation import (
     get_current_auth_user_for_refresh,
 )
 from app.core.config import settings
-from app.core.session_manager import SessionDep
+from app.core.session_manager import SessionDep, TransactionSessionDep
 from sqlalchemy.ext.asyncio import AsyncSession
 from .schemas import TokenInfo, UserLogin
+from .utils import hash_password
 from fastapi import APIRouter, Depends, Request, status, HTTPException, Body, Response
 
 from .validation import oauth, require_role, validate_token
@@ -181,8 +182,8 @@ async def update_me(
     user: UserRead = Depends(get_current_auth_user),
     session: AsyncSession = SessionDep,
 ):
-    user = await users_service(
-        session=session, user=user, user_update=user_update, partial=True
+    user = await users_service.update(
+        session=session, filters=user, values=user_update, partial=True
     )
     access_token = await setup_access_token(user=user, response=response)
     refresh_token = await setup_refresh_token(user=user, response=response)
@@ -193,7 +194,7 @@ async def update_me(
 async def register_user(
     response: Response,
     user: UserLogin,
-    session: AsyncSession = SessionDep,
+    session: AsyncSession = TransactionSessionDep,
 ):
 
     if await users_service.find_one_or_none(session=session, filters=UserFilter(email=user.email)):
@@ -202,7 +203,7 @@ async def register_user(
             detail="User with this email already exist",
         )
     # TODO some validation
-    user = UserCreate(email=user.email, password=user.password, auth_type="default")
+    user = UserCreate(email=user.email, password=hash_password(user.password), auth_type="default")
     user = await users_service.add(session=session, values=user)
 
     access_token = await setup_access_token(user=user, response=response)

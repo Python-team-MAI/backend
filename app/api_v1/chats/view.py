@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException, status, Depends, Query, Path
-from app.core.session_manager import SessionDep
+from app.core.session_manager import SessionDep, TransactionSessionDep
 from app.api_v1.messages.models import MessagesOrm
 from .schemas import ChatCreate, Chat, ChatFilter, ChatUpdate
 from app.api_v1.messages.schemas import MessageRead
@@ -47,7 +47,7 @@ async def list_chat_messages(
 @router.post("", response_model=Chat, status_code=status.HTTP_201_CREATED)
 async def create_chats(
     chats_in: ChatCreate,
-    session: AsyncSession = SessionDep,
+    session: AsyncSession = TransactionSessionDep,
 ):
     return await chats_service.add(session=session, values=chats_in)
 
@@ -59,7 +59,7 @@ async def create_chats(
 async def update_chats(
     chats_update: ChatFilter,
     chats=Depends(chat_by_id),
-    session: AsyncSession = SessionDep,
+    session: AsyncSession = TransactionSessionDep,
 ):
     return await chats_service.update(
         session=session, filters=chats, values=chats_update
@@ -69,7 +69,7 @@ async def update_chats(
 @router.delete("/{chats_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_chats(
     chats_id: int, 
-    session: AsyncSession = SessionDep,
+    session: AsyncSession = TransactionSessionDep,
 ) -> None:
     await chats_service.delete(session=session, filters=ChatFilter(id=chats_id))
 

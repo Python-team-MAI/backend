@@ -23,7 +23,7 @@ async def get_users(
 @router.post("", response_model=UserRead, status_code=status.HTTP_201_CREATED)
 async def create_user(
     user_in: UserCreate,
-    session: AsyncSession = SessionDep,
+    session: AsyncSession = TransactionSessionDep,
 ):
     """Create new user and return created user object"""
     return await users_service.add(session=session, values=user_in)
@@ -47,7 +47,7 @@ async def get_user(
 async def update_user(
     user_update: UserUpdate,
     user=Depends(user_by_id),
-    session: AsyncSession = SessionDep,
+    session: AsyncSession = TransactionSessionDep,
 ):
     return await users_service.update(session=session, filters=user, values=user_update)
 
@@ -55,6 +55,6 @@ async def update_user(
 @router.delete("/{user_id}")
 async def delete_user(
     user: UserRead = Depends(user_by_id),
-    session: AsyncSession = SessionDep,
+    session: AsyncSession = TransactionSessionDep,
 ) -> int:
     return await users_service.delete(session=session, filters=user)

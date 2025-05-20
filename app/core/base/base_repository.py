@@ -19,16 +19,16 @@ class BaseRepository(Generic[T]):
         if self.model is None:
             raise ValueError("Модель должна быть указана в дочернем классе")
 
-    async def find_one_or_none_by_pid(self, session: AsyncSession, data_pid: int):
+    async def find_one_or_none_by_id(self, session: AsyncSession, data_id: int):
         try:
-            query = select(self.model).filter_by(pid=data_pid)
+            query = select(self.model).filter_by(id=data_id)
             result = await session.execute(query)
             record = result.scalar_one_or_none()
-            log_message = f"Запись {self.model.__name__} с ID {data_pid} {'найдена' if record else 'не найдена'}."
+            log_message = f"Запись {self.model.__name__} с ID {data_id} {'найдена' if record else 'не найдена'}."
             logger.info(log_message)
             return record
         except SQLAlchemyError as e:
-            logger.error(f"Ошибка при поиске записи с ID {data_pid}: {e}")
+            logger.error(f"Ошибка при поиске записи с ID {data_id}: {e}")
             raise
 
     async def find_one_or_none(self, session: AsyncSession, filters: BaseModel):
@@ -88,6 +88,7 @@ class BaseRepository(Generic[T]):
             new_instances = [self.model(**values) for values in values_list]
             session.add_all(new_instances)
             logger.info(f"Успешно добавлено {len(new_instances)} записей.")
+            logger.info(f"Транзакция: {'ACTIVE' if session.in_transaction() else 'INACTIVE'}")
             await session.flush()
             return new_instances
         except SQLAlchemyError as e:
