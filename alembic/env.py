@@ -19,10 +19,12 @@ if config.config_file_name is not None:
 # add your model's MetaData object here
 # for 'autogenerate' support
 # from myapp import mymodel
+from app.api_v1.offices.models import OfficesOrm
 from app.api_v1.chats.models import ChatsOrm
 from app.api_v1.messages.models import MessagesOrm
-from app.api_v1.users.models import UsersOrm
 from app.api_v1.groups.models import GroupsOrm
+from app.api_v1.users.models import UsersOrm
+from app.api_v1.deadlines.models import DeadlinesOrm
 from app.core.base.base_model import Base
 from app.core.config import settings
 
