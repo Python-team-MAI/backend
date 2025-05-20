@@ -44,7 +44,7 @@ async def login_google(request: Request):
 
 @router.get("/callback/google")
 async def auth_google(
-    response: Response, request: Request, session: AsyncSession = SessionDep
+    response: Response, request: Request, session: AsyncSession = TransactionSessionDep
 ):
     try:
         user_response: OAuth2Token = await oauth.google.authorize_access_token(request)
@@ -75,7 +75,7 @@ async def login_github(request: Request):
 
 @router.get("/callback/github")
 async def auth_github(
-    request: Request, session: AsyncSession = SessionDep
+    request: Request, session: AsyncSession = TransactionSessionDep
 ):
     try:
         token = await oauth.github.authorize_access_token(request)
@@ -112,7 +112,7 @@ async def login_github(request: Request):
 
 
 @router.get("/callback/yandex")
-async def auth_yandex(response: Response, request: Request, session: AsyncSession = SessionDep):
+async def auth_yandex(response: Response, request: Request, session: AsyncSession = TransactionSessionDep):
     try:
         token = await oauth.yandex.authorize_access_token(request)
 
@@ -180,7 +180,7 @@ async def update_me(
     response: Response,
     user_update: UserFilter,
     user: UserRead = Depends(get_current_auth_user),
-    session: AsyncSession = SessionDep,
+    session: AsyncSession = TransactionSessionDep,
 ):
     user = await users_service.update(
         session=session, filters=user, values=user_update, partial=True
