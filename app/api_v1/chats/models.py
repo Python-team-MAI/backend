@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from app.api_v1.messages.models import MessagesOrm
     from app.api_v1.users.models import UsersOrm
-    from app.api_v1.offices.models import OfficeOrm
+    from app.api_v1.offices.models import OfficesOrm
 
 
 class ChatType(enum.Enum):
@@ -25,5 +25,5 @@ class ChatsOrm(Base):
     
     messages: Mapped[list["MessagesOrm"]] = relationship(back_populates="chat")
 
-    office: Mapped["OfficeOrm"] = relationship(back_populates="chats")
+    office: Mapped["OfficesOrm"] = relationship(back_populates="chats")
     # users: Mapped[list["UsersOrm"]] = relationship(back_populates="chats")
