@@ -18,6 +18,9 @@ from authlib.integrations.starlette_client import OAuth
 import app.api_v1.auth.utils as auth_utils
 from jwt import InvalidTokenError
 from datetime import timedelta, datetime, timezone
+import logging
+
+logger = logging.getLogger(__name__)
 
 http_bearer = HTTPBearer(auto_error=False)
 
@@ -116,7 +119,6 @@ async def validate_token(token: str | bytes, token_type: str):
 
         payload = auth_utils.decode_jwt(token=token)
         await validate_token_type(payload=payload, token_type=token_type)
-        print(payload)
         if payload.exp < datetime.now(timezone.utc):
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
@@ -168,6 +170,7 @@ def require_role(required_role: str):
 
 async def get_user_by_token_sub(payload: dict, session) -> UserRead:
     user_id = int(payload.get("sub"))
+    logger.info(f"Current user: {user_id}")
     user = await users_service.find_one_or_none(session=session, filters=UserFilter(id=user_id))
     if user is not None:
         return user
