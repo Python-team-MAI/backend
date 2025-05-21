@@ -1,13 +1,15 @@
 from app.api_v1.users.repo import UsersRepo
+from app.api_v1.users.schemas import UserRead
 from app.api_v1.users.repo import users_repo
 from app.core.base.base_service import BaseService
 from sqlalchemy.ext.asyncio import AsyncSession
 
 
 class UsersService(BaseService):
-    def __init__(self, repository: UsersRepo):
+    def __init__(self, repository: UsersRepo, schema=UserRead):
         self.repository = repository
-        super().__init__(repository=self.repository)
+        self.schema_out = schema
+        super().__init__(repository=self.repository, schema_out=self.schema_out)
 
 
     async def is_admin(self, session: AsyncSession, user_id: int):

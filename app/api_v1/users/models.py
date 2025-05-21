@@ -1,6 +1,7 @@
 from app.core.base.base_model import Base
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 import enum
+from sqlalchemy import Enum as OrmEnum
 from sqlalchemy import String, ForeignKey, Boolean
 
 from typing import TYPE_CHECKING
@@ -29,13 +30,13 @@ class UsersOrm(Base):
     course: Mapped[int] = mapped_column(nullable=True)
     group_id: Mapped[int] = mapped_column(ForeignKey("groups.id", ondelete="CASCADE"), nullable=True)
     institute: Mapped[int] = mapped_column(nullable=True)
-    role: Mapped[str] = mapped_column(nullable=True)
-    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    role: Mapped[Role] = mapped_column(OrmEnum(Role, native_enum=False), default=Role.student, server_default=Role.student.value)
+    is_active: Mapped[bool] = mapped_column(Boolean, nullable=False)
     is_superuser: Mapped[bool] = mapped_column(
-        Boolean, default=False
+        Boolean, nullable=False
     )
     is_verified: Mapped[bool] = mapped_column(
-        Boolean, default=False
+        Boolean, nullable=False
     )
     deadlines: Mapped[list["DeadlinesOrm"]] = relationship("DeadlinesOrm", back_populates="author")
     group: Mapped["GroupsOrm"] = relationship(back_populates="users")

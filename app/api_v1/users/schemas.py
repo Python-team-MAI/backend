@@ -33,8 +33,15 @@ class UserCreate(User):
     pass
 
 
-class UserUpdate(User):
-    pass
+class UserUpdate(BaseModel):
+    first_name: str | None = None
+    last_name: str | None = None
+    bio: str | None = None
+    password: bytes | None = None
+    course: int | None = None
+    group_id: int | None = None
+    institute: int | None = None
+    role: Role | None = None
 
 
 class UserFilter(BaseModel):

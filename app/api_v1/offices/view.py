@@ -2,13 +2,13 @@ from fastapi import APIRouter, HTTPException, status, Depends
 import logging
 from .service import offices_service
 from .schemas import OfficeCreate, OfficeRead, OfficeUpdate
-from app.api_v1.auth.validation import require_role
+from app.api_v1.auth.validation import require_role, require_superuser
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.session_manager import SessionDep, TransactionSessionDep
 from .dependencies import office_by_id
 
 
-router = APIRouter(tags=["Offices"], dependencies=[Depends(require_role("admin"))])
+router = APIRouter(tags=["Offices"], dependencies=[Depends(require_superuser)])
 
 
 @router.get("", response_model=list[OfficeRead])

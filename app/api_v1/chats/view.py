@@ -1,27 +1,28 @@
 from fastapi import APIRouter, HTTPException, status, Depends, Query, Path
 from app.core.session_manager import SessionDep, TransactionSessionDep
 from app.api_v1.messages.models import MessagesOrm
-from .schemas import ChatCreate, Chat, ChatFilter, ChatUpdate
+from .schemas import ChatCreate, ChatRead, ChatFilter, ChatUpdate
 from app.api_v1.messages.schemas import MessageRead
 from .service import chats_service
 from sqlalchemy.ext.asyncio import AsyncSession
 from .dependencies import chat_by_id
 from app.api_v1.messages.service import messages_service
+from app.api_v1.auth.validation import require_role,require_condition
 from typing import Annotated
 
 
-router = APIRouter(tags=["Chats"])
+router = APIRouter(tags=["Chats"], dependencies=[Depends(require_condition(required_role="headman", allow_superuser=True))])
 
 PAGE_SIZE = 100
 
-@router.get("", response_model=list[Chat])
+@router.get("", response_model=list[ChatRead])
 async def get_chats(
     session: AsyncSession = SessionDep,
 ):
     return await chats_service.find_all(session=session)
 
 
-@router.get("/{chats_id}", response_model=Chat)
+@router.get("/{chats_id}", response_model=ChatRead)
 async def get_chat(
     chat = Depends(chat_by_id)
 ):
@@ -44,7 +45,7 @@ async def list_chat_messages(
     
     
 
-@router.post("", response_model=Chat, status_code=status.HTTP_201_CREATED)
+@router.post("", response_model=ChatRead, status_code=status.HTTP_201_CREATED)
 async def create_chats(
     chats_in: ChatCreate,
     session: AsyncSession = TransactionSessionDep,
@@ -55,9 +56,9 @@ async def create_chats(
 
 
 
-@router.patch("/{chats_id}", response_model=Chat)
+@router.patch("/{chats_id}", response_model=ChatRead)
 async def update_chats(
-    chats_update: ChatFilter,
+    chats_update: ChatUpdate,
     chats=Depends(chat_by_id),
     session: AsyncSession = TransactionSessionDep,
 ):

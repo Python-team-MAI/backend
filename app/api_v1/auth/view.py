@@ -29,8 +29,8 @@ GITHUB_CLIENT_ID = settings.oauth2.AUTH_GITHUB_ID
 GITHUB_CLIENT_SECRET = settings.oauth2.AUTH_GITHUB_SECRET
 YANDEX_CLIENT_ID = settings.oauth2.AUTH_YANDEX_ID
 YANDEX_CLIENT_SECRET = settings.oauth2.AUTH_YANDEX_SECRET
-BACKEND_HOST = settings.oauth2.BACKEND_HOST
-FRONTEND_HOST = settings.oauth2.FRONTEND_HOST
+BACKEND_HOST = settings.hosts.BACKEND_HOST
+FRONTEND_HOST = settings.hosts.FRONTEND_HOST
 GOOGLE_REDIRECT_URI = f"{BACKEND_HOST}/v1/auth/callback/google"
 GITHUB_REDIRECT_URI = f"{BACKEND_HOST}/v1/auth/callback/github"
 YANDEX_REDIRECT_URI = f"{BACKEND_HOST}/v1/auth/callback/yandex"
@@ -169,21 +169,21 @@ async def auth_user_issue_jwt(
     return TokenInfo(access_token=access_token, refresh_token=refresh_token)
 
 
-@router.get("/me")
+@router.get("/me", response_model=UserRead)
 async def auth_user_check_self_info(
     user: UserRead = Depends(get_current_auth_user),
 ):
     return user
 
-@router.patch("/me", response_model=UserRead)
+@router.patch("/me", response_model=TokenInfo)
 async def update_me(
     response: Response,
-    user_update: UserFilter,
+    user_update: UserUpdate,
     user: UserRead = Depends(get_current_auth_user),
     session: AsyncSession = TransactionSessionDep,
 ):
-    user = await users_service.update(
-        session=session, filters=user, values=user_update, partial=True
+    await users_service.update(
+        session=session, filters=user, values=user_update
     )
     access_token = await setup_access_token(user=user, response=response)
     refresh_token = await setup_refresh_token(user=user, response=response)
@@ -203,8 +203,13 @@ async def register_user(
             detail="User with this email already exist",
         )
     # TODO some validation
-    user = UserCreate(email=user.email, password=hash_password(user.password), auth_type="default")
-    user = await users_service.add(session=session, values=user)
+    user_create = UserCreate(email=user.email, password=hash_password(user.password), auth_type="default", is_active=True, is_superuser=False, is_verified=False)
+    user = await users_service.add(session=session, values=user_create)
+    link = f"http://{settings.hosts.DOMEN}"
+    html_message = f"""
+    <h1> Verify your Email</h1>
+    <p>Please click to this <a href="{link}"> link to verify your email</p>
+    """
 
     access_token = await setup_access_token(user=user, response=response)
     refresh_token = await setup_refresh_token(user=user, response=response)

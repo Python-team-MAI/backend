@@ -2,13 +2,13 @@ from fastapi import APIRouter, HTTPException, status, Depends
 import logging
 from .service import messages_service
 from .schemas import MessageCreate, MessageRead, MessageUpdate
-from app.api_v1.auth.validation import require_role
+from app.api_v1.auth.validation import require_role, get_current_auth_user
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.session_manager import SessionDep, TransactionSessionDep
 from .dependencies import message_by_id
 
 
-router = APIRouter(tags=["Messages"], dependencies=[Depends(require_role("admin"))])
+router = APIRouter(tags=["Messages"], dependencies=[Depends(get_current_auth_user)])
 
 
 @router.get("", response_model=list[MessageRead])

@@ -3,8 +3,9 @@ from app.api_v1.users.schemas import UserRead
 from app.core.config import settings
 from datetime import timedelta
 from .schemas import TokenInfo
+import logging
 
-
+logger = logging.getLogger(__name__)
 TOKEN_TYPE_FIELD = "type"
 ACCESS_TOKEN_TOKEN_TYPE = "access"
 REFRESH_TOKEN_TOKEN_TYPE = "refresh"
@@ -31,6 +32,7 @@ async def create_access_token(user: UserRead) -> str:
         "email": user.email,
         "role": user.role
     }
+    logger.debug("Создаем access токен")
     return await create_jwt(
         token_type=ACCESS_TOKEN_TOKEN_TYPE,
         token_data=jwt_payload,
@@ -40,6 +42,7 @@ async def create_access_token(user: UserRead) -> str:
 
 async def create_refresh_token(user: UserRead) -> str:
     jwt_payload = {"sub": str(user.id)}
+    logger.debug("Создаем refresh токен")
     return await create_jwt(
         token_type=REFRESH_TOKEN_TOKEN_TYPE,
         token_data=jwt_payload,
@@ -50,6 +53,7 @@ async def create_refresh_token(user: UserRead) -> str:
 
 async def setup_access_token(user, response):
     access_token = await create_access_token(user)
+    logger.debug("Загружаем access токен в cookie ")
     response.set_cookie(
         "access_token",
         access_token,
@@ -61,6 +65,7 @@ async def setup_access_token(user, response):
 
 async def setup_refresh_token(user, response):
     refresh_token = await create_refresh_token(user)
+    logger.debug("Загружаем refresh токен в cookie ")
     response.set_cookie(
         "refresh_token",
         refresh_token,

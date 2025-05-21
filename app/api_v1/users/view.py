@@ -1,15 +1,15 @@
 from fastapi import APIRouter, HTTPException, status, Depends
 import logging
 from .service import users_service
-from .schemas import UserCreate, UserRead, UserUpdate
+from .schemas import UserCreate, UserRead, UserUpdate, UserFilter
 from app.api_v1.auth.view import get_current_auth_user
-from app.api_v1.auth.validation import require_role
+from app.api_v1.auth.validation import require_role, require_superuser
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.session_manager import SessionDep, TransactionSessionDep
 from .dependencies import user_by_id, user_by_email
 
 
-router = APIRouter(tags=["Users"], dependencies=[Depends(get_current_auth_user), Depends(require_role("admin"))])
+router = APIRouter(tags=["Users"], dependencies=[Depends(get_current_auth_user), Depends(require_superuser())])
 
 
 @router.get("", response_model=list[UserRead])
@@ -31,25 +31,28 @@ async def create_user(
 
 @router.get("/{user_id}", response_model=UserRead)
 async def get_user(
-    user=Depends(user_by_id),
+    user: UserRead = Depends(user_by_id),
 ):
     """Find and return user by id"""
     return user
 
 @router.get("/{user_email}", response_model=UserRead)
 async def get_user(
-    user=Depends(user_by_email),
+    user: UserRead =Depends(user_by_email),
 ):
     """Find and return user by email"""
     return user
 
-@router.patch("/{user_id}", response_model=UserRead)
+@router.patch("/{user_id}")
 async def update_user(
     user_update: UserUpdate,
-    user=Depends(user_by_id),
+    user: UserRead = Depends(user_by_id),
     session: AsyncSession = TransactionSessionDep,
 ):
-    return await users_service.update(session=session, filters=user, values=user_update)
+    res = await users_service.update(session=session, filters=UserFilter(id=user.id), values=user_update)
+    if res:
+        return {"success": True, "count": res}
+    return {"success": False, "count": 0}
 
 
 @router.delete("/{user_id}")

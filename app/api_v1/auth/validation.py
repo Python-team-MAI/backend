@@ -30,8 +30,8 @@ GITHUB_CLIENT_ID = settings.oauth2.AUTH_GITHUB_ID
 GITHUB_CLIENT_SECRET = settings.oauth2.AUTH_GITHUB_SECRET
 YANDEX_CLIENT_ID = settings.oauth2.AUTH_YANDEX_ID
 YANDEX_CLIENT_SECRET = settings.oauth2.AUTH_YANDEX_SECRET
-BACKEND_HOST = settings.oauth2.BACKEND_HOST
-FRONTEND_HOST = settings.oauth2.FRONTEND_HOST
+BACKEND_HOST = settings.hosts.BACKEND_HOST
+FRONTEND_HOST = settings.hosts.FRONTEND_HOST
 GOOGLE_REDIRECT_URI = f"{BACKEND_HOST}v1/auth/callback/google"
 GITHUB_REDIRECT_URI = f"{BACKEND_HOST}v1/auth/callback/github"
 YANDEX_REDIRECT_URI = f"{BACKEND_HOST}v1/auth/callback/yandex"
@@ -130,15 +130,41 @@ async def validate_token(token: str | bytes, token_type: str):
         return {"success": False,
                 "error": e}
 
-def require_role(required_role: str):
-    async def role_checker(role: str = Depends(get_current_user_role)):
-        if role != required_role:
+
+def require_condition(
+    required_role: str | None = None,
+    allow_superuser: bool = True
+):
+    async def checker(
+        user: UserRead = Depends(get_current_auth_user)  
+    ):
+        if allow_superuser and user.is_superuser:
+            return user
+            
+        if required_role and user.role != required_role:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail=f"Access denied. Required role: {required_role}",
+                detail=f"Access denied. Required role: {required_role}"
             )
-    return role_checker
+            
+        return user
+        
+    return checker
 
+# Для проверки суперпользователя
+def require_superuser():
+    async def checker(user: UserRead = Depends(get_current_auth_user)):
+        if not user.is_superuser:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Access denied. Superuser required"
+            )
+        return user
+    return checker
+
+# Для проверки роли с учетом суперпользователя
+def require_role(required_role: str):
+    return require_condition(required_role=required_role, allow_superuser=True)
 
 async def get_user_by_token_sub(payload: dict, session) -> UserRead:
     user_id = int(payload.get("sub"))
@@ -182,7 +208,6 @@ async def get_current_token_payload(token: str = Depends(get_token_from_cookie_o
     return payload
 
 async def get_current_user_role(payload: dict = Depends(get_current_token_payload)) -> str:
-    print(payload)
     role = payload.get("role")
     if not role:
         raise HTTPException(

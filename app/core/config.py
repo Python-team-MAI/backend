@@ -5,7 +5,11 @@ from pydantic import PostgresDsn, RedisDsn, BaseModel
 BASE_DIR = Path(__file__).parent.parent.parent
 
 
-class DBSettings(BaseSettings):
+class EnvBaseSettings(BaseSettings):
+    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
+
+
+class DBSettings(EnvBaseSettings):
     POSTGRES_HOST: str
     POSTGRES_PORT: int
     POSTGRES_USER: str
@@ -21,8 +25,19 @@ class DBSettings(BaseSettings):
     def DATABASE_URL_asyncpg(self):
         # DSN
         return f"postgresql+asyncpg://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@{self.POSTGRES_HOST}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
-    
-    model_config = SettingsConfigDict(env_file=".env")
+
+class MailSettings(EnvBaseSettings):
+    MAIL_USERNAME: str
+    MAIL_PASSWORD: str
+    MAIL_FROM: str
+    MAIL_PORT: int
+    MAIL_SERVER: str
+    MAIL_FROM_NAME: str
+    MAIL_STARTTLS: bool = True
+    MAIL_SSL_TLS: bool = False
+    USE_CREDENTIALS: bool = True
+    VALIDATE_CERTS: bool = True
+    TEMPLATE_FOLDER: Path = BASE_DIR / "app" / "templates"
 
 
 class AuthJWT(BaseModel):
@@ -50,11 +65,14 @@ class Oauth2(BaseSettings):
     AUTH_YANDEX_ID: str
     AUTH_YANDEX_SECRET: str
 
-    BACKEND_HOST: str
-    FRONTEND_HOST: str
 
     model_config = SettingsConfigDict(env_file=".env.local")
 
+
+class HostsSettings(EnvBaseSettings):
+    DOMEN: str
+    BACKEND_HOST: str
+    FRONTEND_HOST: str
 
 class Settings(BaseSettings):
     api_v1_prefix: str = "/v1"
@@ -64,6 +82,10 @@ class Settings(BaseSettings):
     auth_jwt: AuthJWT = AuthJWT()
 
     oauth2: Oauth2 = Oauth2()
+
+    mail: MailSettings = MailSettings()
+
+    hosts: HostsSettings = HostsSettings()
 
 
 settings = Settings()

@@ -20,7 +20,8 @@ class ChatCreate(Chat):
 
 
 class ChatUpdate(ChatCreate):
-    pass
+    name: str | None = None
+    type: str | None = None
 
 
 class ChatFilter(ChatCreate):
