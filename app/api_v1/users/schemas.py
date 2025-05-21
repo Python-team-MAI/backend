@@ -1,5 +1,6 @@
 from pydantic import BaseModel, EmailStr, ConfigDict
 import enum
+from datetime import datetime
 
 class Role(str, enum.Enum):
     ADMIN = "admin"
@@ -26,6 +27,8 @@ class User(BaseModel):
 class UserRead(User):
     model_config = ConfigDict(from_attributes=True)
 
+    created_at: datetime
+    updated_at: datetime
     id: int
 
 
@@ -45,6 +48,9 @@ class UserUpdate(BaseModel):
 
 
 class UserFilter(BaseModel):
+    id: int | None = None
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
     first_name: str | None = None
     last_name: str | None = None
     is_active: bool | None = None
