@@ -32,6 +32,7 @@ import logging
 import re
 
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
 
 http_bearer = HTTPBearer(auto_error=False)
 
@@ -123,6 +124,8 @@ async def validate_auth_user(
 
 async def validate_token_type(payload: dict, token_type: str) -> bool:
     current_token_type = payload.get(TOKEN_TYPE_FIELD)
+    logger.debug(f"Current: {current_token_type}")
+    logger.debug(f"Needed: {token_type}")
     if current_token_type == token_type:
         return True
     raise HTTPException(
@@ -132,20 +135,18 @@ async def validate_token_type(payload: dict, token_type: str) -> bool:
 
 
 async def validate_token(token: str | bytes, token_type: str):
-    try:
+    payload = auth_utils.decode_jwt(token=token)
+    await validate_token_type(payload=payload, token_type=token_type)
+    exp_datetime = datetime.fromtimestamp(payload["exp"], tz=timezone.utc)
+    if exp_datetime < datetime.now(timezone.utc):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail=f"token has expired",
+        )
 
-        payload = auth_utils.decode_jwt(token=token)
-        await validate_token_type(payload=payload, token_type=token_type)
-        if payload["exp"] < datetime.now(timezone.utc):
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail=f"token has expired",
-            )
+    return {"success": True, "error": None}
 
-        return {"success": True, "error": None}
 
-    except Exception as e:
-        return {"success": False, "error": e}
 
 
 def validate_password(password: str) -> int:
