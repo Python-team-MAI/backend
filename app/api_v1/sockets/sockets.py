@@ -73,8 +73,8 @@ async def chat(sid, message, session):
     socket_session = await sio_server.get_session(sid)
     message_create = MessageCreate(
         text=message["text"],
-        user_id=message["user_id"],
-        chat_id=message["chat_id"],
+        user_id=user_id,
+        chat_id=chat_id,
         is_anonymous=message["is_anonymous"],
     )
     message = await messages_service.add(session=session, values=message_create)
