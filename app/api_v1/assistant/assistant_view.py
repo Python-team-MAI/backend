@@ -12,9 +12,15 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(tags=["Indexes"])
+router = APIRouter(tags=["Assistant"])
 
-@router.get("")
+@router.get("/indexes")
 def get_indexes():
     """Find and return all offices"""
     return yandex_service.get_indexes()
+
+
+@router.post("/indexes")
+def create_index():
+    index_id = yandex_service.create_new_index()
+    return index_id
