@@ -3,3 +3,4 @@
 venv/
 certs/
 __pycache__/
+test_knowledge_base/

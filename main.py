@@ -44,8 +44,7 @@ def create_app() -> FastAPI:
         title="MAI API",
         description=("python project"),
         version="1.0.0",
-        lifespan=lifespan,
-        root_path="/api",
+        lifespan=lifespan
     )
     app.add_middleware(
         CORSMiddleware,
