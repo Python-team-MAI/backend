@@ -35,7 +35,7 @@ logger = logging.getLogger(__name__)
 
 http_bearer = HTTPBearer(auto_error=False)
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/v1/auth/login")
 
 
 GOOGLE_CLIENT_ID = settings.oauth2.AUTH_GOOGLE_ID
@@ -152,10 +152,7 @@ def validate_password(password: str) -> int:
     has_lower = re.search(r"[a-z]", password)
     has_upper = re.search(r"[A-Z]", password)
     has_digit = re.search(r"\d", password)
-    has_special = re.search(r"[^A-Za-z0-9]", password)
-    if len(password) > 10 and has_lower and has_upper and has_digit and has_special:
-        return 3
-    elif len(password) > 8 and (has_lower or has_upper) and has_digit:
+    if len(password) > 8 and (has_lower or has_upper) and has_digit:
         return 2
     else:
         raise HTTPException(

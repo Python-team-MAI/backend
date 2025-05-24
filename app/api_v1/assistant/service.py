@@ -129,6 +129,20 @@ class YandexIndexService:
         """Удаляет индекс по его ID"""
         return sdk.search_indexes.get(search_index_id=index_id)
     
+    def get_indexes(self) -> list:
+        indexes = []
+        try:
+            generator = sdk.search_indexes.list()
+            logger.info(f"Generator: {generator}, type: {type(generator)}")
+            for index in sdk.search_indexes.list():
+                logger.info(f"Index: {index}")
+                if index:
+                    indexes.append(index)
+        except Exception as ex:
+            logger.error(f"Произошла ошибка при получении индекса: {ex}")
+
+        return indexes
+    
     def update_index(self, index_id: str, document_paths: list[str]):
         pass
 

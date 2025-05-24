@@ -91,12 +91,12 @@ async def auth_google(
     )
     if user:
         await setup_access_token(user=user, response=response)
-        return RedirectResponse(f"{settings.oauth2.FRONTEND_HOST}/api/v1/auth/callback")
+        return RedirectResponse(f"{settings.hosts.FRONTEND_HOST}/v1/auth/callback")
     else:
         user = UserCreate(email=email, password=None, auth_type="google")
         user = await users_service.add(session=session, values=user)
         await setup_access_token(user=user, response=response)
-        return RedirectResponse(f"{settings.oauth2.FRONTEND_HOST}/api/v1/auth/callback")
+        return RedirectResponse(f"{settings.hosts.FRONTEND_HOST}/v1/auth/callback")
 
 
 @router.get("/github")
@@ -125,14 +125,14 @@ async def auth_github(request: Request, session: AsyncSession = TransactionSessi
         if user:
             setup_access_token(user=user)
             return RedirectResponse(
-                f"{settings.oauth2.FRONTEND_HOST}/api/v1/auth/callback"
+                f"{settings.hosts.FRONTEND_HOST}/v1/auth/callback"
             )
         else:
             user = UserCreate(email=email, password=None, auth_type="github")
             user = await users_service.add(session=session, values=user)
             setup_access_token(user=user)
             return RedirectResponse(
-                f"{settings.oauth2.FRONTEND_HOST}/api/v1/auth/callback"
+                f"{settings.hosts.FRONTEND_HOST}/v1/auth/callback"
             )
 
     except OAuthError as e:
@@ -171,14 +171,14 @@ async def auth_yandex(
         if user:
             setup_access_token(user=user)
             return RedirectResponse(
-                f"{settings.oauth2.FRONTEND_HOST}/api/v1/auth/callback"
+                f"{settings.hosts.FRONTEND_HOST}/v1/auth/callback"
             )
         else:
             user = UserCreate(email=email, password=None, auth_type="yandex")
             user = await users_service.add(session=session, values=user)
             setup_access_token(user=user)
             return RedirectResponse(
-                f"{settings.oauth2.FRONTEND_HOST}/api/v1/auth/callback"
+                f"{settings.hosts.FRONTEND_HOST}/v1/auth/callback"
             )
 
     except OAuthError as e:
@@ -207,6 +207,11 @@ async def auth_refresh_jwt(
 async def auth_user_issue_jwt(
     response: Response, user: UserRead = Depends(validate_auth_user)
 ):
+    if not user.is_verified:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"User with email {user.email} not verified",
+        )
     access_token = await setup_access_token(user=user, response=response)
     refresh_token = await setup_refresh_token(user=user, response=response)
 
@@ -247,12 +252,12 @@ async def register_user(
     # mail
     mail_token = create_url_safe_mail_token({"email": email})
 
-    link = f"http://{settings.hosts.DOMEN}/api/v1/auth/verify-mail/{mail_token}"
+    link = f"http://{settings.hosts.DOMEN}/v1/auth/verify-mail/{mail_token}"
     html_message = email_verification_template.render(link=link, year=datetime.now().year)
     subject = "Welcome"
     send_email.delay([email], subject, html_message)
     logger.info(f"Send verified message to email: {email}")
-    return {"message": "Check your email to verify account"}
+    return {"message": "success"}
 
 
 @router.get("/verify-mail/{mail_token}")
@@ -274,7 +279,7 @@ async def verify_mail(mail_token: str, session: AsyncSession = TransactionSessio
         await users_service.set_user_is_verify(session=session, email=user_email)
         logger.info(f"User {user_email} is verified successfully")
         return JSONResponse(
-            content={"message": "Account verified successfully"},
+            content={"message": "success"},
             status_code=status.HTTP_200_OK,
         )
 
@@ -306,7 +311,7 @@ async def password_reset_request(
     mail_token = create_url_safe_mail_token({"email": email})
 
     link = (
-        f"http://{settings.hosts.DOMEN}/api/v1/auth/password-reset-confirm/{mail_token}"
+        f"http://{settings.hosts.DOMEN}/v1/auth/password-reset-confirm/{mail_token}"
     )
     html_message = password_reset_template.render(link=link)
     subject = "Reset password"

@@ -66,10 +66,6 @@ async def create_snapshot(
     logger.info(f"Current: {current_paths}. Uploaded: {uploaded_files}")
     await snapshots_service.update(session=session, filters=KnowledgeSnapshotFilter(id=new_snapshot_request.snapshot_id), values=KnowledgeSnapshotUpdate(document_paths=uploaded_files))
     
-
-    # Запускаем задачу построения индекса
-    # build_knowledge_index.delay(str(snapshot.id))
-
     return {"snapshot_id": snapshot.id, "new_files_count": len(uploaded_files) - len(current_paths)}
 
 
