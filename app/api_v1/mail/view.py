@@ -28,13 +28,13 @@ async def send_mail(mail: SendMailModel):
 
         if message == "email_verification":
             mail_token = create_url_safe_mail_token({"email": emails[0]})
-            link = f"http://{settings.hosts.DOMEN}/api/v1/auth/verify-mail/{mail_token}"
+            link = f"{settings.hosts.BACKEND_HOST}/api/v1/auth/verify-mail/{mail_token}"
             message = email_verification_template.render(link=link, year=datetime.now().year)
 
         elif message == "reset_password":
             mail_token = create_url_safe_mail_token({"email": emails[0]})
             link = (
-                f"http://{settings.hosts.DOMEN}/api/v1/auth/password-reset-confirm/{mail_token}"
+                f"{settings.hosts.BACKEND_HOST}/api/v1/auth/password-reset-confirm/{mail_token}"
             )
             message = password_reset_template.render(link=link)
 
