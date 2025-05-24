@@ -19,14 +19,8 @@ sio_server = socketio.AsyncServer(async_mode="asgi", cors_allowed_origins=[])
 sio_app = socketio.ASGIApp(socketio_server=sio_server)
 
 
-@sio_server.event
-@session_manager.connection(commit=True)
-async def connect(sid, environ, auth, session):
-    logger.info(f"New sid {sid} connected. Auth: {auth}")
-    access_token = auth.get("access_token")
-
+async def validate_socket_token(sid, session, access_token):
     res = await validate_token(token=access_token, token_type=ACCESS_TOKEN_TOKEN_TYPE)
-
     if not res["success"]:
         logger.warning(
             f"Connection rejected. Access token not validate. {res["error"]}"
@@ -41,6 +35,14 @@ async def connect(sid, environ, auth, session):
         await sio_server.disconnect(sid)
         return
 
+    return user
+
+@sio_server.event
+@session_manager.connection(commit=True)
+async def connect(sid, environ, auth, session):
+    logger.info(f"New sid {sid} connected. Auth: {auth}")
+    access_token = auth.get("access_token")
+    user = await validate_socket_token(sid=sid, session=session, access_token=access_token)
     user_id = user.id
     chat_id = auth.get("chat_id")
     if not chat_id:
@@ -64,6 +66,9 @@ async def connect(sid, environ, auth, session):
 @session_manager.connection(commit=True)
 async def chat(sid, message, session):
     logger.info(f"Sid: {sid}. New message received: {message}")
+    access_token = message.get("access_token")
+    user = await validate_socket_token(sid=sid, session=session, access_token=access_token)
+    user_id = user.id
     chat_id = message["chat_id"]
     socket_session = await sio_server.get_session(sid)
     message_create = MessageCreate(
