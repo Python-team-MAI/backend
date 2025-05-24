@@ -22,5 +22,5 @@ jobs:
             cd ${{ secrets.BACKEND_PATH }}
             git pull origin main
             docker compose down
-            docker compose up -d --build
+            docker compose up -d --build --scale app=3
             docker image prune -f
