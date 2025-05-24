@@ -12,6 +12,7 @@ from app.core.base.base_model import async_session_maker
 
 logger = logging.getLogger(__name__)
 
+
 class DatabaseSessionManager:
     """
     Менеджер для работы с сессиями базы данных. Позволяет управлять сессиями,

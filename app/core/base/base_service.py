@@ -14,7 +14,6 @@ class BaseService:
         self.repository = repository
         self.schema_out = schema_out
 
-
     def _to_schema(self, obj: Base) -> BaseModel:
         if not self.schema_out:
             return obj
@@ -29,7 +28,7 @@ class BaseService:
         """Находит обьект по pid = data_pid\n
         return: Найденный ORM обьект. None если не нашел"""
 
-        orm_obj =  await self.repository.find_one_or_none_by_pid(
+        orm_obj = await self.repository.find_one_or_none_by_pid(
             session=session, data_pid=data_pid
         )
         return self._to_schema(orm_obj) if orm_obj else None
@@ -40,7 +39,9 @@ class BaseService:
         """Находит обьект по фильтрам filters.\n
         return: Найденный ORM обьект. None если не нашел"""
 
-        orm_obj = await self.repository.find_one_or_none(session=session, filters=filters)
+        orm_obj = await self.repository.find_one_or_none(
+            session=session, filters=filters
+        )
         return self._to_schema(orm_obj) if orm_obj else None
 
     async def find_all(
@@ -52,7 +53,7 @@ class BaseService:
         orm_objs = await self.repository.find_all(session=session, filters=filters)
         return self._to_schema_many(orm_objs)
 
-    async def add(self, session: AsyncSession, values: BaseModel) -> Base:
+    async def add(self, session: AsyncSession, values: BaseModel) -> BaseModel:
         """Добавляет обьект со значениями values.\n
         return: Добавленный обьект"""
 
@@ -83,7 +84,9 @@ class BaseService:
 
         return await self.repository.delete(session=session, filters=filters)
 
-    async def count(self, session: AsyncSession, filters: BaseModel | None = None) -> int:
+    async def count(
+        self, session: AsyncSession, filters: BaseModel | None = None
+    ) -> int:
         """Считает количество обьектов со значениями filters.\n
         return: количество обьектов"""
 

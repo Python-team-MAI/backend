@@ -11,12 +11,12 @@ async def office_by_id(
     office_id: Annotated[int, Path],
     session: AsyncSession = SessionDep,
 ) -> OfficesOrm:
-    office = await offices_service.find_one_or_none(session=session, filters=OfficeFilter(id=office_id))
+    office = await offices_service.find_one_or_none(
+        session=session, filters=OfficeFilter(id=office_id)
+    )
     if office is not None:
         return office
 
     raise HTTPException(
         status_code=status.HTTP_404_NOT_FOUND, detail=f"Office {office_id} not found"
     )
-
-

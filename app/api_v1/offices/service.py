@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 
 class OfficesService(BaseService):
-    def __init__(self, repository: OfficesRepo, schemas_out = OfficeRead):
+    def __init__(self, repository: OfficesRepo, schemas_out=OfficeRead):
         self.repository = repository
         self.schema_out = schemas_out
         super().__init__(repository=self.repository, schema_out=self.schema_out)

@@ -5,7 +5,7 @@ from datetime import datetime
 
 class Office(BaseModel):
     name: str
-    description: str | None 
+    description: str | None
 
 
 class OfficeRead(Office):
@@ -21,6 +21,7 @@ class OfficeCreate(Office):
 
 class OfficeUpdate(OfficeCreate):
     pass
+
 
 class OfficeFilter(BaseModel):
     id: int | None = None

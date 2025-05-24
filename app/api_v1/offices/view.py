@@ -42,7 +42,9 @@ async def update_office(
     office=Depends(office_by_id),
     session: AsyncSession = TransactionSessionDep,
 ):
-    return await offices_service.update(session=session, filters=office, values=office_update)
+    return await offices_service.update(
+        session=session, filters=office, values=office_update
+    )
 
 
 @router.delete("/{office_id}")

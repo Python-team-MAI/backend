@@ -1,24 +1,54 @@
 from app.api_v1.users.schemas import UserRead, UserCreate, UserUpdate, UserFilter
 from app.api_v1.users.service import users_service
-from app.api_v1.auth.helpers import create_access_token, create_refresh_token, setup_access_token, setup_refresh_token
+from app.api_v1.users.dependencies import user_by_email
+from app.api_v1.auth.helpers import (
+    create_access_token,
+    create_refresh_token,
+    setup_access_token,
+    setup_refresh_token,
+)
 from app.api_v1.auth.validation import (
     http_bearer,
     validate_auth_user,
     get_current_auth_user,
     get_current_auth_user_for_refresh,
+    validate_user_email_and_password,
+    validate_email,
+    validate_password,
+)
+from app.api_v1.utils.exceptions import (
+    PasswordHasNoDigitsError,
+    PasswordHasNoLowerCaseError,
+    PasswordHasNoSpecialError,
+    PasswordHasNoUpperCaseError,
 )
 from app.core.config import settings
 from app.core.session_manager import SessionDep, TransactionSessionDep
+from app.api_v1.mail.mail import mail, create_message
 from sqlalchemy.ext.asyncio import AsyncSession
-from .schemas import TokenInfo, UserLogin
-from .utils import hash_password
+from .schemas import (
+    TokenInfo,
+    UserLogin,
+    PasswordResetRequestModel,
+    PasswordResetConfirmModel,
+)
+from app.api_v1.celery_tasks import send_email
+from .utils import hash_password, create_url_safe_mail_token, decode_url_safe_mail_token
 from fastapi import APIRouter, Depends, Request, status, HTTPException, Body, Response
+from fastapi.responses import JSONResponse
 
 from .validation import oauth, require_role, validate_token
 from fastapi.responses import RedirectResponse
 from authlib.integrations.base_client import OAuthError
 from authlib.oauth2.rfc6749 import OAuth2Token
+from app.api_v1.utils.setup_logging import setup_logging
+from jinja2 import Environment, FileSystemLoader
+from datetime import datetime
 import logging
+
+env = Environment(loader=FileSystemLoader("app/templates"))
+email_verification_template = env.get_template("email_verification.html")
+password_reset_template = env.get_template("reset_password.html")
 
 router = APIRouter(prefix="/auth", tags=["Auth"], dependencies=[Depends(http_bearer)])
 logger = logging.getLogger(__name__)
@@ -34,7 +64,6 @@ FRONTEND_HOST = settings.hosts.FRONTEND_HOST
 GOOGLE_REDIRECT_URI = f"{BACKEND_HOST}/v1/auth/callback/google"
 GITHUB_REDIRECT_URI = f"{BACKEND_HOST}/v1/auth/callback/github"
 YANDEX_REDIRECT_URI = f"{BACKEND_HOST}/v1/auth/callback/yandex"
-
 
 
 @router.get("/google")
@@ -57,7 +86,9 @@ async def auth_google(
     user_info = user_response.get("userinfo")
     email = user_info["email"].lower()
     logger.info(f"Get user email from google: {email}")
-    user = await users_service.find_one_or_none(session=session, filters=UserFilter(email=email))
+    user = await users_service.find_one_or_none(
+        session=session, filters=UserFilter(email=email)
+    )
     if user:
         await setup_access_token(user=user, response=response)
         return RedirectResponse(f"{settings.oauth2.FRONTEND_HOST}/api/v1/auth/callback")
@@ -74,9 +105,7 @@ async def login_github(request: Request):
 
 
 @router.get("/callback/github")
-async def auth_github(
-    request: Request, session: AsyncSession = TransactionSessionDep
-):
+async def auth_github(request: Request, session: AsyncSession = TransactionSessionDep):
     try:
         token = await oauth.github.authorize_access_token(request)
         if not token:
@@ -84,19 +113,27 @@ async def auth_github(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Токен не получен.",
             )
-        users_resp = await oauth.github.get('https://api.github.com/user', token=token)
+        users_resp = await oauth.github.get("https://api.github.com/user", token=token)
         user = users_resp.json()
-        email_resp = await oauth.github.get('https://api.github.com/user/emails', token=token)
+        email_resp = await oauth.github.get(
+            "https://api.github.com/user/emails", token=token
+        )
         email = email_resp.json()[0]["email"].lower()
-        user = await users_service.find_one_or_none(session=session, filters=UserFilter(email=email))
+        user = await users_service.find_one_or_none(
+            session=session, filters=UserFilter(email=email)
+        )
         if user:
             setup_access_token(user=user)
-            return RedirectResponse(f"{settings.oauth2.FRONTEND_HOST}/api/v1/auth/callback")
+            return RedirectResponse(
+                f"{settings.oauth2.FRONTEND_HOST}/api/v1/auth/callback"
+            )
         else:
             user = UserCreate(email=email, password=None, auth_type="github")
             user = await users_service.add(session=session, values=user)
             setup_access_token(user=user)
-            return RedirectResponse(f"{settings.oauth2.FRONTEND_HOST}/api/v1/auth/callback")
+            return RedirectResponse(
+                f"{settings.oauth2.FRONTEND_HOST}/api/v1/auth/callback"
+            )
 
     except OAuthError as e:
         print(f"OAuthError: {e}")
@@ -112,7 +149,9 @@ async def login_github(request: Request):
 
 
 @router.get("/callback/yandex")
-async def auth_yandex(response: Response, request: Request, session: AsyncSession = TransactionSessionDep):
+async def auth_yandex(
+    response: Response, request: Request, session: AsyncSession = TransactionSessionDep
+):
     try:
         token = await oauth.yandex.authorize_access_token(request)
 
@@ -121,34 +160,39 @@ async def auth_yandex(response: Response, request: Request, session: AsyncSessio
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Токен не получен.",
             )
-        
         # Получение информации о пользователе
-        resp = await oauth.yandex.get('https://login.yandex.ru/info', token=token)
+        resp = await oauth.yandex.get("https://login.yandex.ru/info", token=token)
         user_info = resp.json()
         email = user_info["default_email"].lower()
 
-        user = await users_service.find_one_or_none(session=session, filters=UserFilter(email=email))
+        user = await users_service.find_one_or_none(
+            session=session, filters=UserFilter(email=email)
+        )
         if user:
             setup_access_token(user=user)
-            return RedirectResponse(f"{settings.oauth2.FRONTEND_HOST}/api/v1/auth/callback")
+            return RedirectResponse(
+                f"{settings.oauth2.FRONTEND_HOST}/api/v1/auth/callback"
+            )
         else:
             user = UserCreate(email=email, password=None, auth_type="yandex")
             user = await users_service.add(session=session, values=user)
             setup_access_token(user=user)
-            return RedirectResponse(f"{settings.oauth2.FRONTEND_HOST}/api/v1/auth/callback")
-        
+            return RedirectResponse(
+                f"{settings.oauth2.FRONTEND_HOST}/api/v1/auth/callback"
+            )
+
     except OAuthError as e:
         raise HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
+            status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Could not validate credentials",
         )
-    
+
 
 @router.post("/token-validate")
 async def token_validate(token: str | bytes, token_type: str):
     res = await validate_token(token=token, token_type=token_type)
     return res
-    
+
 
 @router.post("/refresh", response_model=TokenInfo, response_model_exclude_none=True)
 async def auth_refresh_jwt(
@@ -175,6 +219,7 @@ async def auth_user_check_self_info(
 ):
     return user
 
+
 @router.patch("/me", response_model=TokenInfo)
 async def update_me(
     response: Response,
@@ -182,9 +227,7 @@ async def update_me(
     user: UserRead = Depends(get_current_auth_user),
     session: AsyncSession = TransactionSessionDep,
 ):
-    await users_service.update(
-        session=session, filters=user, values=user_update
-    )
+    await users_service.update(session=session, filters=user, values=user_update)
     access_token = await setup_access_token(user=user, response=response)
     refresh_token = await setup_refresh_token(user=user, response=response)
     return TokenInfo(access_token=access_token, refresh_token=refresh_token)
@@ -196,35 +239,107 @@ async def register_user(
     user: UserLogin,
     session: AsyncSession = TransactionSessionDep,
 ):
+    email = user.email
+    await validate_user_email_and_password(user=user, session=session)
+    user = await users_service.create_new_user(
+        session=session, email=email, password=user.password, auth_type="default"
+    )
+    # mail
+    mail_token = create_url_safe_mail_token({"email": email})
 
-    if await users_service.find_one_or_none(session=session, filters=UserFilter(email=user.email)):
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail="User with this email already exist",
+    link = f"http://{settings.hosts.DOMEN}/api/v1/auth/verify-mail/{mail_token}"
+    html_message = email_verification_template.render(link=link, year=datetime.now().year)
+    subject = "Welcome"
+    send_email.delay([email], subject, html_message)
+    logger.info(f"Send verified message to email: {email}")
+    return {"message": "Check your email to verify account"}
+
+
+@router.get("/verify-mail/{mail_token}")
+async def verify_mail(mail_token: str, session: AsyncSession = TransactionSessionDep):
+    token_data = decode_url_safe_mail_token(token=mail_token)
+
+    user_email = token_data.get("email", "")
+
+    if user_email:
+        user = await users_service.get_user_by_email(session=session, email=user_email)
+        logger.debug(
+            f"Get user email from mail-token: {user_email}. User exist: {bool(user is not None)}"
         )
-    # TODO some validation
-    user_create = UserCreate(email=user.email, password=hash_password(user.password), auth_type="default", is_active=True, is_superuser=False, is_verified=False)
-    user = await users_service.add(session=session, values=user_create)
-    link = f"http://{settings.hosts.DOMEN}"
-    html_message = f"""
-    <h1> Verify your Email</h1>
-    <p>Please click to this <a href="{link}"> link to verify your email</p>
-    """
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"User with email: {user_email} not found",
+            )
+        await users_service.set_user_is_verify(session=session, email=user_email)
+        logger.info(f"User {user_email} is verified successfully")
+        return JSONResponse(
+            content={"message": "Account verified successfully"},
+            status_code=status.HTTP_200_OK,
+        )
 
-    access_token = await setup_access_token(user=user, response=response)
-    refresh_token = await setup_refresh_token(user=user, response=response)
-    
-    return TokenInfo(access_token=access_token, refresh_token=refresh_token)
+    logger.error(f"Error occured during verification. Token data: {token_data}")
+    return JSONResponse(
+        content={"message": "Error occured during verification"},
+        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+    )
 
 
-@router.get("/admin-only", dependencies=[Depends(require_role("admin"))])
-async def admin_only():
-    return {"message": "This endpoint is accessible only to admins"}
+@router.post("/password-reset-request")
+async def password_reset_request(
+    email_data: PasswordResetRequestModel, session: AsyncSession = SessionDep
+):
+    email = email_data.email
+    if not validate_email(email):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Email not valid. Domain does not exist",
+        )
+    user = users_service.get_user_by_email(session=session, email=email)
+    if not user:
+        return JSONResponse(
+            content={"message": f"User with this email does not exist"},
+            status_code=status.HTTP_404_NOT_FOUND,
+        )
 
-@router.get("/head-only", dependencies=[Depends(require_role("head"))])
-async def head_only():
-    return {"message": "This endpoint is accessible only to heads"}
+    # mail
+    mail_token = create_url_safe_mail_token({"email": email})
 
-@router.get("/student-only", dependencies=[Depends(require_role("student"))])
-async def student_only():
-    return {"message": "This endpoint is accessible only to students"}
+    link = (
+        f"http://{settings.hosts.DOMEN}/api/v1/auth/password-reset-confirm/{mail_token}"
+    )
+    html_message = password_reset_template.render(link=link)
+    subject = "Reset password"
+    send_email.delay([email], subject, html_message)
+    logger.info(f"Send reset password message to email: {email}")
+    return JSONResponse(
+        content={
+            "message": f"Send the reset password message to email if its exist: {email}"
+        },
+        status_code=status.HTTP_200_OK,
+    )
+
+
+@router.get("/password-reset-confirm/{mail_token}")
+async def reset_account_password(
+    mail_token: str,
+    password_confirm: PasswordResetConfirmModel,
+    session: AsyncSession = TransactionSessionDep,
+):
+    logger.info(f"info: {password_confirm}")
+    if password_confirm.new_password != password_confirm.confirm_new_password:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Passwords do not match",
+        )
+    validate_password(password=password_confirm.new_password)
+    logger.debug("Validating password successfully")
+    token_data = decode_url_safe_mail_token(token=mail_token)
+    user_email = token_data.get("email", "")
+    await users_service.reset_user_password(
+        session=session, email=user_email, new_password=password_confirm.new_password
+    )
+    return JSONResponse(
+        content={"message": f"Password reset successfully "},
+        status_code=status.HTTP_200_OK,
+    )

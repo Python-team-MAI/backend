@@ -2,10 +2,12 @@ from pydantic import BaseModel, EmailStr, ConfigDict
 import enum
 from datetime import datetime
 
+
 class Role(str, enum.Enum):
     ADMIN = "admin"
     STUDENT = "student"
     HEAD = "head"
+
 
 class User(BaseModel):
     first_name: str | None = None
@@ -14,7 +16,7 @@ class User(BaseModel):
     is_superuser: bool = False
     is_verified: bool = False
     bio: str | None = None
-    email: EmailStr 
+    email: EmailStr
     password: bytes | None
     course: int | None = None
     group_id: int | None = None
@@ -44,6 +46,7 @@ class UserUpdate(BaseModel):
     course: int | None = None
     group_id: int | None = None
     institute: int | None = None
+    is_superuser: bool | None = None
     role: Role | None = None
 
 

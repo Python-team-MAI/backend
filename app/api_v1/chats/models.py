@@ -2,7 +2,7 @@ from app.core.base.base_model import Base
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 import enum
 from sqlalchemy import String, ForeignKey
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 
 
 if TYPE_CHECKING:
@@ -21,7 +21,9 @@ class ChatsOrm(Base):
 
     name: Mapped[str] = mapped_column(String(50))
     type: Mapped[str]
-    office_id: Mapped[int] = mapped_column(ForeignKey("offices.id", ondelete="CASCADE"))
+    office_id: Mapped[Optional[int]] = mapped_column(
+        ForeignKey("offices.id", ondelete="CASCADE"), nullable=True
+    )
     messages: Mapped[list["MessagesOrm"]] = relationship(back_populates="chat")
 
     office: Mapped["OfficesOrm"] = relationship("OfficesOrm", back_populates="chat")

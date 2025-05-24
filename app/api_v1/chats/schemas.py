@@ -7,6 +7,7 @@ class Chat(BaseModel):
     type: str
     office_id: int
 
+
 class ChatRead(Chat):
     model_config = ConfigDict(from_attributes=True)
 

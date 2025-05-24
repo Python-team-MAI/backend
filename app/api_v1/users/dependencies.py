@@ -11,7 +11,9 @@ async def user_by_id(
     user_id: Annotated[int, Path],
     session: AsyncSession = SessionDep,
 ) -> UserRead:
-    user = await users_service.find_one_or_none(session=session, filters=UserFilter(id=user_id))
+    user = await users_service.find_one_or_none(
+        session=session, filters=UserFilter(id=user_id)
+    )
     if user is not None:
         return user
 
@@ -24,7 +26,7 @@ async def user_by_email(
     email: Annotated[str, Path],
     session: AsyncSession = SessionDep,
 ) -> UserRead:
-    user = await users_service.find_one_or_none(session=session, filters=UserFilter(email=email))
+    user = await users_service.get_user_by_email(session=session, email=email)
     if user is not None:
         return user
 

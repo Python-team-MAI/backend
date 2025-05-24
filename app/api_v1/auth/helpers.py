@@ -30,7 +30,7 @@ async def create_access_token(user: UserRead) -> str:
     jwt_payload = {
         "sub": str(user.id),  # subject
         "email": user.email,
-        "role": user.role
+        "role": user.role,
     }
     logger.debug("Создаем access токен")
     return await create_jwt(
@@ -48,7 +48,6 @@ async def create_refresh_token(user: UserRead) -> str:
         token_data=jwt_payload,
         expire_timedelta=timedelta(days=settings.auth_jwt.refresh_token_expire_days),
     )
-
 
 
 async def setup_access_token(user, response):

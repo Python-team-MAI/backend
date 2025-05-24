@@ -9,7 +9,10 @@ from app.core.session_manager import SessionDep, TransactionSessionDep
 from .dependencies import user_by_id, user_by_email
 
 
-router = APIRouter(tags=["Users"], dependencies=[Depends(get_current_auth_user), Depends(require_superuser())])
+router = APIRouter(
+    tags=["Users"],
+    dependencies=[Depends(get_current_auth_user), Depends(require_superuser())],
+)
 
 
 @router.get("", response_model=list[UserRead])
@@ -36,12 +39,14 @@ async def get_user(
     """Find and return user by id"""
     return user
 
+
 @router.get("/{user_email}", response_model=UserRead)
 async def get_user(
-    user: UserRead =Depends(user_by_email),
+    user: UserRead = Depends(user_by_email),
 ):
     """Find and return user by email"""
     return user
+
 
 @router.patch("/{user_id}")
 async def update_user(
@@ -49,7 +54,9 @@ async def update_user(
     user: UserRead = Depends(user_by_id),
     session: AsyncSession = TransactionSessionDep,
 ):
-    res = await users_service.update(session=session, filters=UserFilter(id=user.id), values=user_update)
+    res = await users_service.update(
+        session=session, filters=UserFilter(id=user.id), values=user_update
+    )
     if res:
         return {"success": True, "count": res}
     return {"success": False, "count": 0}

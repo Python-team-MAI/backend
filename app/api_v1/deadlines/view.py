@@ -7,7 +7,10 @@ from .dependencies import deadline_by_id
 from app.api_v1.auth.validation import require_condition
 
 
-router = APIRouter(tags=["Deadlines"], dependencies=[Depends(require_condition(required_role="headman"))])
+router = APIRouter(
+    tags=["Deadlines"],
+    dependencies=[Depends(require_condition(required_role="headman"))],
+)
 
 
 @router.get("", response_model=list[DeadlineRead])
@@ -26,11 +29,8 @@ async def create_deadlines(
 
 
 @router.get("/{deadlines_id}", response_model=DeadlineRead)
-async def get_chat(
-    deadlines = Depends(deadline_by_id)
-):
+async def get_chat(deadlines=Depends(deadline_by_id)):
     return deadlines
-
 
 
 @router.patch("/{deadlines_id}", response_model=DeadlineRead)
@@ -46,7 +46,9 @@ async def update_deadlines(
 
 @router.delete("/{deadlines_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_deadlines(
-    deadlines_id: int, 
+    deadlines_id: int,
     session: AsyncSession = TransactionSessionDep,
 ) -> None:
-    await deadlines_service.delete(session=session, filters=DeadlineFilter(id=deadlines_id))
+    await deadlines_service.delete(
+        session=session, filters=DeadlineFilter(id=deadlines_id)
+    )

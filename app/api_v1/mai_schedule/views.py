@@ -1,4 +1,3 @@
-
 import json
 from .utils import logger, get_group_hash, fetch_schedule_from_mai
 from redis import asyncio as redis
@@ -14,7 +13,6 @@ router = APIRouter(tags=["Schedule"])
 
 
 @router.get("/{group_name}")
-
 async def get_schedule(
     group_name: str, redis_client: redis.Redis = Depends(redis_helper.get_redis_client)
 ):
@@ -31,7 +29,6 @@ async def get_schedule(
     except Exception as e:
         logger.error(f"Ошибка при чтении из Redis: {e}")
 
- 
     try:
         schedule_data = await fetch_schedule_from_mai(group_hash)
 
@@ -43,7 +40,13 @@ async def get_schedule(
 
         try:
             async with redis_client as r:
-                await r.set(cache_key, json.dumps(schedule_data), ex=datetime.timedelta(days=settings.db.EXPIRE_TIME_DAYS).total_seconds())
+                await r.set(
+                    cache_key,
+                    json.dumps(schedule_data),
+                    ex=datetime.timedelta(
+                        days=settings.db.EXPIRE_TIME_DAYS
+                    ).total_seconds(),
+                )
             logger.info(f"Расписание для {group_name} сохранено в Redis")
         except Exception as e:
             logger.warning(f"Не удалось сохранить расписание в Redis: {e}")
@@ -54,4 +57,4 @@ async def get_schedule(
         logger.error(
             f"Ошибка при получении расписания для группы {group_name}: {e.detail}"
         )
-        raise 
+        raise

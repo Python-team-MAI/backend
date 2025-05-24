@@ -8,6 +8,7 @@ from app.api_v1.deadlines.view import router as deadlines_router
 from app.api_v1.mai_schedule.views import router as schedule_router
 from app.api_v1.auth.view import router as demo_jwt_auth_router
 from app.api_v1.mail.view import router as mail_router
+from app.api_v1.assistant.snapshot_view import router as snapshot_router
 
 router = APIRouter()
 router.include_router(router=demo_jwt_auth_router)
@@ -19,5 +20,4 @@ router.include_router(router=schedule_router, prefix="/schedule")
 router.include_router(router=messages_router, prefix="/messages")
 router.include_router(router=office_router, prefix="/offices")
 router.include_router(router=deadlines_router, prefix="/deadlines")
-
-
+router.include_router(router=snapshot_router, prefix="/snapshots")

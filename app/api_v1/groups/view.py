@@ -26,11 +26,8 @@ async def create_group(
 
 
 @router.get("/{group_id}", response_model=GroupRead)
-async def get_groups(
-    group = Depends(group_by_id)
-):
+async def get_groups(group=Depends(group_by_id)):
     return group
-
 
 
 @router.patch("/{group_id}", response_model=GroupRead)
@@ -46,7 +43,7 @@ async def update_group(
 
 @router.delete("/{group_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_group(
-    group_id: int, 
+    group_id: int,
     session: AsyncSession = TransactionSessionDep,
 ) -> None:
     await groups_service.delete(session=session, filters=GroupFilter(id=group_id))

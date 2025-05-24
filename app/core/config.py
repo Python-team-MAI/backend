@@ -6,7 +6,9 @@ BASE_DIR = Path(__file__).parent.parent.parent
 
 
 class EnvBaseSettings(BaseSettings):
-    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
+    model_config = SettingsConfigDict(
+        env_file=".env", env_file_encoding="utf-8", extra="ignore"
+    )
 
 
 class DBSettings(EnvBaseSettings):
@@ -19,12 +21,30 @@ class DBSettings(EnvBaseSettings):
     REDIS_HOST: str
     REDIS_PORT: str
     REDIS_DB: str
+    BROKER_DB: str
     EXPIRE_TIME_DAYS: int
+
+    MINIO_ENDPOINT: str
+    MINIO_ACCESS: str
+    MINIO_SECRET: str
+    MINIO_ACL: str
+    KNOWLEDGE_BUCKET: str
 
     @property
     def DATABASE_URL_asyncpg(self):
         # DSN
         return f"postgresql+asyncpg://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@{self.POSTGRES_HOST}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
+    
+    @property
+    def REDIS_URL(self):
+        # DSN
+        return f"redis://{self.REDIS_HOST}:{self.REDIS_PORT}/{self.REDIS_DB}"
+    
+    @property
+    def BROKER_URL(self):
+        # DSN
+        return f"redis://{self.REDIS_HOST}:{self.REDIS_PORT}/{self.BROKER_DB}"
+
 
 class MailSettings(EnvBaseSettings):
     MAIL_USERNAME: str
@@ -65,7 +85,6 @@ class Oauth2(BaseSettings):
     AUTH_YANDEX_ID: str
     AUTH_YANDEX_SECRET: str
 
-
     model_config = SettingsConfigDict(env_file=".env.local")
 
 
@@ -73,6 +92,12 @@ class HostsSettings(EnvBaseSettings):
     DOMEN: str
     BACKEND_HOST: str
     FRONTEND_HOST: str
+
+
+class AssistantSettings(EnvBaseSettings):
+    YANDEX_CLOUD_FOLDER_ID: str
+    YANDEX_CLOUD_API_KEY: str
+
 
 class Settings(BaseSettings):
     api_v1_prefix: str = "/v1"
@@ -87,6 +112,7 @@ class Settings(BaseSettings):
 
     hosts: HostsSettings = HostsSettings()
 
+    assistant: AssistantSettings = AssistantSettings()
+
 
 settings = Settings()
-

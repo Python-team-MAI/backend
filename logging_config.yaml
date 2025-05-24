@@ -8,6 +8,10 @@ formatters:
   detailed:
     format: '%(asctime)s - %(name)s - %(levelname)s - %(message)s - [%(filename)s:%(lineno)d]'
     datefmt: '%Y-%m-%d %H:%M:%S'
+  # colored:
+  #   (): a.logging_tools.ColoredFormatter
+  #   format: '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+  #   datefmt: '%Y-%m-%d %H:%M:%S'
 
 handlers:
   console:

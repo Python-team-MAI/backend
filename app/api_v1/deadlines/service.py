@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 
 class DeadlinesService(BaseService):
-    def __init__(self, repository: DeadlinesRepo, schemas_out = DeadlineRead):
+    def __init__(self, repository: DeadlinesRepo, schemas_out=DeadlineRead):
         self.repository = repository
         self.schema_out = schemas_out
         super().__init__(repository=self.repository, schema_out=self.schema_out)

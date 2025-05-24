@@ -26,6 +26,7 @@ from app.api_v1.messages.models import MessagesOrm
 from app.api_v1.groups.models import GroupsOrm
 from app.api_v1.users.models import UsersOrm
 from app.api_v1.deadlines.models import DeadlinesOrm
+from app.api_v1.assistant.models import KnowledgeSnapshotsOrm
 from app.core.config import settings
 
 target_metadata = Base.metadata

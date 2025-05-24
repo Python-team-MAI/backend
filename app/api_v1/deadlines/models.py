@@ -20,7 +20,6 @@ class DeadlinesOrm(Base):
     group_id: Mapped[int] = mapped_column(ForeignKey("groups.id", ondelete="CASCADE"))
     lesson: Mapped[str] = mapped_column(String(50), nullable=True)
     description: Mapped[str] = mapped_column(String(500), nullable=True)
-  
+
     group: Mapped["GroupsOrm"] = relationship("GroupsOrm", back_populates="deadlines")
     author: Mapped["UsersOrm"] = relationship("UsersOrm", back_populates="deadlines")
- 

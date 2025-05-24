@@ -32,7 +32,6 @@ services:
 
     redis:
         image: redis:6-alpine
-        command: redis-server --requirepass redispass
         volumes:
             - redis_data:/data
         healthcheck:
@@ -45,7 +44,45 @@ services:
         networks:
             - mai_network
 
+    celery_worker:
+        build: .
+        env_file: .env
+        command: celery -A app.api_v1.celery_tasks.celery_app worker --loglevel=info --pool=solo
+        depends_on:
+            - redis
+            - app
+        volumes:
+            - .:/app
+        networks:
+            - mai_network
+    minio:
+        image: minio/minio
+        container_name: minio
+        env_file:
+            - .env
+        ports:
+            - "9000:9000"
+            - "9001:9001"
+        environment:
+            MINIO_ACCESS_KEY: ${MINIO_ACCESS}
+            MINIO_SECRET_KEY: ${MINIO_SECRET}
+        volumes:
+            - minio_data:/data
+            - ./create_buckets.sh:/usr/bin/create_buckets.sh
+        command: server /data --console-address :9001
+        entrypoint: |
+            sh -c "
+                minio server --console-address \":9001\" /data &
+                MINIO_PID=\$! &&
+                sleep 5 &&
+                /bin/sh /usr/bin/create_buckets.sh &&
+                wait \$MINIO_PID
+            "
+
+
+
 volumes:
+    minio_data:
     postgres_data:
     redis_data:
 

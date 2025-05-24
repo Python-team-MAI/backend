@@ -1,7 +1,8 @@
 import jwt
+from fastapi import HTTPException
 from app.core.config import settings
 import bcrypt
-from itsdangerous import URLSafeTimedSerializer
+from itsdangerous import URLSafeTimedSerializer, BadSignature, SignatureExpired
 from datetime import timedelta, datetime, timezone
 import uuid
 import logging
@@ -9,8 +10,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 serializer = URLSafeTimedSerializer(
-    secret_key=settings.oauth2.AUTH_SECRET,
-    salt="email-configuration"
+    secret_key=settings.oauth2.AUTH_SECRET, salt="email-configuration"
 )
 
 
@@ -57,19 +57,17 @@ def validate_password(
 ) -> bool:
     return bcrypt.checkpw(password=password.encode(), hashed_password=hashed_password)
 
-def create_url_safe_token(data: dict):
+
+def create_url_safe_mail_token(data: dict):
+    mail_token = serializer.dumps(data, salt="email-configuration")
+    return mail_token
 
 
-    token = serializer.dumps(data, salt="email-configuration")
-
-    return token
-
-def decode_url_safe_token(token: str):
+def decode_url_safe_mail_token(token: str, max_age_seconds: int = 3600) -> dict:
     try:
-        token_data = serializer.loads(token)
-
-        return token_data
-    except Exception as e:
-        logger.error(e)
-        
-
+        data = serializer.loads(token, max_age=max_age_seconds)
+        return data
+    except SignatureExpired:
+        raise HTTPException(status_code=400, detail="Token has expired")
+    except BadSignature:
+        raise HTTPException(status_code=400, detail="Invalid token")

@@ -29,6 +29,14 @@ redis = "^5.2.1"
 sqladmin = "^0.20.1"
 pyyaml = "^6.0.2"
 fastapi-mail = "^1.5.0"
+celery = "^5.5.2"
+asgiref = "^3.8.1"
+yandex-cloud-ml-sdk = "^0.10.0"
+boto3 = "1.37.2"
+types-aiobotocore-s3 = "^2.22.0"
+aioboto3 = "^14.3.0"
+filetype = "^1.2.0"
+pillow = "^11.2.1"
 
 
 [build-system]

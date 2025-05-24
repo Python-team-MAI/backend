@@ -3,6 +3,7 @@ from app.api_v1.users.models import UsersOrm
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, update
 
+
 class UsersRepo(BaseRepository):
     model = UsersOrm
 
@@ -13,7 +14,7 @@ class UsersRepo(BaseRepository):
         if result:
             return result.is_superuser
         return False
-    
+
     async def get_all_admins(self, session: AsyncSession):
         query = select(UsersOrm).where(UsersOrm.is_superuser == True)
         result = await session.execute(query)

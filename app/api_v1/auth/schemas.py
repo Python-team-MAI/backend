@@ -11,7 +11,16 @@ class TokenInfo(BaseModel):
 class OauthUser(BaseModel):
     email: EmailStr
 
+
 class UserLogin(BaseModel):
     email: EmailStr
     password: str
 
+
+class PasswordResetRequestModel(BaseModel):
+    email: EmailStr
+
+
+class PasswordResetConfirmModel(BaseModel):
+    new_password: str
+    confirm_new_password: str

@@ -12,6 +12,7 @@ class Deadline(BaseModel):
     lesson: str | None
     description: str | None
 
+
 class DeadlineRead(Deadline):
     model_config = ConfigDict(from_attributes=True)
 
@@ -35,10 +36,8 @@ class DeadlineFilter(DeadlineCreate):
     name: str | None = None
     date_from: datetime | None = None
     date_to: datetime | None = None
-    teacher: str | None = None 
+    teacher: str | None = None
     author_id: int | None = None
     group_id: int | None = None
     lesson: str | None = None
     description: str | None = None
-
-

@@ -11,12 +11,13 @@ async def deadline_by_id(
     deadline_id: Annotated[int, Path],
     session: AsyncSession = SessionDep,
 ) -> DeadlinesOrm:
-    deadline = await deadlines_service.find_one_or_none(session=session, filters=DeadlineFilter(id=deadline_id))
+    deadline = await deadlines_service.find_one_or_none(
+        session=session, filters=DeadlineFilter(id=deadline_id)
+    )
     if deadline is not None:
         return deadline
 
     raise HTTPException(
-        status_code=status.HTTP_404_NOT_FOUND, detail=f"Deadline {deadline_id} not found"
+        status_code=status.HTTP_404_NOT_FOUND,
+        detail=f"Deadline {deadline_id} not found",
     )
-
-

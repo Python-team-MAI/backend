@@ -6,6 +6,7 @@ import httpx
 import redis
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.responses import JSONResponse
+
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 handler = logging.StreamHandler()
@@ -59,5 +60,3 @@ async def fetch_schedule_from_mai(group_hash: str) -> dict:
             raise HTTPException(
                 status_code=500, detail=f"Непредвиденная ошибка: {e}"
             ) from None
-
-

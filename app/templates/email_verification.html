@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Подтверждение почты — МАИ</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f4f6f9;
+      color: #2d2d2d;
+      margin: 0;
+      padding: 0;
+    }
+
+    .container {
+      max-width: 640px;
+      margin: 40px auto;
+      background: #ffffff;
+      border-radius: 12px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+      overflow: hidden;
+    }
+
+    .header {
+      background-color: #004a99;
+      padding: 20px;
+      text-align: center;
+      color: white;
+    }
+
+    .header img {
+      width: 80px;
+      margin-bottom: 10px;
+    }
+
+    .header h1 {
+      margin: 0;
+      font-size: 24px;
+      font-weight: 600;
+    }
+
+    .content {
+      padding: 30px 40px;
+      text-align: center;
+    }
+
+    .content p {
+      font-size: 16px;
+      line-height: 1.6;
+      margin: 15px 0;
+    }
+
+    .btn {
+      display: inline-block;
+      margin-top: 25px;
+      background-color: #004a99;
+      color: white;
+      text-decoration: none;
+      padding: 14px 28px;
+      font-weight: bold;
+      border-radius: 6px;
+      font-size: 15px;
+      transition: background 0.3s ease;
+    }
+
+    .btn:hover {
+      background-color: #00366f;
+    }
+
+    .footer {
+      padding: 20px;
+      font-size: 13px;
+      color: #888;
+      text-align: center;
+      background: #f1f1f1;
+    }
+
+    .footer a {
+      color: #888;
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e5/MAI_Logo.png/120px-MAI_Logo.png" alt="МАИ">
+      <h1>Добро пожаловать в систему МАИ</h1>
+    </div>
+    <div class="content">
+      <p>Привет, студент! 👋</p>
+      <p>Ты почти на борту — осталось подтвердить твою почту.</p>
+      <a class="btn" href="{{ link }}">Подтвердить почту</a>
+      <p>Если ты не регистрировался, просто проигнорируй это письмо.</p>
+    </div>
+    <div class="footer">
+      <p>&copy; {{ current_year }} Московский авиационный институт (НАУКА, УЧЁБА, БУДУЩЕЕ).<br>
+      Разработано студентами для студентов ✈️</p>
+    </div>
+  </div>
+</body>
+</html>

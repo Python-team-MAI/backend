@@ -42,7 +42,9 @@ async def update_message(
     message=Depends(message_by_id),
     session: AsyncSession = TransactionSessionDep,
 ):
-    return await messages_service.update(session=session, filters=message, values=message_update)
+    return await messages_service.update(
+        session=session, filters=message, values=message_update
+    )
 
 
 @router.delete("/{message_id}")
