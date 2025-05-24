@@ -252,7 +252,7 @@ async def register_user(
     # mail
     mail_token = create_url_safe_mail_token({"email": email})
 
-    link = f"http://{settings.hosts.DOMEN}/v1/auth/verify-mail/{mail_token}"
+    link = f"http://{settings.hosts.BACKEND_HOST}/v1/auth/verify-mail/{mail_token}"
     html_message = email_verification_template.render(link=link, year=datetime.now().year)
     subject = "Welcome"
     send_email.delay([email], subject, html_message)

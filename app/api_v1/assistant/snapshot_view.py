@@ -1,5 +1,5 @@
 # routes/snapshots.py
-from fastapi import APIRouter, Depends, UploadFile, File, HTTPException
+from fastapi import APIRouter, Depends, UploadFile, File, HTTPException, Form
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.api_v1.assistant.models import KnowledgeSnapshotsOrm
 from app.api_v1.assistant.schemas import KnowledgeSnapshotRead, KnowledgeSnapshotCreate, KnowledgeSnapshotFilter, KnowledgeSnapshotUpdate, NewSnapshotRequest
@@ -22,10 +22,11 @@ async def get_snapshots(
 
 @router.post("/snapshot")
 async def create_snapshot(
-    new_snapshot_request: NewSnapshotRequest,
+    webhook_url: str = Form(None),
+    files: list[UploadFile] = File(...),
     session: AsyncSession = TransactionSessionDep
 ):
-    uploaded_files = await storage_manager.upload_files(new_snapshot_request.files)
+    uploaded_files = await storage_manager.upload_files(files)
     # Создаем запись о снапшоте
     snapshot = KnowledgeSnapshotCreate(document_paths=uploaded_files)
     snapshot = await snapshots_service.add(session=session, values=snapshot)
@@ -34,15 +35,17 @@ async def create_snapshot(
 
 @router.post("/inheritance/{snapshot_id}")
 async def create_snapshot(
-    new_snapshot_request: NewSnapshotRequest,
+    snapshot_id: int,
+    webhook_url: str = Form(None),
+    files: list[UploadFile] = File(...),
     session: AsyncSession = TransactionSessionDep
 ):
-    snapshot = await snapshots_service.find_one_or_none(session=session, filters=KnowledgeSnapshotFilter(id=new_snapshot_request.id))
+    snapshot = await snapshots_service.find_one_or_none(session=session, filters=KnowledgeSnapshotFilter(id=snapshot_id))
     if not snapshot:
         raise HTTPException(status_code=404, detail="Snapshot not found")
     
     current_paths = snapshot.document_paths or []
-    uploaded_files = await storage_manager.upload_files(new_snapshot_request.files, current_paths)
+    uploaded_files = await storage_manager.upload_files(files, current_paths)
     # Создаем запись о снапшоте
     logger.info(f"Current: {current_paths}. Uploaded: {uploaded_files}")
     snapshot = KnowledgeSnapshotCreate(document_paths=uploaded_files)
@@ -52,19 +55,21 @@ async def create_snapshot(
 
 @router.patch("/upload-file/{snapshot_id}")
 async def create_snapshot(
-    new_snapshot_request: NewSnapshotRequest,
+    snapshot_id: int,
+    webhook_url: str = Form(None),
+    files: list[UploadFile] = File(...),
     session: AsyncSession = TransactionSessionDep
 ):
 
-    snapshot = await snapshots_service.find_one_or_none(session=session, filters=KnowledgeSnapshotFilter(id=new_snapshot_request.snapshot_id))
+    snapshot = await snapshots_service.find_one_or_none(session=session, filters=KnowledgeSnapshotFilter(id=snapshot_id))
     if not snapshot:
         raise HTTPException(status_code=404, detail="Snapshot not found")
     
     current_paths = snapshot.document_paths or []
     
-    uploaded_files = await storage_manager.upload_files(new_snapshot_request.files, snapshot_files=current_paths)
+    uploaded_files = await storage_manager.upload_files(files, snapshot_files=current_paths)
     logger.info(f"Current: {current_paths}. Uploaded: {uploaded_files}")
-    await snapshots_service.update(session=session, filters=KnowledgeSnapshotFilter(id=new_snapshot_request.snapshot_id), values=KnowledgeSnapshotUpdate(document_paths=uploaded_files))
+    await snapshots_service.update(session=session, filters=KnowledgeSnapshotFilter(id=snapshot_id), values=KnowledgeSnapshotUpdate(document_paths=uploaded_files))
     
     return {"snapshot_id": snapshot.id, "new_files_count": len(uploaded_files) - len(current_paths)}
 
