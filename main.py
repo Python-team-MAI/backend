@@ -12,6 +12,7 @@ from app.api_v1.utils.setup_logging import setup_logging
 from starlette.config import Config
 from typing import AsyncGenerator
 from authlib.integrations.starlette_client import OAuth
+from app.api_v1.middlewares.logging import register_logging_middler_ware
 import uvicorn
 
 logger = setup_logging()
@@ -54,9 +55,9 @@ def create_app() -> FastAPI:
         allow_headers=["*"],
     )
     # app.add_middleware(SessionMiddleware, secret_key=SECRET_KEY)
-
+    register_logging_middler_ware(app)
     register_routers(app)
-
+    
     return app
 
 

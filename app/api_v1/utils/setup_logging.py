@@ -22,7 +22,8 @@ def setup_logging(
     else:
         logging.basicConfig(level=default_level)
 
-    logger = logging.getLogger("my_app")
+    logger = logging.getLogger("uvicorn.access")
+    logger.disabled = True
     return logger
     
 
