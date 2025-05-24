@@ -90,7 +90,7 @@ async def chat(sid, message, session):
         is_anonymous=message.is_anonymous,
     )
     await sio_server.emit(
-        "chat", {"sid": sid, "message": message.model_dump()}, room=chat_id
+        "chat", {"sid": sid, "message": message.model_dump(mode="json")}, room=chat_id
     )
 
 
