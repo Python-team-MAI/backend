@@ -6,7 +6,6 @@ from app.api_v1.assistant.schemas import KnowledgeSnapshotRead, KnowledgeSnapsho
 from app.core.session_manager import SessionDep, TransactionSessionDep
 from app.api_v1.assistant.service import snapshots_service, yandex_service
 from app.api_v1.minio.manager import storage_manager
-from app.api_v1.assistant.service import sdk
 from app.api_v1.auth.validation import require_superuser
 import uuid
 from app.api_v1.utils.setup_logging import setup_logging
