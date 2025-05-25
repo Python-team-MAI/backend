@@ -66,7 +66,7 @@ YANDEX_REDIRECT_URI = f"{BACKEND_HOST}/v1/auth/callback/yandex"
 
 
 @router.get("/google")
-async def login_google(request: Request):
+async def login_google(request: Request, is_mobile: bool = Query(default=False)):
     return await oauth.google.authorize_redirect(request, GOOGLE_REDIRECT_URI)
 
 
@@ -94,11 +94,11 @@ async def auth_google(
     async with redis_client as redis:
         code = await set_issue_auth_code(user_id=user.id, redis=redis)
     logger.debug(f"Generate code for oauth2: {code}")
-    return RedirectResponse(f"{settings.hosts.FRONTEND_HOST}/oauth2/finalize?code={code}")
+    return RedirectResponse(f"{settings.hosts.FRONTEND_HOST}/api/oauth2/finalize?code={code}")
     
 
 @router.get("/github")
-async def login_github(request: Request):
+async def login_github(request: Request, is_mobile: bool = Query(default=False)):
     return await oauth.github.authorize_redirect(request, GITHUB_REDIRECT_URI)
 
 
@@ -128,7 +128,7 @@ async def auth_github(response: Response, request: Request, redis_client: Redis 
         async with redis_client as redis:
             code = await set_issue_auth_code(user_id=user.id, redis=redis)
         logger.debug(f"Generate code for oauth2: {code}")
-        return RedirectResponse(f"{settings.hosts.FRONTEND_HOST}/oauth2/finalize?code={code}")
+        return RedirectResponse(f"{settings.hosts.FRONTEND_HOST}/api/oauth2/finalize?code={code}")
 
     except OAuthError as e:
         logger.error(f"Oauth error: {e}")
@@ -139,7 +139,7 @@ async def auth_github(response: Response, request: Request, redis_client: Redis 
 
 
 @router.get("/yandex")
-async def login_github(request: Request):
+async def login_github(request: Request, is_mobile: bool = Query(default=False)):
     return await oauth.yandex.authorize_redirect(request, YANDEX_REDIRECT_URI)
 
 
@@ -170,7 +170,7 @@ async def auth_yandex(
         async with redis_client as redis:
             code = await set_issue_auth_code(user_id=user.id, redis=redis)
         logger.debug(f"Generate code for oauth2: {code}")
-        return RedirectResponse(f"{settings.hosts.FRONTEND_HOST}/oauth2/finalize?code={code}")
+        return RedirectResponse(f"{settings.hosts.FRONTEND_HOST}/api/oauth2/finalize?code={code}")
 
 
     except OAuthError as e:
