@@ -53,22 +53,10 @@ async def create_refresh_token(user: UserRead) -> str:
 async def setup_access_token(user, response):
     access_token = await create_access_token(user)
     logger.debug("Загружаем access токен в cookie ")
-    response.set_cookie(
-        "access_token",
-        access_token,
-        expires=settings.auth_jwt.access_token_expire_minutes * 60,
-        httponly=True,
-    )
     return access_token
 
 
 async def setup_refresh_token(user, response):
     refresh_token = await create_refresh_token(user)
     logger.debug("Загружаем refresh токен в cookie ")
-    response.set_cookie(
-        "refresh_token",
-        refresh_token,
-        expires=settings.auth_jwt.refresh_token_expire_days * 60 * 60 * 24,
-        httponly=True,
-    )
     return refresh_token
