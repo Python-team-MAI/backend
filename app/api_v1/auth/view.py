@@ -187,8 +187,8 @@ async def auth_user_issue_jwt(
     session: AsyncSession = SessionDep
 ):
     
-
-    user_id = redis.get(code)
+    async with redis as r:
+        user_id = r.get(code)
     logger.debug(f"Get user_id from redis code {code}")
 
     user = await users_service.get_user_by_id(session=session, id=user_id)
