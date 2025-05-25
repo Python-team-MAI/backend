@@ -18,7 +18,7 @@ class S3AsyncClient:
     _cached_session = None
 
     def __init__(self):
-        self.endpoint_domain = "localhost:9000"
+        self.endpoint_domain = "minio:9000"
         self.use_ssl = False
         if S3AsyncClient._cached_session is None:
             S3AsyncClient._cached_session = aioboto3.Session(
