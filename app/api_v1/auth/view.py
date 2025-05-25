@@ -183,7 +183,6 @@ async def auth_yandex(
 @router.post("/oauth2/finalize", response_model=TokenInfo)
 async def auth_user_issue_jwt(
     code: str = Query(),
-    type: str = Query(),
     redis: Redis = Depends(redis_helper.get_redis_client),
     session: AsyncSession = SessionDep
 ):
