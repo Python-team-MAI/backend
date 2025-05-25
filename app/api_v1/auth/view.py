@@ -6,6 +6,7 @@ from app.api_v1.auth.helpers import (
     create_refresh_token,
     setup_access_token,
     setup_refresh_token,
+    setup_to_cookie
 )
 from app.api_v1.auth.validation import (
     http_bearer,
@@ -170,18 +171,16 @@ async def auth_yandex(
         user = await users_service.find_one_or_none(
             session=session, filters=UserFilter(email=email)
         )
-        if user:
-            setup_access_token(user=user)
-            return RedirectResponse(
-                f"{settings.hosts.FRONTEND_HOST}/v1/auth/callback"
-            )
-        else:
+        if not user:
             user = UserCreate(email=email, password=None, auth_type="yandex")
             user = await users_service.add(session=session, values=user)
-            setup_access_token(user=user)
-            return RedirectResponse(
-                f"{settings.hosts.FRONTEND_HOST}/v1/auth/callback"
-            )
+
+        access_token = setup_access_token(user=user)
+        refresh_token = setup_refresh_token(user=user)
+        await setup_to_cookie(response, access_token, refresh_token)
+        return RedirectResponse(
+            f"{settings.hosts.FRONTEND_HOST}")
+
 
     except OAuthError as e:
         raise HTTPException(
