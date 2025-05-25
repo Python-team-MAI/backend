@@ -43,11 +43,11 @@ def get_token_count(text):
     return len(model.tokenize(text))
 
 def get_token_count(filename):
-    with open(filename, "r", encoding="utf8") as f:
+    with open(filename, "r") as f:
         return len(model.tokenize(f.read()))
 
 def get_file_len(filename):
-    with open(filename, encoding="utf-8") as f:
+    with open(filename) as f:
         l = len(f.read())
     return l
 
@@ -122,9 +122,7 @@ class YandexIndexService:
         # 1. Создаем индекс
         d = [
         {
-        "File": fn,
-        "Tokens": get_token_count(fn),
-        "Chars": get_file_len(fn)
+        "File": fn
         } for fn in document_paths]
         df = pd.DataFrame(d)
         logger.info(f"Dataframe: {df}")
