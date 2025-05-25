@@ -32,7 +32,7 @@ async def create_jwt(
 
 async def set_issue_auth_code(user_id: int, redis: Redis):
     code = str(uuid4())
-    await redis.setex(f"auth_code:{code}", 120, str(user_id))
+    await redis.set(f"auth_code:{code}", str(user_id), ex=120)
     logger.debug(f"Set code: {code}. User_id: {user_id}")
     return code
 
