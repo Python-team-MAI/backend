@@ -30,8 +30,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from datetime import timedelta, datetime, timezone
 import logging
 import re
-
-logger = logging.getLogger(__name__)
+from app.api_v1.utils.setup_logging import setup_logging
+logger = setup_logging(__name__)
 logger.setLevel(logging.DEBUG)
 
 http_bearer = HTTPBearer(auto_error=False)

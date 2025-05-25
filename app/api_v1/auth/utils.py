@@ -6,8 +6,8 @@ from itsdangerous import URLSafeTimedSerializer, BadSignature, SignatureExpired
 from datetime import timedelta, datetime, timezone
 import uuid
 import logging
-
-logger = logging.getLogger(__name__)
+from app.api_v1.utils.setup_logging import setup_logging
+logger = setup_logging(__name__)
 
 serializer = URLSafeTimedSerializer(
     secret_key=settings.oauth2.AUTH_SECRET, salt="email-configuration"

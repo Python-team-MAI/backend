@@ -6,11 +6,11 @@ from sqlalchemy.ext.asyncio import async_sessionmaker, AsyncSession
 from typing_extensions import AsyncGenerator
 from sqlalchemy import text
 from functools import wraps
-
 from app.core.base.base_model import async_session_maker
+from app.api_v1.utils.setup_logging import setup_logging
 
+logger = setup_logging(__name__)
 
-logger = logging.getLogger(__name__)
 
 
 class DatabaseSessionManager:

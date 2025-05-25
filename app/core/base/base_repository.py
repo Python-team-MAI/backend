@@ -7,8 +7,7 @@ import logging
 from sqlalchemy.ext.asyncio import AsyncSession
 from .base_model import Base
 from app.api_v1.utils.setup_logging import setup_logging
-
-logger = setup_logging()
+logger = setup_logging(__name__)
 
 T = TypeVar("T", bound=Base)
 

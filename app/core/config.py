@@ -21,10 +21,12 @@ class DBSettings(EnvBaseSettings):
     REDIS_HOST: str
     REDIS_PORT: str
     REDIS_DB: str
-    BROKER_DB: str
+    CELERY_BROKER_DB: str
+    CELERY_RESULT_DB: str
     EXPIRE_TIME_DAYS: int
 
     MINIO_ENDPOINT: str
+    MINIO_DOMAIN: str
     MINIO_ACCESS: str
     MINIO_SECRET: str
     MINIO_ACL: str
@@ -41,9 +43,14 @@ class DBSettings(EnvBaseSettings):
         return f"redis://{self.REDIS_HOST}:{self.REDIS_PORT}/{self.REDIS_DB}"
     
     @property
-    def BROKER_URL(self):
+    def CELERY_BROKER_URL(self):
         # DSN
-        return f"redis://{self.REDIS_HOST}:{self.REDIS_PORT}/{self.BROKER_DB}"
+        return f"redis://{self.REDIS_HOST}:{self.REDIS_PORT}/{self.CELERY_BROKER_DB}"
+    
+    @property
+    def CELERY_RESULT_URL(self):
+        # DSN
+        return f"redis://{self.REDIS_HOST}:{self.REDIS_PORT}/{self.CELERY_RESULT_DB}"
 
 
 class MailSettings(EnvBaseSettings):
@@ -64,8 +71,7 @@ class AuthJWT(BaseModel):
     private_key_path: Path = BASE_DIR / "certs" / "jwt-private.pem"
     public_key_path: Path = BASE_DIR / "certs" / "jwt-public.pem"
     algorithm: str = "RS256"
-    access_token_expire_minutes: int = 15
-    register_token_expire_minutes: int = 10
+    access_token_expire_minutes: int = 60
     refresh_token_expire_days: int = 30  # days
 
 

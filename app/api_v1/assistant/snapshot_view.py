@@ -1,17 +1,18 @@
 # routes/snapshots.py
-from fastapi import APIRouter, Depends, UploadFile, File, HTTPException, Form
+from fastapi import APIRouter, Depends, UploadFile, File, HTTPException, Form, Depends
+from celery.result import AsyncResult
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.api_v1.assistant.models import KnowledgeSnapshotsOrm
 from app.api_v1.assistant.schemas import KnowledgeSnapshotRead, KnowledgeSnapshotCreate, KnowledgeSnapshotFilter, KnowledgeSnapshotUpdate, NewSnapshotRequest
 from app.core.session_manager import SessionDep, TransactionSessionDep
 from app.api_v1.assistant.service import snapshots_service
-from app.api_v1.assistant.minio_service import storage_manager
+from app.api_v1.minio.manager import storage_manager
+from app.api_v1.auth.validation import require_superuser
 import uuid
-import logging
+from app.api_v1.utils.setup_logging import setup_logging
+logger = setup_logging(__name__)
 
-logger = logging.getLogger(__name__)
-
-router = APIRouter(tags=["Snapshots"])
+router = APIRouter(tags=["Snapshots"], dependencies=[Depends(require_superuser())])
 
 @router.get("", response_model=list[KnowledgeSnapshotRead])
 async def get_snapshots(
@@ -19,6 +20,25 @@ async def get_snapshots(
 ):
     """Find and return all offices"""
     return await snapshots_service.find_all(session=session)
+
+
+
+@router.get("/tasks/{snapshot_id}")
+async def get_task_status(snapshot_id: int, session: AsyncSession = SessionDep):
+    snapshot = await snapshots_service.find_one_or_none(
+        session=session, filters=KnowledgeSnapshotFilter(id=snapshot_id)
+    )
+    if not snapshot:
+        raise HTTPException(status_code=404, detail="Snapshot not found")
+
+    task = AsyncResult(snapshot.task_id)
+
+    return {
+        "task_id": snapshot.task_id,
+        "task_status": task.status,
+        "snapshot_status": snapshot.status,
+        "index_id": snapshot.index_id,
+    }
 
 @router.post("/snapshot")
 async def create_snapshot(

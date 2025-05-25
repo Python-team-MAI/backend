@@ -10,9 +10,8 @@ from fastapi import Depends
 from app.api_v1.auth.utils import decode_jwt
 from app.api_v1.auth.validation import validate_token, get_user_by_token_sub
 from app.api_v1.auth.helpers import ACCESS_TOKEN_TOKEN_TYPE
-import logging
-
-logger = logging.getLogger(__name__)
+from app.api_v1.utils.setup_logging import setup_logging
+logger = setup_logging(__name__)
 
 sio_server = socketio.AsyncServer(async_mode="asgi", cors_allowed_origins=[])
 

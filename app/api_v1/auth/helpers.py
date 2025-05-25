@@ -4,8 +4,8 @@ from app.core.config import settings
 from datetime import timedelta
 from .schemas import TokenInfo
 import logging
-
-logger = logging.getLogger(__name__)
+from app.api_v1.utils.setup_logging import setup_logging
+logger = setup_logging(__name__)
 TOKEN_TYPE_FIELD = "type"
 ACCESS_TOKEN_TOKEN_TYPE = "access"
 REFRESH_TOKEN_TOKEN_TYPE = "refresh"

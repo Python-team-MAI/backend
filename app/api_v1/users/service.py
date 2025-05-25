@@ -7,9 +7,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from pydantic import EmailStr
 
 import logging
-
-logger = logging.getLogger(__name__)
-
+from app.api_v1.utils.setup_logging import setup_logging
+logger = setup_logging(__name__)
 
 class UsersService(BaseService):
     def __init__(self, repository: UsersRepo, schema=UserRead):

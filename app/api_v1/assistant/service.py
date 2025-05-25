@@ -13,12 +13,14 @@ from yandex_cloud_ml_sdk.search_indexes import (
 from yandex_cloud_ml_sdk import YCloudML
 from app.core.config import settings
 from uuid import uuid4
+import pandas as pd
 import os
-import logging
+from app.api_v1.utils.setup_logging import setup_logging
+logger = setup_logging(__name__)
 
 sdk = YCloudML(auth=settings.assistant.YANDEX_CLOUD_API_KEY,  folder_id=settings)
 model = sdk.models.completions("yandexgpt", model_version="rc")
-logger = logging.getLogger(__name__)
+
 
 
 def create_thread():
@@ -40,9 +42,18 @@ def create_assistant(model, tools=None):
 def get_token_count(text):
     return len(model.tokenize(text))
 
-def upload_file(directory_path, indent=0):
-    file = sdk.files.upload(directory_path, ttl_days=1, expiration_policy="static")
-    logger.debug(f"Upload new file: {file.name}")
+def get_token_count(filename):
+    with open(filename, "r", encoding="utf8") as f:
+        return len(model.tokenize(f.read()))
+
+def get_file_len(filename):
+    with open(filename, encoding="utf-8") as f:
+        l = len(f.read())
+    return l
+
+def upload_file(directory_path):
+    return sdk.files.upload(directory_path, ttl_days=1, expiration_policy="static")
+
 
 class Agent:
     def __init__(self, thread_id=None, assistant=None, instruction=None, search_index=None, tools=None):
@@ -109,7 +120,18 @@ class YandexIndexService:
         Возвращает ID созданного индекса.
         """
         # 1. Создаем индекс
+        d = [
+        {
+        "File": fn,
+        "Tokens": get_token_count(fn),
+        "Chars": get_file_len(fn)
+        } for fn in document_paths]
+        df = pd.DataFrame(d)
+        logger.info(f"Dataframe: {df}")
+        df["Uploaded"] = df["File"].apply(upload_file)
+        
         operation = sdk.search_indexes.create_deferred(
+        df["Uploaded"],
         index_type=HybridSearchIndexType(
             chunking_strategy=StaticIndexChunkingStrategy(
                 max_chunk_size_tokens=700,
@@ -120,8 +142,7 @@ class YandexIndexService:
         search_index = operation.wait()
         logger.info(f"Создали индекс: {search_index}")
 
-        for path in document_paths:
-            upload_file(path)
+        # search_index.add_files_deferred()
             
         return search_index.id
 

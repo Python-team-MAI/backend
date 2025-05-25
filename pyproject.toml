@@ -37,6 +37,7 @@ types-aiobotocore-s3 = "^2.22.0"
 aioboto3 = "^14.3.0"
 filetype = "^1.2.0"
 pillow = "^11.2.1"
+pandas = "^2.2.3"
 
 
 [build-system]

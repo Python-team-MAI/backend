@@ -7,6 +7,7 @@ from pathlib import Path
 
 
 def setup_logging(
+    name,
     default_path="logging_config.yaml", default_level=logging.INFO, env_key="LOG_CFG"
 ) -> Logger:
     """Настройка логирования из YAML файла"""
@@ -22,8 +23,7 @@ def setup_logging(
     else:
         logging.basicConfig(level=default_level)
 
-    logger = logging.getLogger("uvicorn.access")
-    logger.disabled = True
+    logger = logging.getLogger(name)
     return logger
     
 

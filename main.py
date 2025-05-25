@@ -15,7 +15,7 @@ from authlib.integrations.starlette_client import OAuth
 from app.api_v1.middlewares.logging import register_logging_middler_ware
 import uvicorn
 
-logger = setup_logging()
+logger = setup_logging(__name__)
 
 
 @asynccontextmanager

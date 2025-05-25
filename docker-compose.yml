@@ -5,7 +5,7 @@ services:
             - .env.local
             - .env
         ports:
-            - '8000-8002:8000'
+            - '8000:8000'
         depends_on:
             postgres:
                 condition: service_healthy
@@ -44,7 +44,7 @@ services:
     celery_worker:
         build: .
         env_file: .env
-        command: celery -A app.api_v1.celery_tasks.celery_app worker --loglevel=info --pool=solo
+        command: celery -A app.api_v1.celery.service worker --loglevel=info --pool=solo
         depends_on:
             - redis
             - app
@@ -58,7 +58,6 @@ services:
         env_file:
             - .env
         ports:
-            - "9000:9000"
             - "9001:9001"
         environment:
             MINIO_ACCESS_KEY: ${MINIO_ACCESS}

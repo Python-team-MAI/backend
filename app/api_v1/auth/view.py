@@ -32,7 +32,7 @@ from .schemas import (
     PasswordResetRequestModel,
     PasswordResetConfirmModel,
 )
-from app.api_v1.celery_tasks import send_email
+from app.api_v1.mail.tasks import send_email
 from .utils import hash_password, create_url_safe_mail_token, decode_url_safe_mail_token
 from fastapi import APIRouter, Depends, Request, status, HTTPException, Body, Response
 from fastapi.responses import JSONResponse
@@ -45,13 +45,15 @@ from app.api_v1.utils.setup_logging import setup_logging
 from jinja2 import Environment, FileSystemLoader
 from datetime import datetime
 import logging
+from app.api_v1.utils.setup_logging import setup_logging
+logger = setup_logging(__name__)
 
 env = Environment(loader=FileSystemLoader("app/templates"))
 email_verification_template = env.get_template("email_verification.html")
 password_reset_template = env.get_template("reset_password.html")
 
 router = APIRouter(prefix="/auth", tags=["Auth"], dependencies=[Depends(http_bearer)])
-logger = logging.getLogger(__name__)
+
 
 GOOGLE_CLIENT_ID = settings.oauth2.AUTH_GOOGLE_ID
 GOOGLE_CLIENT_SECRET = settings.oauth2.AUTH_GOOGLE_SECRET

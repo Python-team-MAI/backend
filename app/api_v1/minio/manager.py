@@ -2,7 +2,7 @@ import io
 import mimetypes 
 import os 
 from typing import List 
- 
+import tempfile
 import aioboto3 
 import aiohttp 
 import filetype
@@ -11,14 +11,14 @@ from fastapi import HTTPException, UploadFile
 from PIL import Image, UnidentifiedImageError 
 from app.core.config import settings
 import logging
-
-logger = logging.getLogger(__name__)
+from app.api_v1.utils.setup_logging import setup_logging
+logger = setup_logging(__name__)
 
 class S3AsyncClient:
     _cached_session = None
 
     def __init__(self):
-        self.endpoint_domain = "minio:9000"
+        self.endpoint_domain = settings.db.MINIO_DOMAIN
         self.use_ssl = False
         if S3AsyncClient._cached_session is None:
             S3AsyncClient._cached_session = aioboto3.Session(
@@ -429,6 +429,23 @@ class S3StorageManager(S3AsyncClient):
                         if e.response['Error']['Code'] == '405':
                             raise HTTPException(status_code=405, detail=f"Method Not Allowed when uploading file {file} to S3")
                         raise HTTPException(status_code=500, detail=f"Error uploading file {file} to S3") from e
+                    
+    async def download_files_to_temp_dir(self, s3_keys: list[str]) -> list[str]:
+        """
+        Скачивает все файлы по ключам из MinIO в одну временную директорию.
+        Возвращает путь к этой директории.
+        """
+        temp_dir = tempfile.mkdtemp(prefix="snapshot_")
+        local_paths = []
+        for s3_key in s3_keys:
+            filename = os.path.basename(s3_key)
+            local_path = os.path.join(temp_dir, filename)
+            local_paths.append(local_path)
+            with open(local_path, "wb") as f:
+                async with self.client as s3_client:
+                    await s3_client.download_fileobj(self.bucket_name, s3_key, f)
+
+        return local_paths, temp_dir
                     
 
 class MinIOStorage(S3StorageManager):

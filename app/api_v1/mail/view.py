@@ -9,7 +9,7 @@ from .mail import create_message, mail
 from .schemas import SendMailModel
 from datetime import datetime
 from app.core.config import settings
-from app.api_v1.celery_tasks import send_email
+from app.api_v1.mail.tasks import send_email
 
 
 router = APIRouter(
