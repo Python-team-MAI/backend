@@ -54,7 +54,7 @@ def create_app() -> FastAPI:
         allow_methods=["*"],
         allow_headers=["*"],
     )
-    # app.add_middleware(SessionMiddleware, secret_key=SECRET_KEY)
+    app.add_middleware(SessionMiddleware, secret_key=SECRET_KEY)
     register_logging_middler_ware(app)
     register_routers(app)
     

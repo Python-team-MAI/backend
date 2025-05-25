@@ -126,7 +126,7 @@ class YandexIndexService:
         } for fn in document_paths]
         df = pd.DataFrame(d)
         logger.info(f"Dataframe: {df}")
-        df["Uploaded"] = df["File"].apply(upload_file)
+        df["Uploaded"] = df["File"].apply(lambda x: self.sync_upload_file(x))
         
         operation = sdk.search_indexes.create_deferred(
         df["Uploaded"],
