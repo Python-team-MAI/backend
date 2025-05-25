@@ -166,7 +166,7 @@ async def auth_yandex(
         if not user:
             user = UserCreate(email=email, password=None, auth_type="yandex")
             user = await users_service.add(session=session, values=user)
-
+        logger.debug(f"User: {user}")
         async with redis_client as redis:
             code = await set_issue_auth_code(user_id=user.id, redis=redis)
         logger.debug(f"Generate code for oauth2: {code}")
@@ -186,10 +186,10 @@ async def auth_user_issue_jwt(
     redis: Redis = Depends(redis_helper.get_redis_client),
     session: AsyncSession = SessionDep
 ):
-    
+    logger.info(f"Code: {code}")
     async with redis as r:
         user_id = await r.get(code)
-    logger.debug(f"Get user_id from redis code {code}")
+    logger.debug(f"Get user_id from redis code {user_id}")
 
     user = await users_service.get_user_by_id(session=session, id=int(user_id))
     access_token = await setup_access_token(user=user)
