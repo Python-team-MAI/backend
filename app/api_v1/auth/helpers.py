@@ -52,16 +52,14 @@ async def create_refresh_token(user: UserRead) -> str:
 
 async def setup_access_token(user):
     access_token = await create_access_token(user)
-    logger.debug("Загружаем access токен в cookie ")
     return access_token
 
 
 async def setup_refresh_token(user):
     refresh_token = await create_refresh_token(user)
-    logger.debug("Загружаем refresh токен в cookie ")
     return refresh_token
 
-async def setup_to_cookie(response, access_token,):
+async def setup_to_cookie(response, access_token, refresh_token):
     response.set_cookie(
     "access_token",
     access_token,

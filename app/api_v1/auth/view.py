@@ -211,8 +211,8 @@ async def auth_user_issue_jwt(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"User with email {user.email} not verified",
         )
-    access_token = await setup_access_token(user=user, response=response)
-    refresh_token = await setup_refresh_token(user=user, response=response)
+    access_token = await setup_access_token(user=user)
+    refresh_token = await setup_refresh_token(user=user)
 
     return TokenInfo(access_token=access_token, refresh_token=refresh_token)
 
@@ -232,8 +232,8 @@ async def update_me(
     session: AsyncSession = TransactionSessionDep,
 ):
     await users_service.update(session=session, filters=user, values=user_update)
-    access_token = await setup_access_token(user=user, response=response)
-    refresh_token = await setup_refresh_token(user=user, response=response)
+    access_token = await setup_access_token(user=user)
+    refresh_token = await setup_refresh_token(user=user)
     return TokenInfo(access_token=access_token, refresh_token=refresh_token)
 
 
