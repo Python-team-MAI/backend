@@ -98,10 +98,9 @@ async def auth_google(
 
     access_token = await setup_access_token(user=user)
     refresh_token = await setup_refresh_token(user=user)
-    await setup_to_cookie(response, access_token, refresh_token)
-    return RedirectResponse(
-        f"{settings.hosts.FRONTEND_HOST}")
-
+    redirect_response = RedirectResponse(f"{settings.hosts.FRONTEND_HOST}")
+    await setup_to_cookie(redirect_response, access_token, refresh_token)
+    return redirect_response
 
 @router.get("/github")
 async def login_github(request: Request):
@@ -133,9 +132,9 @@ async def auth_github(response: Response, request: Request, session: AsyncSessio
 
         access_token = await setup_access_token(user=user)
         refresh_token = await setup_refresh_token(user=user)
-        await setup_to_cookie(response, access_token, refresh_token)
-        return RedirectResponse(
-            f"{settings.hosts.FRONTEND_HOST}")
+        redirect_response = RedirectResponse(f"{settings.hosts.FRONTEND_HOST}")
+        await setup_to_cookie(redirect_response, access_token, refresh_token)
+        return redirect_response
 
     except OAuthError as e:
         print(f"OAuthError: {e}")
@@ -176,9 +175,9 @@ async def auth_yandex(
 
         access_token = await setup_access_token(user=user)
         refresh_token = await setup_refresh_token(user=user)
-        await setup_to_cookie(response, access_token, refresh_token)
-        return RedirectResponse(
-            f"{settings.hosts.FRONTEND_HOST}")
+        redirect_response = RedirectResponse(f"{settings.hosts.FRONTEND_HOST}")
+        await setup_to_cookie(redirect_response, access_token, refresh_token)
+        return redirect_response
 
 
     except OAuthError as e:
