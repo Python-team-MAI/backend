@@ -178,12 +178,12 @@ async def auth_yandex(
 @router.post("/oauth2/finalize", response_model=TokenInfo)
 async def auth_user_issue_jwt(
     code: str = Query(),
-    redis_client: Redis = Depends(redis_helper.get_redis_client),
+    redis: Redis = Depends(redis_helper.get_redis_client),
     session: AsyncSession = SessionDep
 ):
     
-    async with redis_client as r:
-        user_id = r.get(code)
+
+    user_id = redis.get(code)
     logger.debug(f"Get user_id from redis code {code}")
 
     user = await users_service.get_user_by_id(session=session, id=user_id)

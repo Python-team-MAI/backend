@@ -11,7 +11,6 @@ class RedisHelper:
         self.r = None  # Клиент будет создан при первом использовании
         self.broker = aioredis.Redis(host=self.host, port=self.port, db=1)
 
-    @asynccontextmanager
     async def get_redis_client(self):
         if self.r is None:
             self.r = aioredis.Redis(host=self.host, port=self.port, db=self.db)
