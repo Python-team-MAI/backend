@@ -5,11 +5,14 @@ from datetime import timedelta
 from .schemas import TokenInfo
 import logging
 from app.api_v1.utils.setup_logging import setup_logging
+from app.core.redis_helper import redis_helper
+from fastapi import Depends
+from redis.asyncio import Redis
 logger = setup_logging(__name__)
 TOKEN_TYPE_FIELD = "type"
 ACCESS_TOKEN_TOKEN_TYPE = "access"
 REFRESH_TOKEN_TOKEN_TYPE = "refresh"
-
+from uuid import UUID, uuid4
 
 async def create_jwt(
     token_type: str,
@@ -25,6 +28,13 @@ async def create_jwt(
         expire_timedelta=expire_timedelta,
     )
 
+
+
+async def set_issue_auth_code(user_id: int, redis_client: Redis = Depends(redis_helper.get_redis_client)):
+    code = str(uuid4())
+    async with redis_client as r:
+        r.setex(f"auth_code:{code}", 120, str(user_id))
+    return code
 
 async def create_access_token(user: UserRead) -> str:
     jwt_payload = {
@@ -58,17 +68,3 @@ async def setup_access_token(user):
 async def setup_refresh_token(user):
     refresh_token = await create_refresh_token(user)
     return refresh_token
-
-async def setup_to_cookie(response, access_token, refresh_token):
-    response.set_cookie(
-    "access_token",
-    access_token,
-    expires=settings.auth_jwt.access_token_expire_minutes * 60,
-    httponly=True,
-    )
-    response.set_cookie(
-    "refresh_token",
-    refresh_token,
-    expires=settings.auth_jwt.refresh_token_expire_days * 24 * 60 * 60,
-    httponly=True,
-    )

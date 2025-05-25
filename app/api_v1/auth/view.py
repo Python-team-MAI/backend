@@ -6,7 +6,7 @@ from app.api_v1.auth.helpers import (
     create_refresh_token,
     setup_access_token,
     setup_refresh_token,
-    setup_to_cookie
+    set_issue_auth_code
 )
 from app.api_v1.auth.validation import (
     http_bearer,
@@ -17,13 +17,9 @@ from app.api_v1.auth.validation import (
     validate_email,
     validate_password,
 )
-from app.api_v1.utils.exceptions import (
-    PasswordHasNoDigitsError,
-    PasswordHasNoLowerCaseError,
-    PasswordHasNoSpecialError,
-    PasswordHasNoUpperCaseError,
-)
+
 from app.core.config import settings
+from app.core.redis_helper import redis_helper
 from app.core.session_manager import SessionDep, TransactionSessionDep
 from app.api_v1.mail.mail import mail, create_message
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -35,17 +31,17 @@ from .schemas import (
 )
 from app.api_v1.mail.tasks import send_email
 from .utils import hash_password, create_url_safe_mail_token, decode_url_safe_mail_token
-from fastapi import APIRouter, Depends, Request, status, HTTPException, Body, Response
+from fastapi import APIRouter, Depends, Request, status, HTTPException, Body, Response, Query
 from fastapi.responses import JSONResponse
 
 from .validation import oauth, require_role, validate_token
 from fastapi.responses import RedirectResponse
+from redis.asyncio import Redis
 from authlib.integrations.base_client import OAuthError
 from authlib.oauth2.rfc6749 import OAuth2Token
 from app.api_v1.utils.setup_logging import setup_logging
 from jinja2 import Environment, FileSystemLoader
 from datetime import datetime
-import logging
 from app.api_v1.utils.setup_logging import setup_logging
 logger = setup_logging(__name__)
 
@@ -96,11 +92,9 @@ async def auth_google(
         user = UserCreate(email=email, password=None, auth_type="yandex")
         user = await users_service.add(session=session, values=user)
 
-    access_token = await setup_access_token(user=user)
-    refresh_token = await setup_refresh_token(user=user)
-    redirect_response = RedirectResponse(f"{settings.hosts.FRONTEND_HOST}")
-    await setup_to_cookie(redirect_response, access_token, refresh_token)
-    return redirect_response
+    code = await set_issue_auth_code(user_id=user.id)
+    return RedirectResponse(f"{settings.hosts.FRONTEND_HOST}/oauth2/finalize?code={code}")
+    
 
 @router.get("/github")
 async def login_github(request: Request):
@@ -130,11 +124,8 @@ async def auth_github(response: Response, request: Request, session: AsyncSessio
             user = UserCreate(email=email, password=None, auth_type="github")
             user = await users_service.add(session=session, values=user)
 
-        access_token = await setup_access_token(user=user)
-        refresh_token = await setup_refresh_token(user=user)
-        redirect_response = RedirectResponse(f"{settings.hosts.FRONTEND_HOST}")
-        await setup_to_cookie(redirect_response, access_token, refresh_token)
-        return redirect_response
+        code = await set_issue_auth_code(user_id=user.id)
+        return RedirectResponse(f"{settings.hosts.FRONTEND_HOST}/oauth2/finalize?code={code}")
 
     except OAuthError as e:
         print(f"OAuthError: {e}")
@@ -173,11 +164,8 @@ async def auth_yandex(
             user = UserCreate(email=email, password=None, auth_type="yandex")
             user = await users_service.add(session=session, values=user)
 
-        access_token = await setup_access_token(user=user)
-        refresh_token = await setup_refresh_token(user=user)
-        redirect_response = RedirectResponse(f"{settings.hosts.FRONTEND_HOST}")
-        await setup_to_cookie(redirect_response, access_token, refresh_token)
-        return redirect_response
+        code = await set_issue_auth_code(user_id=user.id)
+        return RedirectResponse(f"{settings.hosts.FRONTEND_HOST}/oauth2/finalize?code={code}")
 
 
     except OAuthError as e:
@@ -186,6 +174,22 @@ async def auth_yandex(
             detail="Could not validate credentials",
         )
 
+
+@router.post("/oauth2/finalize", response_model=TokenInfo)
+async def auth_user_issue_jwt(
+    code: str = Query(),
+    redis_client: Redis = Depends(redis_helper.get_redis_client),
+    session: AsyncSession = SessionDep
+):
+    
+    async with redis_client as r:
+        user_id = r.get(code)
+    logger.debug(f"Get user_id from redis code {code}")
+
+    user = await users_service.get_user_by_id(session=session, id=user_id)
+    access_token = await setup_access_token(user=user)
+    refresh_token = await setup_refresh_token(user=user)
+    return TokenInfo(access_token=access_token, refresh_token=refresh_token)
 
 @router.post("/token-validate")
 async def token_validate(token: str | bytes, token_type: str):
