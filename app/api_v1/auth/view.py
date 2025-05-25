@@ -188,10 +188,10 @@ async def auth_user_issue_jwt(
 ):
     
     async with redis as r:
-        user_id = r.get(code)
+        user_id = await r.get(code)
     logger.debug(f"Get user_id from redis code {code}")
 
-    user = await users_service.get_user_by_id(session=session, id=user_id)
+    user = await users_service.get_user_by_id(session=session, id=int(user_id))
     access_token = await setup_access_token(user=user)
     refresh_token = await setup_refresh_token(user=user)
     return TokenInfo(access_token=access_token, refresh_token=refresh_token)
