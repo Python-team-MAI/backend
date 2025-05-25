@@ -189,7 +189,7 @@ async def auth_user_issue_jwt(
     logger.info(f"Code: {code}")
     async with redis as r:
         user_id = await r.get(code)
-    logger.debug(f"Get user_id from redis code {user_id}")
+    logger.info(f"Get user_id from redis code {user_id}")
 
     user = await users_service.get_user_by_id(session=session, id=int(user_id))
     access_token = await setup_access_token(user=user)

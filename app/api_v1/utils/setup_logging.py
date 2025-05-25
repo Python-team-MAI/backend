@@ -23,7 +23,7 @@ def setup_logging(
     else:
         logging.basicConfig(level=default_level)
 
-    logger = logging.getLogger(name)
+    logger = logging.getLogger("my_app")
     return logger
     
 
