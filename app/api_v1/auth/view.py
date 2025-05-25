@@ -72,7 +72,7 @@ async def login_google(request: Request):
 
 @router.get("/callback/google")
 async def auth_google(
-    response: Response, request: Request, session: AsyncSession = TransactionSessionDep
+    response: Response, request: Request, redis_client = Depends(redis_helper.get_redis_client), session: AsyncSession = TransactionSessionDep
 ):
     try:
         user_response: OAuth2Token = await oauth.google.authorize_access_token(request)
@@ -91,8 +91,9 @@ async def auth_google(
     if not user:
         user = UserCreate(email=email, password=None, auth_type="yandex")
         user = await users_service.add(session=session, values=user)
-
-    code = await set_issue_auth_code(user_id=user.id)
+    async with redis_client as redis:
+        code = await set_issue_auth_code(user_id=user.id, redis=redis)
+    logger.debug(f"Generate code for oauth2: {code}")
     return RedirectResponse(f"{settings.hosts.FRONTEND_HOST}/oauth2/finalize?code={code}")
     
 
@@ -102,7 +103,7 @@ async def login_github(request: Request):
 
 
 @router.get("/callback/github")
-async def auth_github(response: Response, request: Request, session: AsyncSession = TransactionSessionDep):
+async def auth_github(response: Response, request: Request, redis_client: Redis = Depends(redis_helper.get_redis_client), session: AsyncSession = TransactionSessionDep):
     try:
         token = await oauth.github.authorize_access_token(request)
         if not token:
@@ -124,11 +125,13 @@ async def auth_github(response: Response, request: Request, session: AsyncSessio
             user = UserCreate(email=email, password=None, auth_type="github")
             user = await users_service.add(session=session, values=user)
 
-        code = await set_issue_auth_code(user_id=user.id)
+        async with redis_client as redis:
+            code = await set_issue_auth_code(user_id=user.id, redis=redis)
+        logger.debug(f"Generate code for oauth2: {code}")
         return RedirectResponse(f"{settings.hosts.FRONTEND_HOST}/oauth2/finalize?code={code}")
 
     except OAuthError as e:
-        print(f"OAuthError: {e}")
+        logger.error(f"Oauth error: {e}")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Could not validate credentials",
@@ -142,7 +145,7 @@ async def login_github(request: Request):
 
 @router.get("/callback/yandex")
 async def auth_yandex(
-    response: Response, request: Request, session: AsyncSession = TransactionSessionDep
+    response: Response, request: Request, redis_client: Redis = Depends(redis_helper.get_redis_client), session: AsyncSession = TransactionSessionDep, 
 ):
     try:
         token = await oauth.yandex.authorize_access_token(request)
@@ -164,7 +167,9 @@ async def auth_yandex(
             user = UserCreate(email=email, password=None, auth_type="yandex")
             user = await users_service.add(session=session, values=user)
 
-        code = await set_issue_auth_code(user_id=user.id)
+        async with redis_client as redis:
+            code = await set_issue_auth_code(user_id=user.id, redis=redis)
+        logger.debug(f"Generate code for oauth2: {code}")
         return RedirectResponse(f"{settings.hosts.FRONTEND_HOST}/oauth2/finalize?code={code}")
 
 
@@ -178,6 +183,7 @@ async def auth_yandex(
 @router.post("/oauth2/finalize", response_model=TokenInfo)
 async def auth_user_issue_jwt(
     code: str = Query(),
+    type: str = Query(),
     redis: Redis = Depends(redis_helper.get_redis_client),
     session: AsyncSession = SessionDep
 ):

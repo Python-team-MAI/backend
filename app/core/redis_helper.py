@@ -8,14 +8,15 @@ class RedisHelper:
         self.host = host
         self.port = port
         self.db = db
-        self.r = None  # Клиент будет создан при первом использовании
+        self.r = None  
         self.broker = aioredis.Redis(host=self.host, port=self.port, db=1)
 
+    @asynccontextmanager
     async def get_redis_client(self):
         if self.r is None:
             self.r = aioredis.Redis(host=self.host, port=self.port, db=self.db)
         try:
-            await self.r.ping()  # Проверяем подключение
+            await self.r.ping()
             yield self.r
         except Exception as e:
             print(f"Ошибка подключения к Redis: {e}")

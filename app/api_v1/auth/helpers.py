@@ -30,9 +30,9 @@ async def create_jwt(
 
 
 
-async def set_issue_auth_code(user_id: int, redis: Redis = Depends(redis_helper.get_redis_client)):
+async def set_issue_auth_code(user_id: int, redis):
     code = str(uuid4())
-    redis.setex(f"auth_code:{code}", 120, str(user_id))
+    await redis.setex(f"auth_code:{code}", 120, str(user_id))
     return code
 
 async def create_access_token(user: UserRead) -> str:
