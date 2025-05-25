@@ -92,14 +92,15 @@ async def auth_google(
     user = await users_service.find_one_or_none(
         session=session, filters=UserFilter(email=email)
     )
-    if user:
-        await setup_access_token(user=user, response=response)
-        return RedirectResponse(f"{settings.hosts.FRONTEND_HOST}/v1/auth/callback")
-    else:
-        user = UserCreate(email=email, password=None, auth_type="google")
+    if not user:
+        user = UserCreate(email=email, password=None, auth_type="yandex")
         user = await users_service.add(session=session, values=user)
-        await setup_access_token(user=user, response=response)
-        return RedirectResponse(f"{settings.hosts.FRONTEND_HOST}/v1/auth/callback")
+
+    access_token = await setup_access_token(user=user)
+    refresh_token = await setup_refresh_token(user=user)
+    await setup_to_cookie(response, access_token, refresh_token)
+    return RedirectResponse(
+        f"{settings.hosts.FRONTEND_HOST}")
 
 
 @router.get("/github")
@@ -108,7 +109,7 @@ async def login_github(request: Request):
 
 
 @router.get("/callback/github")
-async def auth_github(request: Request, session: AsyncSession = TransactionSessionDep):
+async def auth_github(response: Response, request: Request, session: AsyncSession = TransactionSessionDep):
     try:
         token = await oauth.github.authorize_access_token(request)
         if not token:
@@ -122,21 +123,19 @@ async def auth_github(request: Request, session: AsyncSession = TransactionSessi
             "https://api.github.com/user/emails", token=token
         )
         email = email_resp.json()[0]["email"].lower()
+        logger.info(f"Get user email from github: {email}")
         user = await users_service.find_one_or_none(
             session=session, filters=UserFilter(email=email)
         )
-        if user:
-            setup_access_token(user=user)
-            return RedirectResponse(
-                f"{settings.hosts.FRONTEND_HOST}/v1/auth/callback"
-            )
-        else:
+        if not user:
             user = UserCreate(email=email, password=None, auth_type="github")
             user = await users_service.add(session=session, values=user)
-            setup_access_token(user=user)
-            return RedirectResponse(
-                f"{settings.hosts.FRONTEND_HOST}/v1/auth/callback"
-            )
+
+        access_token = await setup_access_token(user=user)
+        refresh_token = await setup_refresh_token(user=user)
+        await setup_to_cookie(response, access_token, refresh_token)
+        return RedirectResponse(
+            f"{settings.hosts.FRONTEND_HOST}")
 
     except OAuthError as e:
         print(f"OAuthError: {e}")
@@ -167,7 +166,7 @@ async def auth_yandex(
         resp = await oauth.yandex.get("https://login.yandex.ru/info", token=token)
         user_info = resp.json()
         email = user_info["default_email"].lower()
-
+        logger.info(f"Get user email from yandex: {email}")
         user = await users_service.find_one_or_none(
             session=session, filters=UserFilter(email=email)
         )
@@ -175,8 +174,8 @@ async def auth_yandex(
             user = UserCreate(email=email, password=None, auth_type="yandex")
             user = await users_service.add(session=session, values=user)
 
-        access_token = setup_access_token(user=user)
-        refresh_token = setup_refresh_token(user=user)
+        access_token = await setup_access_token(user=user)
+        refresh_token = await setup_refresh_token(user=user)
         await setup_to_cookie(response, access_token, refresh_token)
         return RedirectResponse(
             f"{settings.hosts.FRONTEND_HOST}")
