@@ -75,6 +75,8 @@ services:
                 /bin/sh /usr/bin/create_buckets.sh &&
                 wait \$MINIO_PID
             "
+        networks:
+            - mai_network
 
 
 
