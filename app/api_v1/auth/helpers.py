@@ -41,7 +41,7 @@ async def create_access_token(user: UserRead) -> str:
     jwt_payload = {
         "sub": str(user.id),  # subject
         "email": user.email,
-        "role": user.role,
+        "role": user.role.value if user.role else None,
     }
     logger.debug("Создаем access токен")
     return await create_jwt(
