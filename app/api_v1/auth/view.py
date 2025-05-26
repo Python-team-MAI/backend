@@ -189,6 +189,10 @@ async def auth_user_issue_jwt(
     logger.info(f"Code: {code}")
     async with redis as r:
         user_id = await r.get(f"auth_code:{code}")
+
+    if not user_id:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User with id: {user_id} does not exist")
+    
     user_id = user_id.decode("utf-8")
     logger.info(f"Get user_id from redis code {user_id}")
     user = await users_service.get_user_by_id(session=session, id=int(user_id))
