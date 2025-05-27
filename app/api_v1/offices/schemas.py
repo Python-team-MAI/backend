@@ -4,8 +4,14 @@ from datetime import datetime
 
 
 class Office(BaseModel):
+    desc: str | None
     name: str
-    description: str | None
+    color: str
+    length: int
+    width: int
+    height: int
+    type: str
+    coords: list[int]
 
 
 class OfficeRead(Office):
@@ -27,5 +33,12 @@ class OfficeFilter(BaseModel):
     id: int | None = None
     created_at: datetime | None = None
     updated_at: datetime | None = None
+    desc: str | None
     name: str | None = None
-    description: str | None = None
+    color: str | None = None
+    length: int | None = None
+    width: int | None = None
+    height: int | None = None
+    type: str | None = None
+    coords: list[int] | None = None
+

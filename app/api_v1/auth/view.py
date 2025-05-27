@@ -89,7 +89,7 @@ async def auth_google(
         session=session, filters=UserFilter(email=email)
     )
     if not user:
-        user = UserCreate(email=email, password=None, auth_type="yandex")
+        user = UserCreate(email=email, password=None, auth_type="google", is_active=True, is_superuser=False, is_verified=True)
         user = await users_service.add(session=session, values=user)
     async with redis_client as redis:
         code = await set_issue_auth_code(user_id=user.id, redis=redis)
@@ -123,7 +123,7 @@ async def auth_github(response: Response, request: Request, redis_client: Redis 
         )
         if not user:
             user = UserCreate(email=email, password=None, auth_type="github")
-            user = await users_service.add(session=session, values=user)
+            user = await users_service.add(session=session, values=user, is_active=True, is_superuser=False, is_verified=True)
 
         async with redis_client as redis:
             code = await set_issue_auth_code(user_id=user.id, redis=redis)
@@ -165,7 +165,7 @@ async def auth_yandex(
         )
         if not user:
             user = UserCreate(email=email, password=None, auth_type="yandex")
-            user = await users_service.add(session=session, values=user)
+            user = await users_service.add(session=session, values=user, is_active=True, is_superuser=False, is_verified=True)
         logger.debug(f"User: {user}")
         async with redis_client as redis:
             code = await set_issue_auth_code(user_id=user.id, redis=redis)

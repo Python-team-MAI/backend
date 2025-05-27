@@ -13,7 +13,7 @@ if TYPE_CHECKING:
 class DeadlinesOrm(Base):
     __tablename__ = "deadlines"
     name: Mapped[str] = mapped_column(nullable=False)
-    date_from: Mapped[datetime] = mapped_column(DateTime(timezone=False), nullable=False)
+    date_from: Mapped[datetime] = mapped_column(DateTime(timezone=False), nullable=True)
     date_to: Mapped[datetime] = mapped_column(DateTime(timezone=False), nullable=False)
     teacher: Mapped[str] = mapped_column(String(50), nullable=True)
     author_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))

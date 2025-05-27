@@ -1,2 +1,4 @@
 2025-05-25 23:25:40 - my_app - INFO - Dataframe:                                 File
 0  /tmp/snapshot_1u6nwfyi/celevoe.md - [service.py:70]
+2025-05-27 12:07:26 - my_app - INFO - Начало работы приложения... - [main.py:32]
+2025-05-27 12:07:45 - my_app - INFO - Завершение работы приложения... - [main.py:34]
