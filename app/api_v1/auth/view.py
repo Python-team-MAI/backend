@@ -321,9 +321,9 @@ async def password_reset_request(
 
     # mail
     mail_token = create_url_safe_mail_token({"email": email})
-
+    
     link = (
-        f"{settings.hosts.BACKEND_HOST}/v1/auth/password-reset-confirm/{mail_token}"
+        f"{settings.hosts.FRONTEND_HOST}/ru/password/change?token={mail_token}"
     )
     html_message = password_reset_template.render(link=link)
     subject = "Reset password"

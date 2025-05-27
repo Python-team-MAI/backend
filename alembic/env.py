@@ -20,13 +20,14 @@ if config.config_file_name is not None:
 # for 'autogenerate' support
 # from myapp import mymodel
 from app.core.base.base_model import Base
-from app.api_v1.offices.models import OfficesOrm
+from app.api_v1.offices.models import OfficesOrm, NodesOrm
 from app.api_v1.chats.models import ChatsOrm
 from app.api_v1.messages.models import MessagesOrm
 from app.api_v1.groups.models import GroupsOrm
 from app.api_v1.users.models import UsersOrm
 from app.api_v1.deadlines.models import DeadlinesOrm
 from app.api_v1.assistant.models import KnowledgeSnapshotsOrm
+
 from app.core.config import settings
 
 target_metadata = Base.metadata

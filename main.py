@@ -15,6 +15,7 @@ from typing import AsyncGenerator
 from authlib.integrations.starlette_client import OAuth
 from app.api_v1.middlewares.logging import register_logging_middler_ware
 import uvicorn
+from pathlib import Path
 
 logger = setup_logging(__name__)
 
@@ -75,6 +76,7 @@ def register_routers(app: FastAPI) -> None:
 
     app.include_router(router=router_v1, prefix="/v1")
     app.mount("/", app=sio_app)
+    app.mount("/static", StaticFiles(directory=Path(__file__).parent / "static"), name="static")
 
 
 def custom_openapi():

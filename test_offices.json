@@ -1,0 +1,16 @@
+{
+    "offices": [
+		{
+			"desc": "",
+			"name": "Лифт",
+			"color": "#dddddd",
+			"length": 1,
+			"width": 1,
+			"height": 1,
+			"type": "elevator",
+			"coords": [0, 0, 0],
+            "floor": 1
+		}
+
+    ]
+}

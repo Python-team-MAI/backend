@@ -14,11 +14,10 @@ from app.api_v1.mail.tasks import send_email
 
 router = APIRouter(
     tags=["Mail"],
-    dependencies=[Depends(get_current_auth_user), Depends(require_superuser())],
 )
 
 
-@router.post("/send-mail")
+@router.post("/send-mail", dependencies=[Depends(require_superuser())])
 async def send_mail(mail: SendMailModel):
     emails = mail.addresses
 
@@ -34,9 +33,24 @@ async def send_mail(mail: SendMailModel):
         elif message == "reset_password":
             mail_token = create_url_safe_mail_token({"email": emails[0]})
             link = (
-                f"{settings.hosts.BACKEND_HOST}/v1/auth/password-reset-confirm/{mail_token}"
+                f"{settings.hosts.FRONTEND_HOST}/ru/password/change?token={mail_token}"
             )
             message = password_reset_template.render(link=link)
+
+    send_email.delay(emails, subject, message)
+
+    return {"message": "Email sent successfully"}
+
+
+@router.post("/reset-password")
+async def send_mail(mail: SendMailModel):
+    emails = mail.addresses
+    subject = mail.subject
+    mail_token = create_url_safe_mail_token({"email": emails[0]})
+    link = (
+        f"{settings.hosts.FRONTEND_HOST}/ru/password/change?token={mail_token}"
+    )
+    message = password_reset_template.render(link=link)
 
     send_email.delay(emails, subject, message)
 
