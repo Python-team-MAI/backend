@@ -3,7 +3,7 @@ from datetime import datetime
 
 
 class AssistantChat(BaseModel):
-    name: str
+    name: str | None = None
     user_id: int
 
 class AssistantChatRead(AssistantChat):
