@@ -8,7 +8,8 @@ from app.api_v1.assistant.service import snapshots_service, yandex_service, Agen
 from app.api_v1.users.service import users_service
 from app.api_v1.assistant_messages.service import assistant_messages_service
 from app.api_v1.assistant_chats.service import assistant_chats_service
-from app.api_v1.users.schemas import UserFilter, UserUpdate
+from app.api_v1.users.schemas import UserFilter, UserUpdate, UserRead
+from app.api_v1.auth.validation import get_current_auth_user
 from app.api_v1.assistant_chats.schemas import AssistantChatFilter, AssistantChatRead, AssistantChatCreate
 from app.api_v1.assistant_messages.schemas import AssistantMessageCreate, AssistantMessageFilter, AssistantMessageRead
 from app.api_v1.minio.manager import storage_manager
@@ -29,18 +30,16 @@ async def get_assistant(assistant_id):
     return await yandex_service.get_assistant(assistant_id=assistant_id)
 
 @router.post("")
-async def question(user_id: int = Query(), session: AsyncSession = TransactionSessionDep):
-    user = await users_service.get_user_by_id(session=session, id=user_id)
+async def question(user: UserRead = Depends(get_current_auth_user), session: AsyncSession = TransactionSessionDep):
     if user.assistant_id:
         raise HTTPException(status_code=409, detail="This user already have assistant")
     index = await yandex_service.get_first_index()
     assistant = await yandex_service.create_assistant(model=yandex_service.model, tools=[index])
     await users_service.update(session=session, filters=UserFilter(id=user.id), values=UserUpdate(assistant_id=assistant.id))
-    return {"assistant_id": assistant.id}
+    return {"assistant_id": assistant.id, "user_id": user.id}
 
 @router.post("/question")
-async def ask_question(message: MessageQuestion, session: AsyncSession = TransactionSessionDep):
-    user = await users_service.get_user_by_id(session=session, id=message.user_id)
+async def ask_question(message: MessageQuestion, user: UserRead = Depends(get_current_auth_user), session: AsyncSession = TransactionSessionDep):
     assistant_id = user.assistant_id
     thread_id = user.thread_id
     index = await yandex_service.get_first_index()
@@ -63,7 +62,8 @@ async def ask_question(message: MessageQuestion, session: AsyncSession = Transac
     if not chat:
         chat = await assistant_chats_service.add(session=session, values=AssistantChatCreate(user_id=user.id))
     await assistant_messages_service.add(session=session, values=AssistantMessageCreate(text=message.message, assistant_chat_id=chat.id, user_id=user.id))
-    return {"ans": ans, "assistant_id": assistant_id}
+    await assistant_messages_service.add(session=session, values=AssistantMessageCreate(text=ans, assistant_chat_id=chat.id, user_id=user.id))
+    return {"ans": ans, "assistant_id": assistant_id, "user_id": user.id}
 
 
 

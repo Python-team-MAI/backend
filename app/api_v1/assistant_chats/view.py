@@ -1,30 +1,39 @@
 from fastapi import APIRouter, HTTPException, status, Depends, Query, Path
 from app.core.session_manager import SessionDep, TransactionSessionDep
 from app.api_v1.messages.models import MessagesOrm
+from app.api_v1.users.schemas import UserRead
 from .schemas import AssistantChatCreate, AssistantChatRead, AssistantChatFilter, AssistantChatUpdate
 from app.api_v1.assistant_messages.schemas import AssistantMessageRead
 from .service import assistant_chats_service
 from sqlalchemy.ext.asyncio import AsyncSession
 from .dependencies import assistant_chat_by_id
 from app.api_v1.assistant_messages.service import assistant_messages_service
-from app.api_v1.auth.validation import require_role, require_condition
+from app.api_v1.auth.validation import require_role, require_condition, get_current_auth_user, require_superuser
 from typing import Annotated
 import logging
 
-# Depends(require_condition(required_role="headman", allow_superuser=True))
-router = APIRouter(tags=["AssistantChats"], dependencies=[])
+
+router = APIRouter(tags=["AssistantChats"])
 logger = logging.getLogger(__name__)
 PAGE_SIZE = 100
 
 
-@router.get("", response_model=list[AssistantChatRead])
+@router.get("", response_model=list[AssistantChatRead], dependencies=[Depends(require_superuser)])
 async def get_assistant_chats(
     session: AsyncSession = SessionDep,
 ):
     return await assistant_chats_service.find_all(session=session)
 
 
-@router.get("/{assistant_chat_id}", response_model=AssistantChatRead)
+@router.get("/me", response_model=list[AssistantChatRead])
+async def get_assistant_chats(
+    user: UserRead = Depends(get_current_auth_user),
+    session: AsyncSession = SessionDep
+):
+    return await assistant_chats_service.find_all(session=session, filters=AssistantChatFilter(user_id=user.id))
+
+
+@router.get("/{assistant_chat_id}", response_model=AssistantChatRead, dependencies=[Depends(require_superuser)])
 async def get_assistant_chat(assistant_chat=Depends(assistant_chat_by_id)):
     return assistant_chat
 
