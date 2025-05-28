@@ -3,7 +3,7 @@ from app.core.session_manager import SessionDep, TransactionSessionDep
 from app.api_v1.messages.models import MessagesOrm
 from app.api_v1.users.schemas import UserRead
 from .schemas import AssistantChatCreate, AssistantChatRead, AssistantChatFilter, AssistantChatUpdate
-from app.api_v1.assistant_messages.schemas import AssistantMessageRead
+from app.api_v1.assistant_messages.schemas import AssistantMessageRead, AssistantMessageFilter
 from .service import assistant_chats_service
 from sqlalchemy.ext.asyncio import AsyncSession
 from .dependencies import assistant_chat_by_id
@@ -32,6 +32,13 @@ async def get_assistant_chats(
 ):
     return await assistant_chats_service.find_all(session=session, filters=AssistantChatFilter(user_id=user.id))
 
+
+@router.get("/messages/me", response_model=list[AssistantMessageRead])
+async def get_assistant_chats(
+    user: UserRead = Depends(get_current_auth_user),
+    session: AsyncSession = SessionDep
+):
+    return await assistant_messages_service.find_all(session=session, filters=AssistantMessageFilter(user_id=user.id))
 
 @router.get("/{assistant_chat_id}", response_model=AssistantChatRead, dependencies=[Depends(require_superuser)])
 async def get_assistant_chat(assistant_chat=Depends(assistant_chat_by_id)):

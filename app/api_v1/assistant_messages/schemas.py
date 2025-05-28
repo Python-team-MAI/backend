@@ -5,6 +5,7 @@ from datetime import datetime
 
 class AssistantMessage(BaseModel):
     text: str
+    type: str
     assistant_chat_id: int
     user_id: int
 
@@ -29,5 +30,6 @@ class AssistantMessageFilter(BaseModel):
     created_at: datetime | None = None
     updated_at: datetime | None = None
     text: str | None = None
+    type: str | None = None
     assistant_chat_id: int | None = None
     user_id: int | None = None

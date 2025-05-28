@@ -61,8 +61,8 @@ async def ask_question(message: MessageQuestion, user: UserRead = Depends(get_cu
     chat = await assistant_chats_service.find_one_or_none(session=session, filters=AssistantChatFilter(user_id=user.id))
     if not chat:
         chat = await assistant_chats_service.add(session=session, values=AssistantChatCreate(user_id=user.id))
-    await assistant_messages_service.add(session=session, values=AssistantMessageCreate(text=message.message, assistant_chat_id=chat.id, user_id=user.id))
-    await assistant_messages_service.add(session=session, values=AssistantMessageCreate(text=ans, assistant_chat_id=chat.id, user_id=user.id))
+    await assistant_messages_service.add(session=session, values=AssistantMessageCreate(text=message.message, assistant_chat_id=chat.id, user_id=user.id, type="user"))
+    await assistant_messages_service.add(session=session, values=AssistantMessageCreate(text=ans, assistant_chat_id=chat.id, user_id=user.id, type="assistant"))
     return {"ans": ans, "assistant_id": assistant_id, "user_id": user.id}
 
 
@@ -78,9 +78,8 @@ async def delete_index(assistant_id: str):
     except Exception as ex:
         raise HTTPException(status_code=400, detail="Something wrong")
 
-@router.delete("/user/{user_id}")
-async def delete_index(user_id: str, session: AsyncSession = SessionDep):
-    user = await users_service.get_user_by_id(session=session, id=user_id)
+@router.delete("")
+async def delete_index(user: UserRead = Depends(get_current_auth_user), session: AsyncSession = SessionDep):
     assistant_id = user.assistant_id
     if not assistant_id:
         raise HTTPException(status_code=404, detail="User dont have assistant")

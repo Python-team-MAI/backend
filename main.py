@@ -83,9 +83,9 @@ def custom_openapi():
     if app.openapi_schema:
         return app.openapi_schema
     openapi_schema = get_openapi(
-        title="Название API",
+        title="MAI API",
         version="1.0.0",
-        description="Описание API",
+        description="это жесть короче",
         routes=app.routes,
     )
     openapi_schema["components"]["securitySchemes"] = {
