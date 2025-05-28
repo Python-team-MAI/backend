@@ -12,7 +12,7 @@ if TYPE_CHECKING:
 class AssistantMessagesOrm(UsersRelationMixin, Base):
     __tablename__ = "assistant_messages"
     _user_back_populates = "assistant_messages"
-    text: Mapped[str] = mapped_column(String(256))
+    text: Mapped[str]
     type: Mapped[str] = mapped_column(nullable=False)
     assistant_chat_id: Mapped[int] = mapped_column(ForeignKey("assistant_chats.id", ondelete="CASCADE"))
     assistant_chat: Mapped["AssistantChatsOrm"] = relationship(back_populates="messages")
