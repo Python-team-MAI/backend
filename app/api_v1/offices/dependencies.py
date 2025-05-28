@@ -3,14 +3,14 @@ from typing import Annotated
 from app.api_v1.offices.models import OfficesOrm
 from sqlalchemy.ext.asyncio import AsyncSession
 from .service import offices_service
-from .schemas import OfficeFilter
+from .schemas import OfficeFilter, OfficeRead
 from app.core.session_manager import SessionDep
 
 
 async def office_by_id(
     office_id: Annotated[int, Path],
     session: AsyncSession = SessionDep,
-) -> OfficesOrm:
+) -> OfficeRead:
     office = await offices_service.find_one_or_none(
         session=session, filters=OfficeFilter(id=office_id)
     )

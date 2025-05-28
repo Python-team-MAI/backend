@@ -1,0 +1,19 @@
+{
+    "nodes": [
+    {
+      "x": 0,
+      "y": 0,
+      "z": 0,
+      "connections": [
+        "coridor_21_1"
+      ],
+      "floor": 2,
+      "pid_name": "elevator_2",
+      "type": "elevator",
+      "landmarks": [
+        "Лифт"
+      ],
+      "name": "Лифт"
+    }
+    ]
+}

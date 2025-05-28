@@ -75,8 +75,8 @@ def register_routers(app: FastAPI) -> None:
         }
 
     app.include_router(router=router_v1, prefix="/v1")
+    app.mount("/static", StaticFiles(directory="static"), name="static")
     app.mount("/", app=sio_app)
-    app.mount("/static", StaticFiles(directory=Path(__file__).parent / "static"), name="static")
 
 
 def custom_openapi():

@@ -1,0 +1,19 @@
+from app.core.base.base_model import Base
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+import enum
+from sqlalchemy import String, ARRAY
+
+from typing import TYPE_CHECKING
+
+
+class NodesOrm(Base):
+    __tablename__ = "nodes"
+    x: Mapped[int] = mapped_column(nullable=True)
+    y: Mapped[int] = mapped_column(nullable=False)
+    z: Mapped[int] = mapped_column(nullable=False)
+    connections: Mapped[list[str]] = mapped_column(ARRAY(String), nullable=False)
+    floor: Mapped[int] = mapped_column(nullable=False)
+    pid_name: Mapped[str] = mapped_column(nullable=False)
+    type: Mapped[str] = mapped_column(nullable=False)
+    landmarks: Mapped[list[str]] = mapped_column(ARRAY(String), nullable=False)
+    name: Mapped[str] = mapped_column(nullable=False)

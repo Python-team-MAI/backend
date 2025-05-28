@@ -11,7 +11,7 @@ import uuid
 from app.api_v1.utils.setup_logging import setup_logging
 logger = setup_logging(__name__)
 
-router = APIRouter(tags=["Assistant"], dependencies=[Depends(require_superuser())])
+router = APIRouter(tags=["Assistant"], dependencies=[])
 
 @router.get("/indexes")
 def get_indexes():

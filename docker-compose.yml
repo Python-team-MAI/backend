@@ -1,6 +1,7 @@
 services:
     app:
         build: .
+        
         env_file:
             - .env.local
             - .env
@@ -11,6 +12,8 @@ services:
                 condition: service_healthy
             redis:
                 condition: service_healthy
+        volumes:
+            - .:/app
         networks:
             - mai_network
 

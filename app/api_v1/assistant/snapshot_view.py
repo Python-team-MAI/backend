@@ -12,7 +12,7 @@ import uuid
 from app.api_v1.utils.setup_logging import setup_logging
 logger = setup_logging(__name__)
 
-router = APIRouter(tags=["Snapshots"], dependencies=[Depends(require_superuser())])
+router = APIRouter(tags=["Snapshots"], dependencies=[])
 
 @router.get("", response_model=list[KnowledgeSnapshotRead])
 async def get_snapshots(

@@ -337,7 +337,7 @@ async def password_reset_request(
     )
 
 
-@router.get("/password-reset-confirm/{mail_token}")
+@router.post("/password-reset-confirm/{mail_token}")
 async def reset_account_password(
     mail_token: str,
     password_confirm: PasswordResetConfirmModel,
