@@ -11,6 +11,8 @@ from app.api_v1.mail.view import router as mail_router
 from app.api_v1.assistant.snapshot_view import router as snapshot_router
 from app.api_v1.assistant.assistant_view import router as assistant_router
 from app.api_v1.nodes.view import router as nodes_router
+from app.api_v1.assistant_chats.view import router as assistant_chats_router
+from app.api_v1.assistant_messages.view import router as assistant_messages_router
 
 router = APIRouter()
 router.include_router(router=demo_jwt_auth_router)
@@ -25,3 +27,5 @@ router.include_router(router=deadlines_router, prefix="/deadlines")
 router.include_router(router=snapshot_router, prefix="/snapshots")
 router.include_router(router=assistant_router, prefix="/assistant")
 router.include_router(router=nodes_router, prefix="/nodes")
+router.include_router(router=assistant_chats_router, prefix="/assistant-chats")
+router.include_router(router=assistant_messages_router, prefix="/assistant-messages")

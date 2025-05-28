@@ -6,7 +6,11 @@ from app.api_v1.assistant.schemas import KnowledgeSnapshotRead, KnowledgeSnapsho
 from app.core.session_manager import SessionDep, TransactionSessionDep
 from app.api_v1.assistant.service import snapshots_service, yandex_service, Agent, instruction as main_instruction
 from app.api_v1.users.service import users_service
+from app.api_v1.assistant_messages.service import assistant_messages_service
+from app.api_v1.assistant_chats.service import assistant_chats_service
 from app.api_v1.users.schemas import UserFilter, UserUpdate
+from app.api_v1.assistant_chats.schemas import AssistantChatFilter, AssistantChatRead, AssistantChatCreate
+from app.api_v1.assistant_messages.schemas import AssistantMessageCreate, AssistantMessageFilter, AssistantMessageRead
 from app.api_v1.minio.manager import storage_manager
 from app.api_v1.auth.validation import require_superuser
 import uuid
@@ -54,7 +58,13 @@ async def ask_question(message: MessageQuestion, session: AsyncSession = Transac
 
     agent = await Agent.create(thread_id=thread_id, assistant=assistant, instruction=main_instruction, search_index=index)
     ans, thread_id = await agent(message.message)
+
+    chat = await assistant_chats_service.find_one_or_none(session=session, filters=AssistantChatFilter(user_id=user.id))
+    if not chat:
+        chat = await assistant_chats_service.add(session=session, values=AssistantChatCreate(user_id=user.id))
+    await assistant_messages_service.add(session=session, values=AssistantMessageCreate(text=message.message, assistant_chat_id=chat.id, user_id=user.id))
     return {"ans": ans, "assistant_id": assistant_id}
+
 
 
 

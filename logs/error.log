@@ -4,3 +4,4 @@
 	details = "failed to connect to all addresses; last error: UNKNOWN: ipv6:%5B2a0d:d6c1:0:1c::4e%5D:443: connect: Network is unreachable (101)"
 	debug_error_string = "UNKNOWN:Error received from peer  {grpc_message:"failed to connect to all addresses; last error: UNKNOWN: ipv6:%5B2a0d:d6c1:0:1c::4e%5D:443: connect: Network is unreachable (101)", grpc_status:14, created_time:"2025-05-28T10:15:58.34746401+00:00"}"
 > - [service.py:95]
+2025-05-28 18:06:42 - my_app - ERROR - Ошибка при поиске всех записей по фильтрам {}: Could not determine join condition between parent/child tables on relationship AssistantMessagesOrm.assistant_chat - there are no foreign keys linking these tables.  Ensure that referencing columns are associated with a ForeignKey or ForeignKeyConstraint, or specify a 'primaryjoin' expression. - [base_repository.py:62]
