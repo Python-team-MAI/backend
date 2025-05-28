@@ -55,3 +55,16 @@ async def send_mail(mail: SendMailModel):
     send_email.delay(emails, subject, message)
 
     return {"message": "Email sent successfully"}
+
+
+@router.post("/email-verification")
+async def send_mail(mail: SendMailModel):
+    emails = mail.addresses
+    subject = mail.subject
+    mail_token = create_url_safe_mail_token({"email": emails[0]})
+    link = f"{settings.hosts.BACKEND_HOST}/v1/auth/verify-mail/{mail_token}"
+    message = email_verification_template.render(link=link, year=datetime.now().year)
+
+    send_email.delay(emails, subject, message)
+
+    return {"message": "Email sent successfully"}

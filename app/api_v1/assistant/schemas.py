@@ -15,7 +15,9 @@ class KnowledgeSnapshot(BaseModel):
     status: str = "pending"  # pending, processing, ready, failed
 
 
-
+class MessageQuestion(BaseModel):
+    message: str
+    user_id: int
 
 class KnowledgeSnapshotRead(KnowledgeSnapshot):
     model_config = ConfigDict(from_attributes=True)

@@ -39,8 +39,12 @@ class UsersOrm(Base):
     is_active: Mapped[bool] = mapped_column(Boolean, nullable=False)
     is_superuser: Mapped[bool] = mapped_column(Boolean, nullable=False)
     is_verified: Mapped[bool] = mapped_column(Boolean, nullable=False)
+    thread_id: Mapped[str] = mapped_column(nullable=True)
+    assistant_id: Mapped[str] = mapped_column(nullable=True)
+
     deadlines: Mapped[list["DeadlinesOrm"]] = relationship(
         "DeadlinesOrm", back_populates="author"
     )
     group: Mapped["GroupsOrm"] = relationship(back_populates="users")
     messages: Mapped["MessagesOrm"] = relationship(back_populates="user")
+    

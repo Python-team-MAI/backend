@@ -22,6 +22,8 @@ class User(BaseModel):
     group_id: int | None = None
     institute: int | None = None
     role: Role | None = Role.STUDENT
+    thread_id: str | None = None
+    assistant_id: str | None = None
     auth_type: str
     # json_settings: str
 
@@ -48,6 +50,8 @@ class UserUpdate(BaseModel):
     institute: int | None = None
     is_superuser: bool | None = None
     role: Role | None = None
+    assistant_id: str | None = None
+    
 
 
 class UserFilter(BaseModel):
@@ -67,3 +71,5 @@ class UserFilter(BaseModel):
     institute: int | None = None
     role: Role | None = None
     auth_type: str | None = None
+    thread_id: str | None = None
+    assistant_id: str | None = None

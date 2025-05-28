@@ -464,8 +464,8 @@ class MinIOStorage(S3StorageManager):
                 key = await self.put_object(file=file, file_type="md")
                 new_snapshot_files.append(key)
             elif file.filename not in new_snapshot_files:
-                new_snapshot_files.append(key)
-                logger.info(f"Add file to snapshot: {key}")
+                new_snapshot_files.append(file.filename)
+                logger.info(f"Add file to snapshot: {file.filename}")
             else:
                 logger.info(f"File already exist")
         return new_snapshot_files

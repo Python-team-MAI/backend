@@ -8,6 +8,10 @@ from app.api_v1.assistant.schemas import KnowledgeSnapshotFilter, KnowledgeSnaps
 from app.core.session_manager import session_manager
 import pandas as pd
 import asyncio
+from app.api_v1.utils.setup_logging import setup_logging
+
+
+logger = setup_logging(__name__)
 
 
 async def run(snapshot):
@@ -20,7 +24,7 @@ async def run(snapshot):
 
         try:
             paths, temp_dir = await storage_manager.download_files_to_temp_dir(snapshot.document_paths)
-            index_id = yandex_service.create_new_index(paths)
+            index_id = await yandex_service.create_new_index(paths)
             shutil.rmtree(temp_dir)
 
             await snapshots_service.update(session=session, filters=KnowledgeSnapshotFilter(id=snapshot_id), values=KnowledgeSnapshotFilter(status="ready", index_id=index_id)) 
@@ -33,7 +37,6 @@ async def run(snapshot):
 
 @celery_app.task(bind=True, name="create_yandex_index_from_snapshot")
 def create_yandex_index_from_snapshot(self, snapshot):
-    print(snapshot)
     loop = asyncio.get_event_loop()  
     loop.run_until_complete(run(snapshot))  
     loop.close() 

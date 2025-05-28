@@ -1,1 +1,20 @@
-[{"type": "elevator", "name": "\u0426\u0435\u043d\u0442\u0440\u0430\u043b\u044c\u043d\u044b\u0439 \u043b\u0438\u0444\u0442", "nodes": ["elevator_1", "elevator_2", "string"], "weight": 2}, {"type": "stairs", "name": "\u041b\u0435\u0441\u0442\u043d\u0438\u0446\u0430", "nodes": ["stairs_11", "stairs_21"], "weight": 2}]
+[
+  {
+    "type": "elevator",
+    "name": "Центральный лифт",
+    "nodes": [
+      "elevator_1",
+      "elevator_2"
+    ],
+    "weight": 2
+  },
+  {
+    "type": "stairs",
+    "name": "Лестница",
+    "nodes": [
+      "stairs_11",
+      "stairs_21"
+    ],
+    "weight": 2
+  }
+]

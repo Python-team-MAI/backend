@@ -42,7 +42,7 @@ class UsersService(BaseService):
             session=session, filters=UserFilter(email=email)
         )
 
-    async def get_user_by_id(self, session: AsyncSession, id: int):
+    async def get_user_by_id(self, session: AsyncSession, id: int) -> UserRead:
         return await self.repository.find_one_or_none(
             session=session, filters=UserFilter(id=id)
         )
