@@ -5,3 +5,4 @@ certs/
 __pycache__/
 test_knowledge_base/
 nginx/
+logs/
