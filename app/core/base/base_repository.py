@@ -47,13 +47,16 @@ class BaseRepository(Generic[T]):
             logger.error(f"Ошибка при поиске записи по фильтрам {filter_dict}: {e}")
             raise
 
-    async def find_all(self, session: AsyncSession, filters: BaseModel | None = None):
+    async def find_all(self, session: AsyncSession, filters: BaseModel | None = None, options: list = None):
         filter_dict = filters.model_dump(exclude_unset=True) if filters else {}
         logger.debug(
             f"Поиск всех записей {self.model.__name__} по фильтрам: {filter_dict}"
         )
         try:
             query = select(self.model).filter_by(**filter_dict)
+            if options:
+                for opt in options:
+                    query = query.options(opt)
             result = await session.execute(query)
             records = result.scalars().all()
             logger.debug(f"Найдено {len(records)} записей.")

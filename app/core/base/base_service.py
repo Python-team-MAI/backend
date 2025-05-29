@@ -45,12 +45,12 @@ class BaseService:
         return self._to_schema(orm_obj) if orm_obj else None
 
     async def find_all(
-        self, session: AsyncSession, filters: BaseModel | None = None
+        self, session: AsyncSession, filters: BaseModel | None = None, options: list | None = None
     ) -> list[BaseModel]:
         """Находит список обьектов по фильтрам filters.\n
         return: Список найденных ORM обьектов. None если не нашел"""
 
-        orm_objs = await self.repository.find_all(session=session, filters=filters)
+        orm_objs = await self.repository.find_all(session=session, filters=filters, options=options)
         return self._to_schema_many(orm_objs)
 
     async def add(self, session: AsyncSession, values: BaseModel) -> BaseModel:

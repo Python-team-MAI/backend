@@ -328,10 +328,7 @@ async def verify_mail(mail_token: str, session: AsyncSession = TransactionSessio
             )
         await users_service.set_user_is_verify(session=session, email=user_email)
         logger.info(f"User {user_email} is verified successfully")
-        return JSONResponse(
-            content={"message": "success"},
-            status_code=status.HTTP_200_OK,
-        )
+        return RedirectResponse(f"{settings.hosts.FRONTEND_HOST}/ru/register/success")
 
     logger.error(f"Error occured during verification. Token data: {token_data}")
     return JSONResponse(

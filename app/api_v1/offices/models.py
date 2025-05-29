@@ -21,8 +21,5 @@ class OfficesOrm(Base):
     type: Mapped[str] = mapped_column(nullable=False)
     coords: Mapped[list[float]] = mapped_column(ARRAY(FLOAT), nullable=False)
 
-    chat_id: Mapped[Optional[int]] = mapped_column(
-        ForeignKey("chats.id", ondelete="CASCADE"), nullable=True
-    )
     chat: Mapped["ChatsOrm"] = relationship("ChatsOrm", back_populates="office")
 
