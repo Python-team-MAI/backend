@@ -264,7 +264,7 @@ async def auth_user_issue_jwt(
                 "refresh_token": refresh_token
                         }) as response:
                 ans = await response.text()
-
+    logger.info(f"Ans: {ans}")
     return RedirectResponse(f"https://t.me/{settings.hosts.BOT_TOKEN}?start=auth_done")
 
 

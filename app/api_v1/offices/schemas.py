@@ -9,8 +9,8 @@ class Office(BaseModel):
     color: str
     length: float
     width: float
-    floor: float
-    height: int
+    floor: int
+    height: float
     type: str
     coords: list[float]
 
