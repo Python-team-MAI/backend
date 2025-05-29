@@ -101,6 +101,7 @@ class HostsSettings(EnvBaseSettings):
     BOT_TOKEN: str
 
 
+
 class AssistantSettings(EnvBaseSettings):
     YANDEX_CLOUD_FOLDER_ID: str
     YANDEX_CLOUD_API_KEY: str
