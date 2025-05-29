@@ -64,7 +64,7 @@ async def get_floor(
 ):
     offices_orm = await offices_service.repository.find_all_with_chat(session=session, filters=OfficeFilter(floor=floor))
     logger.debug(f"Offices orm: {offices_orm}")
-    offices = [OfficesAndChats(**office.to_dict()) for office in offices_orm]
+    offices = [OfficesAndChats.model_validate(office) for office in offices_orm]
     nodes = await nodes_service.find_all(session=session, filters=NodeFilter(floor=floor))
     return {
         "offices": offices,
