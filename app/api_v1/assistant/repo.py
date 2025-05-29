@@ -8,4 +8,4 @@ class KnowledgeSnapshotsRepo(BaseRepository):
     model = KnowledgeSnapshotsOrm
 
 
-snapshots_repo: KnowledgeSnapshotsOrm = KnowledgeSnapshotsRepo()
+snapshots_repo: KnowledgeSnapshotsRepo = KnowledgeSnapshotsRepo()

@@ -33,7 +33,7 @@ from app.api_v1.mail.tasks import send_email
 from .utils import hash_password, create_url_safe_mail_token, decode_url_safe_mail_token
 from fastapi import APIRouter, Depends, Request, status, HTTPException, Body, Response, Query
 from fastapi.responses import JSONResponse
-
+import aiohttp
 from .validation import oauth, require_role, validate_token
 from fastapi.responses import RedirectResponse
 from redis.asyncio import Redis
@@ -42,6 +42,7 @@ from authlib.oauth2.rfc6749 import OAuth2Token
 from app.api_v1.utils.setup_logging import setup_logging
 from jinja2 import Environment, FileSystemLoader
 from datetime import datetime
+import app.api_v1.auth.utils as auth_utils
 from app.api_v1.utils.setup_logging import setup_logging
 logger = setup_logging(__name__)
 
@@ -228,6 +229,41 @@ async def auth_user_issue_jwt(
     refresh_token = await setup_refresh_token(user=user)
 
     return TokenInfo(access_token=access_token, refresh_token=refresh_token)
+
+@router.post("/tg-auth", response_model=TokenInfo)
+async def auth_user_issue_jwt(
+    tg_id: str = Query(),
+    user_in = UserLogin(email="fedorvolosnev@yandex.ru", password="string12345"), session: AsyncSession = SessionDep
+):
+    unauthed_exc = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED, detail="invalid password or username"
+    )
+    unverify_exc = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED, detail="your email dont verify"
+    )
+    user = await users_service.find_one_or_none(
+        session=session, filters=UserFilter(email=user_in.email)
+    )
+
+    if not user:
+        raise unauthed_exc
+    if not user.is_verified:
+        raise unverify_exc
+    if not auth_utils.validate_password(
+        password=user_in.password, hashed_password=user.password
+    ):
+        raise unauthed_exc
+    access_token = await setup_access_token(user=user)
+    refresh_token = await setup_refresh_token(user=user)
+    async with aiohttp.ClientSession() as session:
+            async with session.post("https://api.mai-students.ru/telegram-webhook/auth", data={
+                "telegram_id": tg_id,
+                "access_token": access_token,
+                "refresh_token": refresh_token
+                        }) as response:
+                ans = await response.text()
+
+    return RedirectResponse(f"https://t.me/{settings.hosts.BOT_TOKEN}?start=auth_done")
 
 
 @router.get("/me", response_model=UserRead)

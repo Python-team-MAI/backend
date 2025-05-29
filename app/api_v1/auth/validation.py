@@ -112,8 +112,8 @@ async def validate_auth_user(
 
     if not user:
         raise unauthed_exc
-    # if not user.is_verified:
-    #     raise unverify_exc
+    if not user.is_verified:
+        raise unverify_exc
     if auth_utils.validate_password(
         password=user_in.password, hashed_password=user.password
     ):

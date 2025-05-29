@@ -98,6 +98,7 @@ class HostsSettings(EnvBaseSettings):
     DOMEN: str
     BACKEND_HOST: str
     FRONTEND_HOST: str
+    BOT_TOKEN: str
 
 
 class AssistantSettings(EnvBaseSettings):
