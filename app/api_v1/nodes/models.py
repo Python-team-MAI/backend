@@ -8,9 +8,9 @@ from typing import TYPE_CHECKING
 
 class NodesOrm(Base):
     __tablename__ = "nodes"
-    x: Mapped[int] = mapped_column(nullable=True)
-    y: Mapped[int] = mapped_column(nullable=False)
-    z: Mapped[int] = mapped_column(nullable=False)
+    x: Mapped[float] = mapped_column(nullable=True)
+    y: Mapped[float] = mapped_column(nullable=False)
+    z: Mapped[float] = mapped_column(nullable=False)
     connections: Mapped[list[str]] = mapped_column(ARRAY(String), nullable=False)
     floor: Mapped[int] = mapped_column(nullable=False)
     pid_name: Mapped[str] = mapped_column(nullable=False)
