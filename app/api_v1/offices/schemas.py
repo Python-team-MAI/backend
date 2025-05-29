@@ -1,4 +1,5 @@
 from pydantic import BaseModel, EmailStr, ConfigDict
+from app.api_v1.chats.schemas import ChatRead
 import enum
 from datetime import datetime
 
@@ -13,6 +14,23 @@ class Office(BaseModel):
     height: float
     type: str
     coords: list[float]
+
+
+class OfficesAndChats(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    id: int
+    created_at: datetime
+    updated_at: datetime
+    desc: str | None = None
+    name: str
+    color: str
+    length: float
+    width: float
+    floor: int
+    height: float
+    type: str
+    coords: list[float]
+    chat: ChatRead | None = None 
     
 
 

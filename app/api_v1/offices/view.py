@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException, status, Depends, File, UploadFile,
 import logging
 from app.api_v1.offices.service import offices_service
 from app.api_v1.nodes.service import nodes_service
-from app.api_v1.offices.schemas import OfficeCreate, OfficeRead, OfficeUpdate, OfficeFilter
+from app.api_v1.offices.schemas import OfficeCreate, OfficeRead, OfficeUpdate, OfficeFilter, OfficesAndChats
 from app.api_v1.offices.models import OfficesOrm
 from app.api_v1.nodes.schemas import NodeFilter, NodeRead
 from app.api_v1.auth.validation import require_role, require_superuser
@@ -11,6 +11,9 @@ from app.core.session_manager import SessionDep, TransactionSessionDep
 from app.api_v1.offices.dependencies import office_by_id
 from sqlalchemy.orm import selectinload
 import json
+from app.api_v1.utils.setup_logging import setup_logging
+
+logger = setup_logging(__name__)
 
 router = APIRouter(tags=["Offices"], dependencies=[Depends(require_superuser)])
 
@@ -59,7 +62,9 @@ async def get_floor(
     floor: int = Path(..., description="Этаж"),
     session: AsyncSession = SessionDep
 ):
-    offices = await offices_service.find_all(session=session, filters=OfficeFilter(floor=floor), options=[selectinload(OfficesOrm.chat)])
+    offices_orm = await offices_service.repository.find_all_with_chat(session=session, filters=OfficeFilter(floor=floor))
+    logger.debug(f"Offices orm: {offices_orm}")
+    offices = [OfficesAndChats(**office.to_dict()) for office in offices_orm]
     nodes = await nodes_service.find_all(session=session, filters=NodeFilter(floor=floor))
     return {
         "offices": offices,
