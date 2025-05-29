@@ -19,19 +19,19 @@ class NodesService(BaseService):
 
 
 
-    async def add(self, session, values: NodeCreate):
-        if values.type in ["elevator", "stairs"]:
-            with open("static/all_vertical_connections.json", "r", encoding="utf-8") as f:
-                content = f.read()
-                data = json.loads(content)
-            logger.debug(f"Node type: {values.type}")
-            for connection in data:
-                if connection["type"] == values.type:
-                    connection["nodes"].append(values.pid_name)
-            with open("static/all_vertical_connections.json", "w", encoding="utf-8") as f:
-                json.dump(data, f)
+    # async def add(self, session, values: NodeCreate):
+    #     if values.type in ["elevator", "stairs"]:
+    #         with open("static/all_vertical_connections.json", "r", encoding="utf-8") as f:
+    #             content = f.read()
+    #             data = json.loads(content)
+    #         logger.debug(f"Node type: {values.type}")
+    #         for connection in data:
+    #             if connection["type"] == values.type:
+    #                 connection["nodes"].append(values.pid_name)
+    #         with open("static/all_vertical_connections.json", "w", encoding="utf-8") as f:
+    #             json.dump(data, f)
 
-        return await super().add(session, values)
+    #     return await super().add(session, values)
     
     async def create_nodes_from_json(self, data, session: AsyncSession) -> list[NodeRead]:
         if ("nodes" not in data or not isinstance(data["nodes"], list)):
