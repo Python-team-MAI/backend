@@ -67,7 +67,7 @@ async def get_floor(
 @router.delete("/map/floor/{floor}")
 async def get_floor(
     floor: int = Path(..., description="Этаж"),
-    session: AsyncSession = SessionDep
+    session: AsyncSession = TransactionSessionDep
 ):
     offices = await offices_service.delete(session=session, filters=OfficeFilter(floor=floor))
     nodes = await nodes_service.delete(session=session, filters=NodeFilter(floor=floor))
