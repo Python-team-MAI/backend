@@ -5,7 +5,6 @@ from datetime import datetime
 
 class Office(BaseModel):
     desc: str | None = None
-    office_id: int | None = None
     name: str
     color: str
     length: float
@@ -37,7 +36,6 @@ class OfficeFilter(BaseModel):
     id: int | None = None
     created_at: datetime | None = None
     updated_at: datetime | None = None
-    office_id: int | None = None
     desc: str | None = None
     name: str | None = None
     color: str | None = None

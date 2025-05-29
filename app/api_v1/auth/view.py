@@ -230,42 +230,42 @@ async def auth_user_issue_jwt(
 
     return TokenInfo(access_token=access_token, refresh_token=refresh_token)
 
-@router.get("/tg-auth", response_model=TokenInfo)
-async def auth_user_issue_jwt(
-    tg_id: str = Query(),
-    user_in = UserLogin(email="fedorvolosnev@yandex.ru", password="string12345"), session: AsyncSession = SessionDep
-):
-    unauthed_exc = HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED, detail="invalid password or username"
-    )
-    unverify_exc = HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED, detail="your email dont verify"
-    )
-    user = await users_service.find_one_or_none(
-        session=session, filters=UserFilter(email=user_in.email)
-    )
+# @router.get("/tg-auth", response_model=TokenInfo)
+# async def auth_user_issue_jwt(
+#     tg_id: str = Query(),
+#     user_in = UserLogin(email="fedorvolosnev@yandex.ru", password="string12345"), session: AsyncSession = SessionDep
+# ):
+#     unauthed_exc = HTTPException(
+#         status_code=status.HTTP_401_UNAUTHORIZED, detail="invalid password or username"
+#     )
+#     unverify_exc = HTTPException(
+#         status_code=status.HTTP_401_UNAUTHORIZED, detail="your email dont verify"
+#     )
+#     user = await users_service.find_one_or_none(
+#         session=session, filters=UserFilter(email=user_in.email)
+#     )
 
-    if not user:
-        raise unauthed_exc
-    if not user.is_verified:
-        raise unverify_exc
-    if not auth_utils.validate_password(
-        password=user_in.password, hashed_password=user.password
-    ):
-        raise unauthed_exc
-    access_token = await setup_access_token(user=user)
-    refresh_token = await setup_refresh_token(user=user)
-    async with aiohttp.ClientSession() as session:
-            async with session.post("https://api.mai-students.ru/telegram-webhook/auth", data={
-                "telegram_id": tg_id,
-                "first_name": user.first_name,
-                "last_name": user.last_name,
-                "access_token": access_token,
-                "refresh_token": refresh_token
-                        }) as response:
-                ans = await response.text()
-    logger.info(f"Ans: {ans}")
-    return RedirectResponse(f"https://t.me/{settings.hosts.BOT_TOKEN}?start=auth_done")
+#     if not user:
+#         raise unauthed_exc
+#     if not user.is_verified:
+#         raise unverify_exc
+#     if not auth_utils.validate_password(
+#         password=user_in.password, hashed_password=user.password
+#     ):
+#         raise unauthed_exc
+#     access_token = await setup_access_token(user=user)
+#     refresh_token = await setup_refresh_token(user=user)
+#     async with aiohttp.ClientSession() as session:
+#             async with session.post("https://api.mai-students.ru/telegram-webhook/auth", data={
+#                 "telegram_id": tg_id,
+#                 "first_name": user.first_name,
+#                 "last_name": user.last_name,
+#                 "access_token": access_token,
+#                 "refresh_token": refresh_token
+#                         }) as response:
+#                 ans = await response.text()
+#     logger.info(f"Ans: {ans}")
+#     return RedirectResponse(f"https://t.me/{settings.hosts.BOT_TOKEN}?start=auth_done")
 
 
 @router.get("/me", response_model=UserRead)
