@@ -7,9 +7,9 @@ class Office(BaseModel):
     desc: str | None
     name: str
     color: str
-    length: int
-    width: int
-    floor: int
+    length: float
+    width: float
+    floor: float
     height: int
     type: str
     coords: list[float]
@@ -37,9 +37,9 @@ class OfficeFilter(BaseModel):
     desc: str | None = None
     name: str | None = None
     color: str | None = None
-    length: int | None = None
-    width: int | None = None
-    height: int | None = None
+    length: float | None = None
+    width: float | None = None
+    height: float | None = None
     floor: int | None = None
     type: str | None = None
-    coords: list[int] | None = None
+    coords: list[float] | None = None
