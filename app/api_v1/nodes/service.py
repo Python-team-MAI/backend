@@ -24,7 +24,7 @@ class NodesService(BaseService):
             with open("static/all_vertical_connections.json", "r", encoding="utf-8") as f:
                 content = f.read()
                 data = json.loads(content)
-
+            logger.debug(f"Node type: {values.type}")
             for connection in data:
                 if connection["type"] == values.type:
                     connection["nodes"].append(values.pid_name)
