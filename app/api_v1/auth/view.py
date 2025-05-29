@@ -258,6 +258,8 @@ async def auth_user_issue_jwt(
     async with aiohttp.ClientSession() as session:
             async with session.post("https://api.mai-students.ru/telegram-webhook/auth", data={
                 "telegram_id": tg_id,
+                "first_name": user.first_name,
+                "last_name": user.last_name,
                 "access_token": access_token,
                 "refresh_token": refresh_token
                         }) as response:
