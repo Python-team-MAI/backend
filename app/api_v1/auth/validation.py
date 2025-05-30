@@ -231,14 +231,15 @@ def require_role(required_role: str):
     return require_condition(required_role=required_role, allow_superuser=True)
 
 
-async def get_user_by_token_sub(payload: dict, session: AsyncSession, request: Request, ) -> UserRead:
+async def get_user_by_token_sub(payload: dict, session: AsyncSession, request: Request | None = None) -> UserRead:
     user_id = int(payload.get("sub"))
     logger.info(f"Current user: {user_id}")
     user = await users_service.find_one_or_none(
         session=session, filters=UserFilter(id=user_id)
     )
     if user is not None:
-        request.state.user_id = user.id
+        if request:
+            request.state.user_id = user.id
         return user
     raise HTTPException(
         status_code=status.HTTP_404_NOT_FOUND, detail=f"User {user_id} not found"

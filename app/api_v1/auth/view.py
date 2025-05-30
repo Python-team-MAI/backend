@@ -325,7 +325,6 @@ async def auth_user_check_self_info(
 
 @router.patch("/me", response_model=TokenInfo)
 async def update_me(
-    response: Response,
     user_update: UserUpdate,
     user: UserRead = Depends(get_current_auth_user),
     session: AsyncSession = TransactionSessionDep,
