@@ -53,7 +53,7 @@ def setup_logging(name: str) -> logging.Logger:
     
     # Создаем обработчик для stdout
     handler = logging.StreamHandler(sys.stdout)
-    handler.setLevel(logging.INFO)
+    handler.setLevel(logging.DEBUG)
     
     # Устанавливаем JSON форматтер
     formatter = CustomJsonFormatter(

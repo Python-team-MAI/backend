@@ -76,18 +76,7 @@ async def chat(sid, message, session):
         chat_id=chat_id,
         is_anonymous=message["is_anonymous"],
     )
-    message = await messages_service.add(session=session, values=message_create)
-    message = MessageOut(
-        id=message.id,
-        created_at=message.created_at,
-        updated_at=message.updated_at,
-        first_name=socket_session.get("first_name"),
-        last_name=socket_session.get("last_name"),
-        text=message.text,
-        user_id=message.user_id,
-        chat_id=message.chat_id,
-        is_anonymous=message.is_anonymous,
-    )
+    message = await messages_service.add_return_user(session=session, values=message_create)
     await sio_server.emit(
         "chat", {"sid": sid, "message": message.model_dump(mode="json")}, room=chat_id
     )

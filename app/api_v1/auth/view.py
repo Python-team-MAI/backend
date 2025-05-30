@@ -94,7 +94,7 @@ async def auth_google(
         user = await users_service.add(session=session, values=user)
     async with redis_client as redis:
         code = await set_issue_auth_code(user_id=user.id, redis=redis)
-    logger.debug(f"Generate code for oauth2: {code}")
+    
     return RedirectResponse(f"{settings.hosts.FRONTEND_HOST}/api/oauth2/finalize?code={code}")
     
 
@@ -128,7 +128,6 @@ async def auth_github(response: Response, request: Request, redis_client: Redis 
 
         async with redis_client as redis:
             code = await set_issue_auth_code(user_id=user.id, redis=redis)
-        logger.debug(f"Generate code for oauth2: {code}")
         return RedirectResponse(f"{settings.hosts.FRONTEND_HOST}/api/oauth2/finalize?code={code}")
 
     except OAuthError as e:
@@ -160,7 +159,6 @@ async def auth_yandex(
         resp = await oauth.yandex.get("https://login.yandex.ru/info", token=token)
         user_info = resp.json()
         email = user_info["default_email"].lower()
-        logger.info(f"Get user email from yandex: {email}")
         user = await users_service.find_one_or_none(
             session=session, filters=UserFilter(email=email)
         )
@@ -170,7 +168,6 @@ async def auth_yandex(
         logger.debug(f"User: {user}")
         async with redis_client as redis:
             code = await set_issue_auth_code(user_id=user.id, redis=redis)
-        logger.debug(f"Generate code for oauth2: {code}")
         return RedirectResponse(f"{settings.hosts.FRONTEND_HOST}/api/oauth2/finalize?code={code}")
 
 
@@ -187,7 +184,6 @@ async def auth_user_issue_jwt(
     redis: Redis = Depends(redis_helper.get_redis_client),
     session: AsyncSession = SessionDep
 ):
-    logger.info(f"Code: {code}")
     async with redis as r:
         user_id = await r.get(f"auth_code:{code}")
 

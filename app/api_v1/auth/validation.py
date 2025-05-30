@@ -167,7 +167,6 @@ def validate_email(email: EmailStr) -> bool:
     domain = str(email).split("@")[-1]
     try:
         records = dns.resolver.resolve(domain, "MX")
-        logger.debug(f"Records: {records}")
         return bool(records)
     except (dns.resolver.NoAnswer, dns.resolver.NXDOMAIN, dns.exception.Timeout):
         return False
@@ -256,7 +255,6 @@ async def get_token_from_cookie_or_header(request: Request) -> str:
     token = request.cookies.get("access_token")
     if not token:
         authorization_header = request.headers.get("Authorization")
-        logger.info(f"Authorization header: {authorization_header}")
         if authorization_header:
             token = authorization_header.replace("Bearer ", "")
         else:

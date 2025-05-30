@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from app.api_v1.users.schemas import UserRead
 from datetime import datetime
 
 
@@ -13,3 +14,5 @@ class MessageOut(BaseModel):
     user_id: int
     is_deleted: bool = False
     is_anonymous: bool = False
+    user: UserRead | None
+

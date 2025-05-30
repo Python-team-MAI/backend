@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException, status, Depends, Query, Path
 from app.core.session_manager import SessionDep, TransactionSessionDep
 from app.api_v1.messages.models import MessagesOrm
 from .schemas import ChatCreate, ChatRead, ChatFilter, ChatUpdate
-from app.api_v1.messages.schemas import MessageRead
+from app.api_v1.messages.schemas import MessageRead, MessageAndUser
 from .service import chats_service
 from sqlalchemy.ext.asyncio import AsyncSession
 from .dependencies import chat_by_id
@@ -29,7 +29,7 @@ async def get_chat(chat=Depends(chat_by_id)):
     return chat
 
 
-@router.get("/{chat_id}/messages", response_model=list[MessageRead])
+@router.get("/{chat_id}/messages", response_model=list[MessageAndUser])
 async def list_chat_messages(
     chat_id: Annotated[int, Path],
     chat=Depends(chat_by_id),
