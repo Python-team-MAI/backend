@@ -9,11 +9,16 @@ from pythonjsonlogger import jsonlogger
 class CustomJsonFormatter(jsonlogger.JsonFormatter):
     """Кастомный JSON форматтер для логов"""
     
+    def __init__(self, *args, **kwargs):
+        # Отключаем экранирование unicode символов
+        kwargs.setdefault('ensure_ascii', False)
+        super().__init__(*args, **kwargs)
+    
     def add_fields(self, log_record: Dict[str, Any], record: logging.LogRecord, message_dict: Dict[str, Any]) -> None:
         super().add_fields(log_record, record, message_dict)
         
         # Добавляем timestamp в ISO формате
-        log_record['timestamp'] = datetime.now(timezone.utc).isoformat() + 'Z'
+        log_record['timestamp'] = datetime.utcnow().isoformat() + 'Z'
         
         # Добавляем уровень лога
         log_record['level'] = record.levelname
@@ -30,6 +35,15 @@ class CustomJsonFormatter(jsonlogger.JsonFormatter):
         # Переименовываем message в msg для краткости
         if 'message' in log_record:
             log_record['msg'] = log_record.pop('message')
+    
+    def format(self, record):
+        """Переопределяем format для правильной работы с unicode"""
+        import json
+        log_record = {}
+        self.add_fields(log_record, record, {})
+        
+        # Используем json.dumps с ensure_ascii=False для поддержки кириллицы
+        return json.dumps(log_record, ensure_ascii=False, default=str)
 
 
 def setup_logging(name: str) -> logging.Logger:
@@ -44,7 +58,7 @@ def setup_logging(name: str) -> logging.Logger:
     """
     
     # Создаем логгер
-    logger = logging.getLogger("app")
+    logger = logging.getLogger(name)
     logger.setLevel(logging.INFO)
     
     # Убираем существующие обработчики
