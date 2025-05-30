@@ -47,7 +47,7 @@ def create_app() -> FastAPI:
         title="MAI API",
         description=("python project"),
         version="1.0.0",
-        lifespan=lifespan
+        lifespan=lifespan,
     )
     app.add_middleware(LoggingMiddleware)
     app.add_middleware(
@@ -58,9 +58,9 @@ def create_app() -> FastAPI:
         allow_headers=["*"],
     )
     app.add_middleware(SessionMiddleware, secret_key=SECRET_KEY)
-    #register_logging_middler_ware(app)
+    # register_logging_middler_ware(app)
     register_routers(app)
-    
+
     return app
 
 
@@ -73,7 +73,7 @@ def register_routers(app: FastAPI) -> None:
     def home_page():
         logger.info("Обращение к главной странице", extra={"endpoint": "/"})
         return {"message": "Hello from MAI API"}
-    
+
     @app.get("/health")
     def health_check():
         logger.info("Health check запрос", extra={"endpoint": "/health"})
@@ -106,7 +106,6 @@ def custom_openapi():
             openapi_schema["paths"][path][method]["security"] = [{"BearerAuth": []}]
     app.openapi_schema = openapi_schema
     return app.openapi_schema
-
 
 
 app = create_app()

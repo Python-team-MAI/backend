@@ -6,7 +6,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 
 class AssistantMessagesService(BaseService):
-    def __init__(self, repository: AssistantMessagesRepo, schemas_out=AssistantMessageRead):
+    def __init__(
+        self, repository: AssistantMessagesRepo, schemas_out=AssistantMessageRead
+    ):
         self.repository: AssistantMessagesRepo = repository
         self.schema_out = schemas_out
         super().__init__(repository=self.repository, schema_out=self.schema_out)
@@ -17,4 +19,6 @@ class AssistantMessagesService(BaseService):
         )
 
 
-assistant_messages_service: AssistantMessagesService = AssistantMessagesService(repository=assistant_messages_repo)
+assistant_messages_service: AssistantMessagesService = AssistantMessagesService(
+    repository=assistant_messages_repo
+)

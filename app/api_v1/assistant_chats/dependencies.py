@@ -22,5 +22,6 @@ async def assistant_chat_by_id(
         return chat
 
     raise HTTPException(
-        status_code=status.HTTP_404_NOT_FOUND, detail=f"Chat {assistant_chat_id} not found"
+        status_code=status.HTTP_404_NOT_FOUND,
+        detail=f"Chat {assistant_chat_id} not found",
     )

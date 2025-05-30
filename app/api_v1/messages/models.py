@@ -19,4 +19,3 @@ class MessagesOrm(UsersRelationMixin, Base):
     is_anonymous: Mapped[bool] = mapped_column(default=False)
 
     chat: Mapped["ChatsOrm"] = relationship(back_populates="messages")
-    

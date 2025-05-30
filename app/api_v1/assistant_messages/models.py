@@ -14,5 +14,9 @@ class AssistantMessagesOrm(UsersRelationMixin, Base):
     _user_back_populates = "assistant_messages"
     text: Mapped[str] = mapped_column(Text)
     type: Mapped[str] = mapped_column(nullable=False)
-    assistant_chat_id: Mapped[int] = mapped_column(ForeignKey("assistant_chats.id", ondelete="CASCADE"))
-    assistant_chat: Mapped["AssistantChatsOrm"] = relationship(back_populates="messages")
+    assistant_chat_id: Mapped[int] = mapped_column(
+        ForeignKey("assistant_chats.id", ondelete="CASCADE")
+    )
+    assistant_chat: Mapped["AssistantChatsOrm"] = relationship(
+        back_populates="messages"
+    )

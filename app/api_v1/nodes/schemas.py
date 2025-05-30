@@ -1,6 +1,7 @@
 from pydantic import BaseModel, ConfigDict
 from datetime import datetime
 
+
 class Node(BaseModel):
     x: float
     y: float
@@ -18,6 +19,7 @@ class NodeRead(Node):
     created_at: datetime
     updated_at: datetime
     id: int
+
 
 class NodeCreate(Node):
     pass

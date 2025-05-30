@@ -15,4 +15,3 @@ class MessageOut(BaseModel):
     is_deleted: bool = False
     is_anonymous: bool = False
     user: UserRead | None
-

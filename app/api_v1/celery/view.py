@@ -4,6 +4,7 @@ from app.api_v1.auth.validation import require_superuser
 
 router = APIRouter(tags=["Celery Tasks"], dependencies=[Depends(require_superuser())])
 
+
 @router.get("/tasks/{task_id}/status")
 async def get_task_status(task_id: str):
     """

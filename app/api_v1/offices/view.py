@@ -1,8 +1,23 @@
-from fastapi import APIRouter, HTTPException, status, Depends, File, UploadFile, Query, Path
+from fastapi import (
+    APIRouter,
+    HTTPException,
+    status,
+    Depends,
+    File,
+    UploadFile,
+    Query,
+    Path,
+)
 import logging
 from app.api_v1.offices.service import offices_service
 from app.api_v1.nodes.service import nodes_service
-from app.api_v1.offices.schemas import OfficeCreate, OfficeRead, OfficeUpdate, OfficeFilter, OfficesAndChats
+from app.api_v1.offices.schemas import (
+    OfficeCreate,
+    OfficeRead,
+    OfficeUpdate,
+    OfficeFilter,
+    OfficesAndChats,
+)
 from app.api_v1.offices.models import OfficesOrm
 from app.api_v1.nodes.schemas import NodeFilter, NodeRead
 from app.api_v1.auth.validation import require_role, require_superuser
@@ -24,6 +39,7 @@ async def get_offices(
 ):
     """Find and return all offices"""
     return await offices_service.find_all(session=session)
+
 
 @router.post("/from-json", status_code=status.HTTP_201_CREATED)
 async def create_office_from_json(
@@ -48,7 +64,6 @@ async def create_office(
     return await offices_service.add(session=session, values=office_in)
 
 
-
 @router.get("/{office_id}", response_model=OfficeRead)
 async def get_office(
     office=Depends(office_by_id),
@@ -59,27 +74,30 @@ async def get_office(
 
 @router.get("/map/floor/{floor}")
 async def get_floor(
-    floor: int = Path(..., description="Этаж"),
-    session: AsyncSession = SessionDep
+    floor: int = Path(..., description="Этаж"), session: AsyncSession = SessionDep
 ):
-    offices_orm = await offices_service.repository.find_all_with_chat(session=session, filters=OfficeFilter(floor=floor))
+    offices_orm = await offices_service.repository.find_all_with_chat(
+        session=session, filters=OfficeFilter(floor=floor)
+    )
     logger.debug(f"Offices orm: {offices_orm}")
     offices = [OfficesAndChats.model_validate(office) for office in offices_orm]
-    nodes = await nodes_service.find_all(session=session, filters=NodeFilter(floor=floor))
-    return {
-        "offices": offices,
-        "nodes": nodes
-    }
+    nodes = await nodes_service.find_all(
+        session=session, filters=NodeFilter(floor=floor)
+    )
+    return {"offices": offices, "nodes": nodes}
+
 
 @router.delete("/map/floor/{floor}")
 async def get_floor(
     floor: int = Path(..., description="Этаж"),
-    session: AsyncSession = TransactionSessionDep
+    session: AsyncSession = TransactionSessionDep,
 ):
-    offices = await offices_service.delete(session=session, filters=OfficeFilter(floor=floor))
+    offices = await offices_service.delete(
+        session=session, filters=OfficeFilter(floor=floor)
+    )
     nodes = await nodes_service.delete(session=session, filters=NodeFilter(floor=floor))
     return {"deleted_offices": offices, "deleted_nodes": nodes}
-    
+
 
 @router.patch("/{office_id}")
 async def update_office(
@@ -94,8 +112,9 @@ async def update_office(
 
 @router.delete("/{office_id}")
 async def delete_office(
-    office_id: int, 
+    office_id: int,
     session: AsyncSession = TransactionSessionDep,
 ) -> int:
-    return await offices_service.delete(session=session, filters=OfficeFilter(id=office_id))
-
+    return await offices_service.delete(
+        session=session, filters=OfficeFilter(id=office_id)
+    )

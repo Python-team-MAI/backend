@@ -17,8 +17,6 @@ class NodesService(BaseService):
         self.schema_out = schemas_out
         super().__init__(repository=self.repository, schema_out=self.schema_out)
 
-
-
     # async def add(self, session, values: NodeCreate):
     #     if values.type in ["elevator", "stairs"]:
     #         with open("static/all_vertical_connections.json", "r", encoding="utf-8") as f:
@@ -32,21 +30,25 @@ class NodesService(BaseService):
     #             json.dump(data, f)
 
     #     return await super().add(session, values)
-    
-    async def create_nodes_from_json(self, data, session: AsyncSession) -> list[NodeRead]:
-        if ("nodes" not in data or not isinstance(data["nodes"], list)):
-            raise HTTPException(status_code=400, detail="Invalid data format: missing 'nodes' list")
 
+    async def create_nodes_from_json(
+        self, data, session: AsyncSession
+    ) -> list[NodeRead]:
+        if "nodes" not in data or not isinstance(data["nodes"], list):
+            raise HTTPException(
+                status_code=400, detail="Invalid data format: missing 'nodes' list"
+            )
 
         ans = []
         for node_data in data["nodes"]:
             try:
                 node = NodeCreate(**node_data)
-        
+
                 added_node = await self.add(session=session, values=node)
                 ans.append(added_node)
             except Exception as e:
                 raise HTTPException(status_code=400, detail=f"Invalid node data: {e}")
         return ans
-    
+
+
 nodes_service: NodesService = NodesService(repository=nodes_repo, schemas_out=NodeRead)

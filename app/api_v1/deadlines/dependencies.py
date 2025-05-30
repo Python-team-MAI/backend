@@ -16,7 +16,7 @@ async def deadline_by_id(
     deadline_id: Annotated[int, Path],
     session: AsyncSession = SessionDep,
 ) -> DeadlineRead:
-    
+
     deadline = await deadlines_service.find_one_or_none(
         session=session, filters=DeadlineFilter(id=deadline_id)
     )
@@ -28,11 +28,12 @@ async def deadline_by_id(
         detail=f"Deadline {deadline_id} not found",
     )
 
+
 async def deadlines_by_author_id(
     user_id: Annotated[int, Path],
     session: AsyncSession = SessionDep,
 ) -> list[DeadlineRead]:
-    
+
     deadlines = await deadlines_service.find_all(
         session=session, filters=DeadlineFilter(author_id=user_id)
     )
@@ -53,7 +54,12 @@ async def deadline_by_datetime_to(
 ) -> list[DeadlineRead]:
 
     date_from = parse_datetime(date)
-    deadlines = await deadlines_service.get_deadline_by_date_to(session=session, date=date_from, author_id=user_id, interval_seconds=interval_seconds)
+    deadlines = await deadlines_service.get_deadline_by_date_to(
+        session=session,
+        date=date_from,
+        author_id=user_id,
+        interval_seconds=interval_seconds,
+    )
     if deadlines != []:
         return deadlines
 
@@ -71,7 +77,12 @@ async def deadline_by_datetime_from(
 ) -> list[DeadlineRead]:
 
     date_from = parse_datetime(date)
-    deadlines = await deadlines_service.get_deadline_by_date_from(session=session, date=date_from, author_id=user_id, interval_seconds=interval_seconds)
+    deadlines = await deadlines_service.get_deadline_by_date_from(
+        session=session,
+        date=date_from,
+        author_id=user_id,
+        interval_seconds=interval_seconds,
+    )
     if deadlines != []:
         return deadlines
 

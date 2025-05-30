@@ -8,7 +8,7 @@ class RedisHelper:
         self.host = host
         self.port = port
         self.db = db
-        self.r = None  
+        self.r = None
         self.broker = aioredis.Redis(host=self.host, port=self.port, db=1)
 
     @asynccontextmanager
@@ -21,7 +21,6 @@ class RedisHelper:
         except Exception as e:
             print(f"Ошибка подключения к Redis: {e}")
             raise
-
 
 
 redis_helper = RedisHelper(

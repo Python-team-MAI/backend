@@ -7,6 +7,7 @@ import logging
 from sqlalchemy.ext.asyncio import AsyncSession
 from .base_model import Base
 from app.api_v1.utils.setup_logging import setup_logging
+
 logger = setup_logging(__name__)
 
 T = TypeVar("T", bound=Base)
@@ -47,7 +48,12 @@ class BaseRepository(Generic[T]):
             logger.error(f"Ошибка при поиске записи по фильтрам {filter_dict}: {e}")
             raise
 
-    async def find_all(self, session: AsyncSession, filters: BaseModel | None = None, options: list = None):
+    async def find_all(
+        self,
+        session: AsyncSession,
+        filters: BaseModel | None = None,
+        options: list = None,
+    ):
         filter_dict = filters.model_dump(exclude_unset=True) if filters else {}
         logger.debug(
             f"Поиск всех записей {self.model.__name__} по фильтрам: {filter_dict}"

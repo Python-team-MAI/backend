@@ -19,7 +19,6 @@ class UsersRelationMixin:
             ForeignKey("users.id", ondelete="CASCADE"),
             unique=cls._user_id_unique,
             nullable=cls._user_id_nullable,
-            
         )
 
     @declared_attr

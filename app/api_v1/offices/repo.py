@@ -13,16 +13,24 @@ logger = setup_logging(__name__)
 class OfficesRepo(BaseRepository):
     model = OfficesOrm
 
-
-    async def find_all_with_chat(self, session: AsyncSession, filters: OfficeFilter | None = None, ):
+    async def find_all_with_chat(
+        self,
+        session: AsyncSession,
+        filters: OfficeFilter | None = None,
+    ):
         filter_dict = filters.model_dump(exclude_unset=True) if filters else {}
         logger.debug(
             f"Поиск всех записей {self.model.__name__} по фильтрам: {filter_dict}"
         )
-        query = select(self.model).filter_by(**filter_dict).options(selectinload(OfficesOrm.chat))
+        query = (
+            select(self.model)
+            .filter_by(**filter_dict)
+            .options(selectinload(OfficesOrm.chat))
+        )
         result = await session.execute(query)
         records = result.scalars().all()
         logger.debug(f"Найдено {len(records)} записей.")
         return records
+
 
 offices_repo: OfficesOrm = OfficesRepo()

@@ -47,6 +47,7 @@ class SocketMessageAndUser(BaseModel):
     is_anonymous: bool = False
     user: UserRead | None
 
+
 class MessageCreate(Message):
     pass
 

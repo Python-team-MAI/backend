@@ -1,6 +1,10 @@
 from fastapi import APIRouter, HTTPException, status, Depends
 import logging
-from app.api_v1.auth.view import get_current_auth_user, email_verification_template, password_reset_template
+from app.api_v1.auth.view import (
+    get_current_auth_user,
+    email_verification_template,
+    password_reset_template,
+)
 from app.api_v1.auth.validation import require_superuser
 from app.api_v1.auth.utils import create_url_safe_mail_token
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -28,7 +32,9 @@ async def send_mail(mail: SendMailModel):
         if message == "email_verification":
             mail_token = create_url_safe_mail_token({"email": emails[0]})
             link = f"{settings.hosts.BACKEND_HOST}/v1/auth/verify-mail/{mail_token}"
-            message = email_verification_template.render(link=link, year=datetime.now().year)
+            message = email_verification_template.render(
+                link=link, year=datetime.now().year
+            )
 
         elif message == "reset_password":
             mail_token = create_url_safe_mail_token({"email": emails[0]})
@@ -47,9 +53,7 @@ async def send_mail(mail: SendMailModel):
     emails = mail.addresses
     subject = mail.subject
     mail_token = create_url_safe_mail_token({"email": emails[0]})
-    link = (
-        f"{settings.hosts.FRONTEND_HOST}/ru/password/change?token={mail_token}"
-    )
+    link = f"{settings.hosts.FRONTEND_HOST}/ru/password/change?token={mail_token}"
     message = password_reset_template.render(link=link)
 
     send_email.delay(emails, subject, message)

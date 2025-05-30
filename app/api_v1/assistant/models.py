@@ -11,6 +11,8 @@ class KnowledgeSnapshotsOrm(Base):
 
     is_active: Mapped[bool] = mapped_column(default=False)
     document_paths: Mapped[list[str]] = mapped_column(JSONB, nullable=False)
-    index_id: Mapped[str] = mapped_column(nullable=True)       # ID индекса в Yandex GPT
+    index_id: Mapped[str] = mapped_column(nullable=True)  # ID индекса в Yandex GPT
     task_id: Mapped[str] = mapped_column(nullable=True)
-    status: Mapped[str] = mapped_column(String, default='ready')     # working, processing, ready
+    status: Mapped[str] = mapped_column(
+        String, default="ready"
+    )  # working, processing, ready

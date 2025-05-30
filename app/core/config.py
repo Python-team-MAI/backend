@@ -36,17 +36,17 @@ class DBSettings(EnvBaseSettings):
     def DATABASE_URL_asyncpg(self):
         # DSN
         return f"postgresql+asyncpg://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@{self.POSTGRES_HOST}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
-    
+
     @property
     def REDIS_URL(self):
         # DSN
         return f"redis://{self.REDIS_HOST}:{self.REDIS_PORT}/{self.REDIS_DB}"
-    
+
     @property
     def CELERY_BROKER_URL(self):
         # DSN
         return f"redis://{self.REDIS_HOST}:{self.REDIS_PORT}/{self.CELERY_BROKER_DB}"
-    
+
     @property
     def CELERY_RESULT_URL(self):
         # DSN
@@ -99,7 +99,6 @@ class HostsSettings(EnvBaseSettings):
     BACKEND_HOST: str
     FRONTEND_HOST: str
     BOT_TOKEN: str
-
 
 
 class AssistantSettings(EnvBaseSettings):

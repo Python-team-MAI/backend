@@ -5,7 +5,10 @@ celery_app = Celery(
     "app",
     broker=settings.db.CELERY_BROKER_URL,
     backend=settings.db.CELERY_RESULT_URL,
-    include=["app.api_v1.assistant.tasks", "app.api_v1.mail.tasks"],  # все модули с тасками
+    include=[
+        "app.api_v1.assistant.tasks",
+        "app.api_v1.mail.tasks",
+    ],  # все модули с тасками
 )
 
 # # настройки можно указать явно

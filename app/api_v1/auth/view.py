@@ -6,7 +6,7 @@ from app.api_v1.auth.helpers import (
     create_refresh_token,
     setup_access_token,
     setup_refresh_token,
-    set_issue_auth_code
+    set_issue_auth_code,
 )
 from app.api_v1.auth.validation import (
     http_bearer,
@@ -31,7 +31,16 @@ from .schemas import (
 )
 from app.api_v1.mail.tasks import send_email
 from .utils import hash_password, create_url_safe_mail_token, decode_url_safe_mail_token
-from fastapi import APIRouter, Depends, Request, status, HTTPException, Body, Response, Query
+from fastapi import (
+    APIRouter,
+    Depends,
+    Request,
+    status,
+    HTTPException,
+    Body,
+    Response,
+    Query,
+)
 from fastapi.responses import JSONResponse
 import aiohttp
 from .validation import oauth, require_role, validate_token
@@ -44,6 +53,7 @@ from jinja2 import Environment, FileSystemLoader
 from datetime import datetime
 import app.api_v1.auth.utils as auth_utils
 from app.api_v1.utils.setup_logging import setup_logging
+
 logger = setup_logging(__name__)
 
 env = Environment(loader=FileSystemLoader("app/templates"))
@@ -73,7 +83,10 @@ async def login_google(request: Request, is_mobile: bool = Query(default=False))
 
 @router.get("/callback/google")
 async def auth_google(
-    response: Response, request: Request, redis_client = Depends(redis_helper.get_redis_client), session: AsyncSession = TransactionSessionDep
+    response: Response,
+    request: Request,
+    redis_client=Depends(redis_helper.get_redis_client),
+    session: AsyncSession = TransactionSessionDep,
 ):
     try:
         user_response: OAuth2Token = await oauth.google.authorize_access_token(request)
@@ -90,13 +103,22 @@ async def auth_google(
         session=session, filters=UserFilter(email=email)
     )
     if not user:
-        user = UserCreate(email=email, password=None, auth_type="google", is_active=True, is_superuser=False, is_verified=True)
+        user = UserCreate(
+            email=email,
+            password=None,
+            auth_type="google",
+            is_active=True,
+            is_superuser=False,
+            is_verified=True,
+        )
         user = await users_service.add(session=session, values=user)
     async with redis_client as redis:
         code = await set_issue_auth_code(user_id=user.id, redis=redis)
-    
-    return RedirectResponse(f"{settings.hosts.FRONTEND_HOST}/api/oauth2/finalize?code={code}")
-    
+
+    return RedirectResponse(
+        f"{settings.hosts.FRONTEND_HOST}/api/oauth2/finalize?code={code}"
+    )
+
 
 @router.get("/github")
 async def login_github(request: Request, is_mobile: bool = Query(default=False)):
@@ -104,7 +126,12 @@ async def login_github(request: Request, is_mobile: bool = Query(default=False))
 
 
 @router.get("/callback/github")
-async def auth_github(response: Response, request: Request, redis_client: Redis = Depends(redis_helper.get_redis_client), session: AsyncSession = TransactionSessionDep):
+async def auth_github(
+    response: Response,
+    request: Request,
+    redis_client: Redis = Depends(redis_helper.get_redis_client),
+    session: AsyncSession = TransactionSessionDep,
+):
     try:
         token = await oauth.github.authorize_access_token(request)
         if not token:
@@ -124,11 +151,19 @@ async def auth_github(response: Response, request: Request, redis_client: Redis 
         )
         if not user:
             user = UserCreate(email=email, password=None, auth_type="github")
-            user = await users_service.add(session=session, values=user, is_active=True, is_superuser=False, is_verified=True)
+            user = await users_service.add(
+                session=session,
+                values=user,
+                is_active=True,
+                is_superuser=False,
+                is_verified=True,
+            )
 
         async with redis_client as redis:
             code = await set_issue_auth_code(user_id=user.id, redis=redis)
-        return RedirectResponse(f"{settings.hosts.FRONTEND_HOST}/api/oauth2/finalize?code={code}")
+        return RedirectResponse(
+            f"{settings.hosts.FRONTEND_HOST}/api/oauth2/finalize?code={code}"
+        )
 
     except OAuthError as e:
         logger.error(f"Oauth error: {e}")
@@ -145,7 +180,10 @@ async def login_github(request: Request, is_mobile: bool = Query(default=False))
 
 @router.get("/callback/yandex")
 async def auth_yandex(
-    response: Response, request: Request, redis_client: Redis = Depends(redis_helper.get_redis_client), session: AsyncSession = TransactionSessionDep, 
+    response: Response,
+    request: Request,
+    redis_client: Redis = Depends(redis_helper.get_redis_client),
+    session: AsyncSession = TransactionSessionDep,
 ):
     try:
         token = await oauth.yandex.authorize_access_token(request)
@@ -164,12 +202,19 @@ async def auth_yandex(
         )
         if not user:
             user = UserCreate(email=email, password=None, auth_type="yandex")
-            user = await users_service.add(session=session, values=user, is_active=True, is_superuser=False, is_verified=True)
+            user = await users_service.add(
+                session=session,
+                values=user,
+                is_active=True,
+                is_superuser=False,
+                is_verified=True,
+            )
         logger.debug(f"User: {user}")
         async with redis_client as redis:
             code = await set_issue_auth_code(user_id=user.id, redis=redis)
-        return RedirectResponse(f"{settings.hosts.FRONTEND_HOST}/api/oauth2/finalize?code={code}")
-
+        return RedirectResponse(
+            f"{settings.hosts.FRONTEND_HOST}/api/oauth2/finalize?code={code}"
+        )
 
     except OAuthError as e:
         raise HTTPException(
@@ -182,20 +227,24 @@ async def auth_yandex(
 async def auth_user_issue_jwt(
     code: str = Query(),
     redis: Redis = Depends(redis_helper.get_redis_client),
-    session: AsyncSession = SessionDep
+    session: AsyncSession = SessionDep,
 ):
     async with redis as r:
         user_id = await r.get(f"auth_code:{code}")
 
     if not user_id:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User with id: {user_id} does not exist")
-    
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"User with id: {user_id} does not exist",
+        )
+
     user_id = user_id.decode("utf-8")
     logger.info(f"Get user_id from redis code {user_id}")
     user = await users_service.get_user_by_id(session=session, id=int(user_id))
     access_token = await setup_access_token(user=user)
     refresh_token = await setup_refresh_token(user=user)
     return TokenInfo(access_token=access_token, refresh_token=refresh_token)
+
 
 @router.post("/token-validate")
 async def token_validate(token: str | bytes, token_type: str):
@@ -226,10 +275,10 @@ async def auth_user_issue_jwt(
 
     return TokenInfo(access_token=access_token, refresh_token=refresh_token)
 
+
 @router.get("/tg-auth", response_model=TokenInfo)
 async def auth_user_issue_jwt(
-    tg_id: str = Query(),
-    user_in = UserLogin, session: AsyncSession = SessionDep
+    tg_id: str = Query(), user_in=UserLogin, session: AsyncSession = SessionDep
 ):
     unauthed_exc = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED, detail="invalid password or username"
@@ -252,14 +301,17 @@ async def auth_user_issue_jwt(
     access_token = await setup_access_token(user=user)
     refresh_token = await setup_refresh_token(user=user)
     async with aiohttp.ClientSession() as session:
-            async with session.post("https://api.mai-students.ru/telegram-webhook/auth", data={
+        async with session.post(
+            "https://api.mai-students.ru/telegram-webhook/auth",
+            data={
                 "telegram_id": tg_id,
                 "first_name": user.first_name,
                 "last_name": user.last_name,
                 "access_token": access_token,
-                "refresh_token": refresh_token
-                        }) as response:
-                ans = await response.text()
+                "refresh_token": refresh_token,
+            },
+        ) as response:
+            ans = await response.text()
     logger.info(f"Ans: {ans}")
     return RedirectResponse(f"https://t.me/{settings.hosts.BOT_TOKEN}?start=auth_done")
 
@@ -299,7 +351,9 @@ async def register_user(
     mail_token = create_url_safe_mail_token({"email": email})
 
     link = f"{settings.hosts.BACKEND_HOST}/v1/auth/verify-mail/{mail_token}"
-    html_message = email_verification_template.render(link=link, year=datetime.now().year)
+    html_message = email_verification_template.render(
+        link=link, year=datetime.now().year
+    )
     subject = "Welcome"
     send_email.delay([email], subject, html_message)
     logger.info(f"Send verified message to email: {email}")
@@ -352,10 +406,8 @@ async def password_reset_request(
 
     # mail
     mail_token = create_url_safe_mail_token({"email": email})
-    
-    link = (
-        f"{settings.hosts.FRONTEND_HOST}/ru/password/change?token={mail_token}"
-    )
+
+    link = f"{settings.hosts.FRONTEND_HOST}/ru/password/change?token={mail_token}"
     html_message = password_reset_template.render(link=link)
     subject = "Reset password"
     send_email.delay([email], subject, html_message)

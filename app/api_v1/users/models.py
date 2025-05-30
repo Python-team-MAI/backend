@@ -49,5 +49,6 @@ class UsersOrm(Base):
     )
     group: Mapped["GroupsOrm"] = relationship(back_populates="users")
     messages: Mapped["MessagesOrm"] = relationship(back_populates="user")
-    assistant_messages: Mapped["AssistantMessagesOrm"] = relationship(back_populates="user")
-    
+    assistant_messages: Mapped["AssistantMessagesOrm"] = relationship(
+        back_populates="user"
+    )

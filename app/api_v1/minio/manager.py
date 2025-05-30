@@ -1,18 +1,20 @@
-import io 
-import mimetypes 
-import os 
-from typing import List 
+import io
+import mimetypes
+import os
+from typing import List
 import tempfile
-import aioboto3 
-import aiohttp 
+import aioboto3
+import aiohttp
 import filetype
-from botocore.exceptions import ClientError 
-from fastapi import HTTPException, UploadFile 
-from PIL import Image, UnidentifiedImageError 
+from botocore.exceptions import ClientError
+from fastapi import HTTPException, UploadFile
+from PIL import Image, UnidentifiedImageError
 from app.core.config import settings
 import logging
 from app.api_v1.utils.setup_logging import setup_logging
+
 logger = setup_logging(__name__)
+
 
 class S3AsyncClient:
     _cached_session = None
@@ -23,31 +25,32 @@ class S3AsyncClient:
         if S3AsyncClient._cached_session is None:
             S3AsyncClient._cached_session = aioboto3.Session(
                 aws_access_key_id=settings.db.MINIO_ACCESS,
-                aws_secret_access_key=settings.db.MINIO_SECRET
+                aws_secret_access_key=settings.db.MINIO_SECRET,
             )
         self.endpoint_url = self._get_endpoint_url()
 
     @property
     def client(self):
         return S3AsyncClient._cached_session.client(
-            "s3",
-            endpoint_url=self.endpoint_url,
-            use_ssl=self.use_ssl
+            "s3", endpoint_url=self.endpoint_url, use_ssl=self.use_ssl
         )
-    
+
     def _get_endpoint_url(self) -> str:
         if self.endpoint_domain.startswith("http"):
-            raise ValueError("settings.MINIO_DOMAIN should not start with 'http' or 'https'. Please use just the domain name.")
+            raise ValueError(
+                "settings.MINIO_DOMAIN should not start with 'http' or 'https'. Please use just the domain name."
+            )
 
         protocol = "https" if self.use_ssl else "http"
         return f"{protocol}://{self.endpoint_domain}"
-    
+
     async def __aenter__(self):
         self.s3_client = await self.client.__aenter__()
         return self
-    
+
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         await self.s3_client.__aexit__(exc_type, exc_val, exc_tb)
+
 
 class S3StorageManager(S3AsyncClient):
     bucket_name = None
@@ -67,7 +70,9 @@ class S3StorageManager(S3AsyncClient):
         for attr in required_attributes:
             value = getattr(cls, attr)
             if value is None:
-                raise ValueError(f"The '{attr}' class attribute is required and cannot be None.")
+                raise ValueError(
+                    f"The '{attr}' class attribute is required and cannot be None."
+                )
 
     def _prepare_path(self, path: str) -> str:
         """
@@ -79,8 +84,8 @@ class S3StorageManager(S3AsyncClient):
         Возвращает:
         - `str`: Подготовленный путь с завершающим '/'.
         """
-        if path and not path.endswith('/'):
-            path += '/'
+        if path and not path.endswith("/"):
+            path += "/"
         return path
 
     async def _read_file(self, file: UploadFile) -> tuple[bytes, str]:
@@ -117,7 +122,7 @@ class S3StorageManager(S3AsyncClient):
                 key = f"{base_name}_{counter}{extension}"
                 counter += 1
             except ClientError as e:
-                if e.response['Error']['Code'] == '404':
+                if e.response["Error"]["Code"] == "404":
                     break
                 else:
                     raise
@@ -142,7 +147,9 @@ class S3StorageManager(S3AsyncClient):
         except UnidentifiedImageError:
             raise HTTPException(status_code=400, detail="Invalid image file")
         except Exception as e:
-            raise HTTPException(status_code=500, detail="An error occurred while processing the image") from e
+            raise HTTPException(
+                status_code=500, detail="An error occurred while processing the image"
+            ) from e
 
     async def _check_and_delete_object(self, s3_client, key: str) -> None:
         """
@@ -159,8 +166,11 @@ class S3StorageManager(S3AsyncClient):
             await s3_client.head_object(Bucket=self.bucket_name, Key=key)
             await self.delete_object(key)
         except ClientError as e:
-            if e.response['Error']['Code'] != '404':
-                raise HTTPException(status_code=500, detail="Error checking or deleting existing file in S3") from e
+            if e.response["Error"]["Code"] != "404":
+                raise HTTPException(
+                    status_code=500,
+                    detail="Error checking or deleting existing file in S3",
+                ) from e
 
     async def generate_url(self, key: str, expiration: int = 3600) -> str:
         """
@@ -178,17 +188,19 @@ class S3StorageManager(S3AsyncClient):
             protocol = "https" if self.use_ssl else "http"
             if self.custom_domain:
                 return f"{protocol}://{self.custom_domain}/{key}"
-            if self.default_acl == 'public-read':
+            if self.default_acl == "public-read":
                 return f"{protocol}://{self.endpoint_domain}/{self.bucket_name}/{key}"
             try:
                 url = await s3_client.generate_presigned_url(
-                    'get_object',
-                    Params={'Bucket': self.bucket_name, 'Key': key},
-                    ExpiresIn=expiration
+                    "get_object",
+                    Params={"Bucket": self.bucket_name, "Key": key},
+                    ExpiresIn=expiration,
                 )
                 return url
             except ClientError as e:
-                raise HTTPException(status_code=500, detail="Error generating presigned URL") from e
+                raise HTTPException(
+                    status_code=500, detail="Error generating presigned URL"
+                ) from e
 
     async def list_objects(self, path: str = "", file_type: str = "all") -> List[str]:
         """
@@ -209,30 +221,36 @@ class S3StorageManager(S3AsyncClient):
                 prefix = self._prepare_path(path)
 
                 response = await s3_client.list_objects_v2(
-                    Bucket=self.bucket_name,
-                    Prefix=prefix
+                    Bucket=self.bucket_name, Prefix=prefix
                 )
 
-                if 'Contents' not in response:
+                if "Contents" not in response:
                     return []
 
                 def is_image(key: str) -> bool:
-                    return key.lower().endswith(('.png', '.jpg', '.jpeg', '.webp', '.gif'))
+                    return key.lower().endswith(
+                        (".png", ".jpg", ".jpeg", ".webp", ".gif")
+                    )
 
                 def filter_key(obj):
                     if file_type == "images":
-                        return is_image(obj['Key'])
+                        return is_image(obj["Key"])
                     elif file_type == "non_images":
-                        return not is_image(obj['Key'])
+                        return not is_image(obj["Key"])
                     else:
                         return True
 
-                return [obj['Key'] for obj in response['Contents'] if filter_key(obj)]
+                return [obj["Key"] for obj in response["Contents"] if filter_key(obj)]
 
             except ClientError as e:
-                raise HTTPException(status_code=500, detail="Error connecting to S3 or retrieving objects") from e
+                raise HTTPException(
+                    status_code=500,
+                    detail="Error connecting to S3 or retrieving objects",
+                ) from e
 
-    async def put_object(self, file: UploadFile, path: str = "", file_type: str = "image") -> str:
+    async def put_object(
+        self, file: UploadFile, path: str = "", file_type: str = "image"
+    ) -> str:
         """
         Асинхронно загружает файл в S3 бакет и возвращает ключ (имя) объекта в хранилище.
 
@@ -254,12 +272,14 @@ class S3StorageManager(S3AsyncClient):
 
             if file_type == "image":
                 if not is_image:
-                    logger.error("Файл %s не является допустимым изображением", file.filename)
+                    logger.error(
+                        "Файл %s не является допустимым изображением", file.filename
+                    )
                     raise HTTPException(status_code=400, detail="Invalid image file")
                 file_content, content_type = self._convert_to_webp(file_content)
                 file_name = os.path.splitext(file_name)[0] + ".webp"
             else:
-                content_type = kind.mime if kind else 'application/octet-stream'
+                content_type = kind.mime if kind else "application/octet-stream"
 
             key = await self._generate_unique_key(s3_client, path + file_name)
 
@@ -269,15 +289,19 @@ class S3StorageManager(S3AsyncClient):
                     Key=key,
                     Body=file_content,
                     ContentType=content_type,
-                    ACL=self.default_acl
+                    ACL=self.default_acl,
                 )
             except ClientError as e:
                 logger.error("Ошибка при загрузке файла %s: %s", file.filename, e)
-                raise HTTPException(status_code=500, detail="Error uploading file to S3") from e
+                raise HTTPException(
+                    status_code=500, detail="Error uploading file to S3"
+                ) from e
             logger.info("Файл успешно загружен в S3: %s", key)
             return key
 
-    async def update_object(self, file: UploadFile, old_key: str, path: str = "", file_type: str = "image") -> str:
+    async def update_object(
+        self, file: UploadFile, old_key: str, path: str = "", file_type: str = "image"
+    ) -> str:
         """
         Обновляет существующий объект в S3, удаляя старый и загружая новый файл.
 
@@ -297,7 +321,9 @@ class S3StorageManager(S3AsyncClient):
             new_key = await self.put_object(file, path, file_type)
             return new_key
 
-    async def generate_upload_url(self, file_name: str, expiration: int = 3600, path: str = "") -> str:
+    async def generate_upload_url(
+        self, file_name: str, expiration: int = 3600, path: str = ""
+    ) -> str:
         """
         Генерирует и возвращает предписанный URL для загрузки файла в S3.
 
@@ -317,15 +343,19 @@ class S3StorageManager(S3AsyncClient):
             key = await self._generate_unique_key(s3_client, path + file_name)
             try:
                 url = await s3_client.generate_presigned_url(
-                    'put_object',
-                    Params={'Bucket': self.bucket_name, 'Key': key},
-                    ExpiresIn=expiration
+                    "put_object",
+                    Params={"Bucket": self.bucket_name, "Key": key},
+                    ExpiresIn=expiration,
                 )
                 return url, key
             except ClientError as e:
-                raise HTTPException(status_code=500, detail="Error generating presigned upload URL") from e
+                raise HTTPException(
+                    status_code=500, detail="Error generating presigned upload URL"
+                ) from e
 
-    async def generate_update_url(self, file_name: str, old_key: str, expiration: int = 3600, path: str = "") -> str:
+    async def generate_update_url(
+        self, file_name: str, old_key: str, expiration: int = 3600, path: str = ""
+    ) -> str:
         """
         Генерирует и возвращает предписанный URL для обновления файла в S3.
 
@@ -345,13 +375,15 @@ class S3StorageManager(S3AsyncClient):
             key = await self._generate_unique_key(s3_client, path + file_name)
             try:
                 url = await s3_client.generate_presigned_url(
-                    'put_object',
-                    Params={'Bucket': self.bucket_name, 'Key': key},
-                    ExpiresIn=expiration
+                    "put_object",
+                    Params={"Bucket": self.bucket_name, "Key": key},
+                    ExpiresIn=expiration,
                 )
                 return url, key
             except ClientError as e:
-                raise HTTPException(status_code=500, detail="Error generating presigned upload URL") from e
+                raise HTTPException(
+                    status_code=500, detail="Error generating presigned upload URL"
+                ) from e
 
     async def delete_object(self, key: str) -> None:
         """
@@ -369,10 +401,12 @@ class S3StorageManager(S3AsyncClient):
                 await s3_client.delete_object(Bucket=self.bucket_name, Key=key)
                 logger.info("Объект успешно удален: %s", key)
             except ClientError as e:
-                error_code = e.response['Error']['Code']
-                if error_code != 'NoSuchKey':
+                error_code = e.response["Error"]["Code"]
+                if error_code != "NoSuchKey":
                     logger.error("Ошибка при удалении объекта %s: %s", key, e)
-                    raise HTTPException(status_code=500, detail="Error deleting file from S3") from e
+                    raise HTTPException(
+                        status_code=500, detail="Error deleting file from S3"
+                    ) from e
                 logger.warning("Объект не найден в S3 при попытке удаления: %s", key)
 
     async def download_file_by_url(self, url: str) -> UploadFile:
@@ -388,7 +422,9 @@ class S3StorageManager(S3AsyncClient):
         async with aiohttp.ClientSession() as session:
             async with session.get(url) as response:
                 if response.status != 200:
-                    raise HTTPException(status_code=response.status, detail="Failed to download file")
+                    raise HTTPException(
+                        status_code=response.status, detail="Failed to download file"
+                    )
 
                 file_content = await response.read()
                 file_name = url.split("/")[-1]
@@ -412,9 +448,9 @@ class S3StorageManager(S3AsyncClient):
 
                     content_type, _ = mimetypes.guess_type(file_path)
                     if content_type is None:
-                        content_type = 'application/octet-stream'
+                        content_type = "application/octet-stream"
 
-                    with open(file_path, 'rb') as f:
+                    with open(file_path, "rb") as f:
                         file_content = f.read()
 
                     try:
@@ -423,13 +459,18 @@ class S3StorageManager(S3AsyncClient):
                             Key=s3_key,
                             Body=file_content,
                             ContentType=content_type,
-                            ACL=self.default_acl
+                            ACL=self.default_acl,
                         )
                     except ClientError as e:
-                        if e.response['Error']['Code'] == '405':
-                            raise HTTPException(status_code=405, detail=f"Method Not Allowed when uploading file {file} to S3")
-                        raise HTTPException(status_code=500, detail=f"Error uploading file {file} to S3") from e
-                    
+                        if e.response["Error"]["Code"] == "405":
+                            raise HTTPException(
+                                status_code=405,
+                                detail=f"Method Not Allowed when uploading file {file} to S3",
+                            )
+                        raise HTTPException(
+                            status_code=500, detail=f"Error uploading file {file} to S3"
+                        ) from e
+
     async def download_files_to_temp_dir(self, s3_keys: list[str]) -> list[str]:
         """
         Скачивает все файлы по ключам из MinIO в одну временную директорию.
@@ -446,12 +487,14 @@ class S3StorageManager(S3AsyncClient):
                     await s3_client.download_fileobj(self.bucket_name, s3_key, f)
 
         return local_paths, temp_dir
-                    
+
 
 class MinIOStorage(S3StorageManager):
     bucket_name = settings.db.KNOWLEDGE_BUCKET
     default_acl = settings.db.MINIO_ACL
-    endpoint_domain =settings.db.MINIO_ENDPOINT.replace("http://", "").replace("https://", "")
+    endpoint_domain = settings.db.MINIO_ENDPOINT.replace("http://", "").replace(
+        "https://", ""
+    )
     use_ssl = False
 
     async def upload_files(self, files: list[UploadFile], snapshot_files: list = []):

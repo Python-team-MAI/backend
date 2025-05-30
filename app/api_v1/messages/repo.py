@@ -5,6 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, update
 from sqlalchemy.orm import selectinload
 
+
 class MessagesRepo(BaseRepository):
     model = MessagesOrm
 
@@ -22,9 +23,11 @@ class MessagesRepo(BaseRepository):
         result = await session.execute(stmt)
         return result.scalars().all()
 
-    async def add_return_user(self, session: AsyncSession, values: MessageCreate) -> MessagesOrm:
+    async def add_return_user(
+        self, session: AsyncSession, values: MessageCreate
+    ) -> MessagesOrm:
         new_message = await self.add(session=session, values=values)
- 
+
         stmt = (
             select(MessagesOrm)
             .options(selectinload(MessagesOrm.user))

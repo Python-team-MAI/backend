@@ -30,17 +30,16 @@ class OfficesAndChats(BaseModel):
     height: float
     type: str
     coords: list[float]
-    chat: ChatRead | None = None 
-    
-
+    chat: ChatRead | None = None
 
 
 class OfficeRead(Office):
     model_config = ConfigDict(from_attributes=True)
-    
+
     created_at: datetime
     updated_at: datetime
     id: int
+
 
 class OfficeCreate(Office):
     pass

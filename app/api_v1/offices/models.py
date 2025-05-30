@@ -22,4 +22,3 @@ class OfficesOrm(Base):
     coords: Mapped[list[float]] = mapped_column(ARRAY(FLOAT), nullable=False)
 
     chat: Mapped["ChatsOrm"] = relationship("ChatsOrm", back_populates="office")
-

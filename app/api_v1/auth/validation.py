@@ -31,6 +31,7 @@ from datetime import timedelta, datetime, timezone
 import logging
 import re
 from app.api_v1.utils.setup_logging import setup_logging
+
 logger = setup_logging(__name__)
 logger.setLevel(logging.DEBUG)
 
@@ -146,8 +147,6 @@ async def validate_token(token: str | bytes, token_type: str):
         return {"success": True, "error": None}
     except Exception as e:
         return {"success": False, "error": e}
-
-
 
 
 def validate_password(password: str) -> int:

@@ -10,6 +10,7 @@ import json
 
 router = APIRouter(tags=["Nodes"], dependencies=[Depends(require_superuser)])
 
+
 @router.get("/nodes", response_model=list[NodeRead])
 async def get_nodes(
     session: AsyncSession = SessionDep,
@@ -43,10 +44,7 @@ async def create_node_from_json(
 
 @router.delete("/nodes/{node_id}")
 async def delete_node(
-    node_id, 
+    node_id,
     session: AsyncSession = TransactionSessionDep,
 ) -> int:
     return await nodes_service.delete(session=session, filters=NodeFilter(id=node_id))
-
-
-

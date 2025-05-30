@@ -51,7 +51,6 @@ class UserUpdate(BaseModel):
     is_superuser: bool | None = None
     role: Role | None = None
     assistant_id: str | None = None
-    
 
 
 class UserFilter(BaseModel):

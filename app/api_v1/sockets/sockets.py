@@ -11,6 +11,7 @@ from app.api_v1.auth.utils import decode_jwt
 from app.api_v1.auth.validation import validate_token, get_user_by_token_sub
 from app.api_v1.auth.helpers import ACCESS_TOKEN_TOKEN_TYPE
 from app.api_v1.utils.setup_logging import setup_logging
+
 logger = setup_logging(__name__)
 
 sio_server = socketio.AsyncServer(async_mode="asgi", cors_allowed_origins=[])
@@ -36,11 +37,14 @@ async def validate_socket_token(sid, session, access_token):
 
     return user
 
+
 @sio_server.event
 @session_manager.connection(commit=True)
 async def connect(sid, environ, auth, session):
     access_token = auth.get("access_token")
-    user = await validate_socket_token(sid=sid, session=session, access_token=access_token)
+    user = await validate_socket_token(
+        sid=sid, session=session, access_token=access_token
+    )
     user_id = user.id
     chat_id = auth.get("chat_id")
     if not chat_id:
@@ -64,7 +68,9 @@ async def connect(sid, environ, auth, session):
 @session_manager.connection(commit=True)
 async def chat(sid, message, session):
     access_token = message.get("access_token")
-    user = await validate_socket_token(sid=sid, session=session, access_token=access_token)
+    user = await validate_socket_token(
+        sid=sid, session=session, access_token=access_token
+    )
     user_id = user.id
     chat_id = message["chat_id"]
     socket_session = await sio_server.get_session(sid)
@@ -74,7 +80,9 @@ async def chat(sid, message, session):
         chat_id=chat_id,
         is_anonymous=message["is_anonymous"],
     )
-    message = await messages_service.add_return_user(session=session, values=message_create)
+    message = await messages_service.add_return_user(
+        session=session, values=message_create
+    )
     await sio_server.emit(
         "chat", {"sid": sid, "message": message.model_dump(mode="json")}, room=chat_id
     )

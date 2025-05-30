@@ -8,11 +8,13 @@ from app.api_v1.utils.setup_logging import setup_logging
 from app.core.redis_helper import redis_helper
 from fastapi import Depends
 from redis.asyncio import Redis
+
 logger = setup_logging(__name__)
 TOKEN_TYPE_FIELD = "type"
 ACCESS_TOKEN_TOKEN_TYPE = "access"
 REFRESH_TOKEN_TOKEN_TYPE = "refresh"
 from uuid import UUID, uuid4
+
 
 async def create_jwt(
     token_type: str,
@@ -29,12 +31,12 @@ async def create_jwt(
     )
 
 
-
 async def set_issue_auth_code(user_id: int, redis: Redis):
     code = str(uuid4())
     await redis.set(f"auth_code:{code}", str(user_id), ex=120)
 
     return code
+
 
 async def create_access_token(user: UserRead) -> str:
     jwt_payload = {

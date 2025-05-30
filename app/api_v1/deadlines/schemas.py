@@ -12,20 +12,21 @@ def parse_datetime(value):
         dt = value
     else:
         raise ValueError("Invalid datetime format")
-    
+
     # Явно обрезаем микросекунды и часовой пояс
     return dt.replace(microsecond=0, tzinfo=None)
 
+
 class Deadline(BaseModel):
     name: str
-    date_from: datetime | None 
+    date_from: datetime | None
     date_to: datetime
     teacher: str | None
     author_id: int
     lesson: str | None
     description: str | None
 
-    @field_validator('date_from', 'date_to', mode='before')
+    @field_validator("date_from", "date_to", mode="before")
     def parse_datetime(cls, value):
         if isinstance(value, str):
             dt = datetime.fromisoformat(value)
@@ -33,7 +34,7 @@ class Deadline(BaseModel):
             dt = value
         else:
             raise ValueError("Invalid datetime format")
-        
+
         # Явно обрезаем микросекунды и часовой пояс
         return dt.replace(microsecond=0, tzinfo=None)
 
@@ -46,10 +47,9 @@ class DeadlineRead(Deadline):
     updated_at: datetime
 
 
-
-
 class PersonalDeadlineCreate(Deadline):
     pass
+
 
 class GroupDeadlineCreate(Deadline):
     group_id: int

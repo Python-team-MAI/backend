@@ -17,7 +17,9 @@ class DeadlinesOrm(Base):
     date_to: Mapped[datetime] = mapped_column(DateTime(timezone=False), nullable=False)
     teacher: Mapped[str] = mapped_column(String(50), nullable=True)
     author_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
-    group_id: Mapped[int] = mapped_column(ForeignKey("groups.id", ondelete="CASCADE"), nullable=True)
+    group_id: Mapped[int] = mapped_column(
+        ForeignKey("groups.id", ondelete="CASCADE"), nullable=True
+    )
     lesson: Mapped[str] = mapped_column(String(50), nullable=True)
     description: Mapped[str] = mapped_column(String(500), nullable=True)
 

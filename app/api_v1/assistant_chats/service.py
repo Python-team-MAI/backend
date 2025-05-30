@@ -12,4 +12,6 @@ class AssistantChatsService(BaseService):
         super().__init__(repository=self.repository, schema_out=AssistantChatRead)
 
 
-assistant_chats_service: AssistantChatsService = AssistantChatsService(repository=assistant_chats_repo)
+assistant_chats_service: AssistantChatsService = AssistantChatsService(
+    repository=assistant_chats_repo
+)

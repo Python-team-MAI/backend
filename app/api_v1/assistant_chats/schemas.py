@@ -6,6 +6,7 @@ class AssistantChat(BaseModel):
     name: str | None = None
     user_id: int
 
+
 class AssistantChatRead(AssistantChat):
     model_config = ConfigDict(from_attributes=True)
 
@@ -20,8 +21,6 @@ class AssistantChatCreate(AssistantChat):
 
 class AssistantChatUpdate(AssistantChatCreate):
     name: str | None = None
-    
-
 
 
 class AssistantChatFilter(AssistantChatCreate):
@@ -30,5 +29,3 @@ class AssistantChatFilter(AssistantChatCreate):
     updated_at: datetime | None = None
     name: str | None = None
     user_id: int | None = None
-
-

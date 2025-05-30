@@ -8,7 +8,6 @@ from yandex_cloud_ml_sdk.search_indexes import (
     StaticIndexChunkingStrategy,
     HybridSearchIndexType,
     ReciprocalRankFusionIndexCombinationStrategy,
-    
 )
 from yandex_cloud_ml_sdk import AsyncYCloudML
 from fastapi import HTTPException, status
@@ -21,9 +20,13 @@ from app.api_v1.utils.setup_logging import setup_logging
 
 logger = setup_logging(__name__)
 
+
 class YandexService:
     def __init__(self):
-        self.sdk = AsyncYCloudML(auth=settings.assistant.YANDEX_CLOUD_API_KEY,  folder_id=settings.assistant.YANDEX_CLOUD_FOLDER_ID)
+        self.sdk = AsyncYCloudML(
+            auth=settings.assistant.YANDEX_CLOUD_API_KEY,
+            folder_id=settings.assistant.YANDEX_CLOUD_FOLDER_ID,
+        )
         self.model = self.sdk.models.completions("yandexgpt", model_version="rc")
         self.folder_id = settings.assistant.YANDEX_CLOUD_FOLDER_ID
 
@@ -58,7 +61,9 @@ class YandexService:
         return l
 
     def upload_file(self, directory_path):
-        return self.sdk.files.upload(directory_path, ttl_days=3, expiration_policy="static")
+        return self.sdk.files.upload(
+            directory_path, ttl_days=3, expiration_policy="static"
+        )
 
     async def create_new_index(self, document_paths: list[str]) -> str:
         """
@@ -68,30 +73,29 @@ class YandexService:
         uploaded_files = (self.upload_file(path) for path in document_paths)
         files = await asyncio.gather(*uploaded_files)
         operation = await self.sdk.search_indexes.create_deferred(
-        files,
-        index_type=HybridSearchIndexType(
-            chunking_strategy=StaticIndexChunkingStrategy(
-                max_chunk_size_tokens=700,
-                chunk_overlap_tokens=300,
-            )
-        ),
+            files,
+            index_type=HybridSearchIndexType(
+                chunking_strategy=StaticIndexChunkingStrategy(
+                    max_chunk_size_tokens=700,
+                    chunk_overlap_tokens=300,
+                )
+            ),
         )
         search_index = await operation
         logger.info(f"Создали индекс: {search_index}")
 
-            
         return search_index.id
 
     async def get_current_index(self, index_id: str):
         """Получаем индекс по айди"""
         return await self.sdk.search_indexes.get(search_index_id=index_id)
-    
+
     async def get_first_index(self):
         indexes = await self.get_indexes()
         if not indexes:
             raise HTTPException(status_code=400, detail="Indexes not found")
         return yandex_service.sdk.tools.search_index(indexes[0])
-    
+
     async def get_indexes(self) -> list:
         indexes = []
         try:
@@ -106,7 +110,7 @@ class YandexService:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=ex)
 
         return indexes
-    
+
     async def get_assistants(self) -> list:
         assistants = []
         try:
@@ -119,18 +123,19 @@ class YandexService:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=ex)
 
         return assistants
-    
+
     async def get_assistant(self, assistant_id: str):
         """Возвращает ассистента по его ID"""
         return await self.sdk.assistants.get(assistant_id=assistant_id)
-    
+
     def get_instruction(self):
         with open("instructions.md", "r", encoding="utf-8") as f:
             instruction = f.read()
         return instruction
-    
+
     def update_index(self, index_id: str, document_paths: list[str]):
         pass
+
 
 yandex_service: YandexService = YandexService()
 instruction = yandex_service.get_instruction()
@@ -139,12 +144,19 @@ instruction = yandex_service.get_instruction()
 class Agent:
 
     @classmethod
-    async def create(cls, thread_id=None, assistant=None, instruction=None, search_index=None, tools=None):
+    async def create(
+        cls,
+        thread_id=None,
+        assistant=None,
+        instruction=None,
+        search_index=None,
+        tools=None,
+    ):
         self = cls()
         self.thread_id = thread_id
         self.thread = None
 
-        if assistant:   
+        if assistant:
             self.assistant = assistant
         else:
             if tools:
@@ -156,7 +168,9 @@ class Agent:
             if search_index:
                 index = await yandex_service.sdk.tools.search_index(search_index)
                 tools.append(index)
-            self.assistant = await yandex_service.create_assistant(yandex_service.model, tools)
+            self.assistant = await yandex_service.create_assistant(
+                yandex_service.model, tools
+            )
 
         if instruction:
             await self.assistant.update(instruction=instruction)
@@ -179,8 +193,7 @@ class Agent:
         run = await self.assistant.run(thread)
         res = await run
         logger.info(f"Result: {res}")
-        return  res.text, self.thread.id
-        
+        return res.text, self.thread.id
 
     async def restart(self):
         if self.thread:
@@ -196,12 +209,15 @@ class Agent:
             await self.assistant.delete()
 
 
-
 class KnowledgeSnapshotsService(BaseService):
-    def __init__(self, repository: KnowledgeSnapshotsRepo, schemas_out=KnowledgeSnapshotRead):
+    def __init__(
+        self, repository: KnowledgeSnapshotsRepo, schemas_out=KnowledgeSnapshotRead
+    ):
         self.repository = repository
         self.schema_out = KnowledgeSnapshotRead
         super().__init__(repository=self.repository, schema_out=KnowledgeSnapshotRead)
 
 
-snapshots_service: KnowledgeSnapshotsService = KnowledgeSnapshotsService(repository=snapshots_repo, schemas_out=KnowledgeSnapshotRead)
+snapshots_service: KnowledgeSnapshotsService = KnowledgeSnapshotsService(
+    repository=snapshots_repo, schemas_out=KnowledgeSnapshotRead
+)

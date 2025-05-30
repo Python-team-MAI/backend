@@ -12,7 +12,6 @@ from app.api_v1.utils.setup_logging import setup_logging
 logger = setup_logging(__name__)
 
 
-
 class DatabaseSessionManager:
     """
     Менеджер для работы с сессиями базы данных. Позволяет управлять сессиями,

@@ -7,6 +7,7 @@ from datetime import timedelta, datetime, timezone
 import uuid
 import logging
 from app.api_v1.utils.setup_logging import setup_logging
+
 logger = setup_logging(__name__)
 
 serializer = URLSafeTimedSerializer(

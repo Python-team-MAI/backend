@@ -18,5 +18,6 @@ async def assistant_message_by_id(
         return message
 
     raise HTTPException(
-        status_code=status.HTTP_404_NOT_FOUND, detail=f"Message {assistant_message_id} not found"
+        status_code=status.HTTP_404_NOT_FOUND,
+        detail=f"Message {assistant_message_id} not found",
     )

@@ -15,4 +15,6 @@ class AssistantChatsOrm(UsersRelationMixin, Base):
 
     name: Mapped[str] = mapped_column(String(50), nullable=True)
 
-    messages: Mapped[list["AssistantMessagesOrm"]] = relationship(back_populates="assistant_chat")
+    messages: Mapped[list["AssistantMessagesOrm"]] = relationship(
+        back_populates="assistant_chat"
+    )
