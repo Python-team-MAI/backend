@@ -17,6 +17,7 @@ class Role(enum.Enum):
     student = "student"
     teacher = "teacher"
     headman = "headman"
+    admin = "admin"
 
 
 class UsersOrm(Base):
