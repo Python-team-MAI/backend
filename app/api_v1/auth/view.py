@@ -326,7 +326,7 @@ async def verify_mail(mail_token: str, session: AsyncSession = TransactionSessio
         logger.info(f"User {user_email} is verified successfully")
         return RedirectResponse(f"{settings.hosts.FRONTEND_HOST}/ru/register/success")
 
-    logger.error(f"Error occured during verification. Token data: {token_data}")
+    logger.error(f"Error occured during verification. User email: {user_email}")
     return JSONResponse(
         content={"message": "Error occured during verification"},
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,

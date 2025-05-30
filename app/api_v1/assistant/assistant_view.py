@@ -67,8 +67,6 @@ async def ask_question(message: MessageQuestion, user: UserRead = Depends(get_cu
 
 
 
-
-
 @router.delete("/{assistant_id}")
 async def delete_index(assistant_id: str):
     assistant = await yandex_service.get_assistant(assistant_id=assistant_id)
