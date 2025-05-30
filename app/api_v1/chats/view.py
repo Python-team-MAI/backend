@@ -57,7 +57,7 @@ async def create_chats(
     return await chats_service.add(session=session, values=chats_in)
 
 
-@router.patch("/{chats_id}", response_model=ChatRead)
+@router.patch("/{chat_id}", response_model=ChatRead)
 async def update_chats(
     chats_update: ChatUpdate,
     chats=Depends(chat_by_id),
@@ -68,9 +68,9 @@ async def update_chats(
     )
 
 
-@router.delete("/{chats_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/{chat_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_chats(
-    chats_id: int,
+    chat_id: int,
     session: AsyncSession = TransactionSessionDep,
 ) -> None:
-    await chats_service.delete(session=session, filters=ChatFilter(id=chats_id))
+    await chats_service.delete(session=session, filters=ChatFilter(id=chat_id))

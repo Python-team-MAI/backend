@@ -39,7 +39,6 @@ async def validate_socket_token(sid, session, access_token):
 @sio_server.event
 @session_manager.connection(commit=True)
 async def connect(sid, environ, auth, session):
-    logger.info(f"New sid {sid} connected. Auth: {auth}")
     access_token = auth.get("access_token")
     user = await validate_socket_token(sid=sid, session=session, access_token=access_token)
     user_id = user.id
@@ -64,7 +63,6 @@ async def connect(sid, environ, auth, session):
 @sio_server.event
 @session_manager.connection(commit=True)
 async def chat(sid, message, session):
-    logger.info(f"Sid: {sid}. New message received: {message}")
     access_token = message.get("access_token")
     user = await validate_socket_token(sid=sid, session=session, access_token=access_token)
     user_id = user.id

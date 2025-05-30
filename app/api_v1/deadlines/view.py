@@ -3,16 +3,16 @@ from app.core.session_manager import SessionDep, TransactionSessionDep
 from .schemas import PersonalDeadlineCreate, GroupDeadlineCreate, DeadlineRead, DeadlineFilter, DeadlineUpdate, parse_datetime
 from .service import deadlines_service
 from sqlalchemy.ext.asyncio import AsyncSession
-from .dependencies import deadline_by_id, deadline_by_datetime_from, deadline_by_datetime_to, deadline_by_group_id
-from app.api_v1.auth.validation import require_condition
+from .dependencies import deadline_by_id, deadline_by_datetime_from, deadline_by_datetime_to, deadline_by_group_id, deadlines_by_author_id
+from app.api_v1.auth.validation import require_condition, get_current_auth_user
 import logging
 
 logger = logging.getLogger(__name__)
 
-Depends(require_condition(required_role="headman"))
+
 router = APIRouter(
     tags=["Deadlines"],
-    dependencies=[],
+    dependencies=[Depends(get_current_auth_user)],
 )
 
 
@@ -22,6 +22,13 @@ async def get_deadlines(
 ):
     return await deadlines_service.find_all(session=session)
 
+@router.get("/{deadline_id}", response_model=DeadlineRead)
+async def get_deadlines_by_author_id(deadline=Depends(deadline_by_id)):
+    return deadline
+
+@router.get("/user/{user_id}", response_model=list[DeadlineRead])
+async def get_deadlines_by_author_id(deadlines=Depends(deadlines_by_author_id)):
+    return deadlines
 
 @router.get("/{datetime_id}", response_model=DeadlineRead)
 async def get_chat(deadlines=Depends(deadline_by_id)):

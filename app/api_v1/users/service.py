@@ -5,11 +5,60 @@ from app.api_v1.auth.utils import hash_password
 from app.core.base.base_service import BaseService
 from sqlalchemy.ext.asyncio import AsyncSession
 from pydantic import EmailStr
-
+import random
 import logging
 from app.api_v1.utils.setup_logging import setup_logging
 logger = setup_logging(__name__)
 
+
+animals = [
+    "Аллигатор", "Антерес", "Армадилло", "Аурокс", "Аксолотль", 
+    "Барсук", "Летучая мышь", "Бобёр", "Буйвол", "Капля", 
+    "Капибара", "Хамелеон", "Гепард", "Шиншилла", "Чипмaнк", 
+    "Чупакабра", "Коршун", "Койот", "Динго", "Динозавр", 
+    "Дельфин", "Утка", "Слон", "Хорёк", "Лиса", "Жираф", 
+    "Гофер", "Гризли", "Ёж", "Гиппо", "Гиена", "Ибис", 
+    "Ифрит", "Игуана", "Джекaл", "Кенгуру", "Коала", "Кракен", 
+    "Лемур", "Леопард", "Лигер", "Лама", "Мантa", "Миска", 
+    "Обезьяна", "Лось", "Нарвал", "Nyan Cat", "Орангутан", 
+    "Выдра", "Панда", "Пингвин", "Утконос", "Питон", "Квага", 
+    "Кролик", "Енот", "Носорог", "Овца", "Шип", "Скунс", 
+    "Белка", "Тигр", "Черепаха", "Морж", "Волк", "Волкособ", 
+    "Вомбат"
+]
+
+adjectives = {
+    'm': ["Весёлый", "Грустный", "Сонный", "Игривый", "Задумчивый", 
+          "Быстрый", "Медленный", "Пушистый", "Голодный", "Довольный",
+          "Загадочный", "Яркий", "Неуклюжий", "Шустрый", "Ленивый"],
+    
+    'f': ["Весёлая", "Грустная", "Сонная", "Игривая", "Задумчивая",
+          "Быстрая", "Медленная", "Пушистая", "Голодная", "Довольная",
+          "Загадочная", "Яркая", "Неуклюжая", "Шустрая", "Ленивая"],
+    
+    'n': ["Весёлое", "Грустное", "Сонное", "Игривое", "Задумчивое",
+          "Быстрое", "Медленное", "Пушистое", "Голодное", "Довольное",
+          "Загадочное", "Яркое", "Неуклюжее", "Шустрое", "Ленивое"]
+}
+
+
+animal_genders = {
+    # Мужской род
+    'm': ["Аллигатор", "Антерес", "Армадилло", "Аурокс", "Барсук", "Бобёр", 
+          "Буйвол", "Хамелеон", "Гепард", "Динго", "Динозавр", "Дельфин",
+          "Слон", "Хорёк", "Жираф", "Гофер", "Гризли", "Ёж", "Гиппо", "Ибис",
+          "Ифрит", "Джекaл", "Кенгуру", "Кракен", "Лемур", "Леопард", "Лигер",
+          "Лось", "Нарвал", "Орангутан", "Пингвин", "Утконос", "Питон", "Кролик",
+          "Енот", "Носорог", "Тигр", "Морж", "Волк", "Волкособ", "Вомбат"],
+    
+    # Женский род
+    'f': ["Летучая мышь", "Капля", "Капибара", "Шиншилла", "Чупакабра", "Утка",
+          "Лиса", "Гиена", "Игуана", "Коала", "Лама", "Мантa", "Миска", "Обезьяна",
+          "Выдра", "Панда", "Овца", "Белка", "Черепаха"],
+    
+    # Средний род (и неизменяемые)
+    'n': ["Квага", "Шип", "Скунс"]
+    }
 class UsersService(BaseService):
     def __init__(self, repository: UsersRepo, schema=UserRead):
         self.repository = repository
@@ -22,10 +71,24 @@ class UsersService(BaseService):
     async def get_all_admins(self, session: AsyncSession):
         await self.repository.get_all_admins(session=session)
 
+    def generate_random_names(self):
+        animal = random.choice(animals)
+        gender = 'm'
+        for g, animals_list in animal_genders.items():
+            if animal in animals_list:
+                gender = g
+                break
+        
+        adjective = random.choice(adjectives[gender])
+        return adjective, animal
+
     async def create_new_user(
         self, session: AsyncSession, email: EmailStr, password: str, auth_type: str
     ) -> UserRead:
+        first_name, last_name = self.generate_random_names()
         user_create = UserCreate(
+            first_name=first_name,
+            last_name=last_name,
             email=email,
             password=hash_password(password),
             auth_type="default",

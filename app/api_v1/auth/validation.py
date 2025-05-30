@@ -101,10 +101,10 @@ async def validate_auth_user(
     session=SessionDep,
 ):
     unauthed_exc = HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED, detail="invalid password or username"
+        status_code=status.HTTP_401_UNAUTHORIZED, detail="Неверные почта или пароль"
     )
     unverify_exc = HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED, detail="your email dont verify"
+        status_code=status.HTTP_401_UNAUTHORIZED, detail="Данные почта не подтверждена"
     )
     user = await users_service.find_one_or_none(
         session=session, filters=UserFilter(email=user_in.email)
@@ -186,7 +186,7 @@ async def validate_user_email_and_password(user: UserLogin, session: AsyncSessio
     ):
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
-            detail="User with this email already exist",
+            detail="Пользователь с такой почтой уже существует",
         )
     logger.debug("Check user exist - Success")
     if user.password:
@@ -232,7 +232,7 @@ def require_role(required_role: str):
     return require_condition(required_role=required_role, allow_superuser=True)
 
 
-async def get_user_by_token_sub(payload: dict, session) -> UserRead:
+async def get_user_by_token_sub(payload: dict, request: Request, session) -> UserRead:
     user_id = int(payload.get("sub"))
     logger.info(f"Current user: {user_id}")
     user = await users_service.find_one_or_none(
@@ -240,7 +240,7 @@ async def get_user_by_token_sub(payload: dict, session) -> UserRead:
     )
     if user is not None:
         return user
-
+    request.state.user_id = user.id
     raise HTTPException(
         status_code=status.HTTP_404_NOT_FOUND, detail=f"User {user_id} not found"
     )
