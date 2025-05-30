@@ -233,7 +233,7 @@ async def auth_user_issue_jwt(
 @router.get("/tg-auth", response_model=TokenInfo)
 async def auth_user_issue_jwt(
     tg_id: str = Query(),
-    user_in = UserLogin(email="fedorvolosnev@yandex.ru", password="string12345"), session: AsyncSession = SessionDep
+    user_in = UserLogin, session: AsyncSession = SessionDep
 ):
     unauthed_exc = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED, detail="invalid password or username"

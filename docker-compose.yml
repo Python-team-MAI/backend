@@ -14,8 +14,16 @@ services:
                 condition: service_healthy
         volumes:
             - .:/app
+            - ./logs:/app/logs
+        logging:
+            driver: json-file
+            options:
+                tag: "{{.ImageName}}|{{.Name}}|{{.ImageFullID}}|{{.FullID}}"
         networks:
             - mai_network
+            - logging_network
+
+        
 
     postgres:
         image: postgres:13-alpine

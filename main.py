@@ -13,7 +13,7 @@ from app.api_v1.utils.setup_logging import setup_logging
 from starlette.config import Config
 from typing import AsyncGenerator
 from authlib.integrations.starlette_client import OAuth
-from app.api_v1.middlewares.logging import register_logging_middler_ware
+from app.api_v1.middlewares.logging import LoggingMiddleware
 import uvicorn
 from pathlib import Path
 
@@ -49,6 +49,7 @@ def create_app() -> FastAPI:
         version="1.0.0",
         lifespan=lifespan
     )
+    app.add_middleware(LoggingMiddleware)
     app.add_middleware(
         CORSMiddleware,
         allow_origins=["http://localhost:3000", "https://mai-students.ru"],
@@ -68,11 +69,15 @@ def register_routers(app: FastAPI) -> None:
 
     root_router = APIRouter()
 
-    @root_router.get("/", tags=["root"])
+    @app.get("/")
     def home_page():
-        return {
-            "message": "Hello",
-        }
+        logger.info("Обращение к главной странице", extra={"endpoint": "/"})
+        return {"message": "Hello from MAI API"}
+    
+    @app.get("/health")
+    def health_check():
+        logger.info("Health check запрос", extra={"endpoint": "/health"})
+        return {"status": "healthy", "service": "mai-api"}
 
     app.include_router(router=router_v1, prefix="/v1")
     app.mount("/static", StaticFiles(directory="static"), name="static")

@@ -38,6 +38,7 @@ aioboto3 = "^14.3.0"
 filetype = "^1.2.0"
 pillow = "^11.2.1"
 pandas = "^2.2.3"
+python-json-logger = "^3.3.0"
 
 
 [build-system]
