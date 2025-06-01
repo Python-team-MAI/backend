@@ -257,7 +257,6 @@ async def get_token_from_cookie_or_header(request: Request) -> str:
     token = request.cookies.get("access_token")
     if not token:
         authorization_header = request.headers.get("Authorization")
-        logger.info(f"Header: {authorization_header}")
         if authorization_header:
             token = authorization_header.replace("Bearer ", "")
         else:
