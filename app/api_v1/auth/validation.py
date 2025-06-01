@@ -138,7 +138,9 @@ async def validate_token(token: str | bytes, token_type: str):
         payload = auth_utils.decode_jwt(token=token)
         await validate_token_type(payload=payload, token_type=token_type)
         exp_datetime = datetime.fromtimestamp(payload["exp"], tz=timezone.utc)
+    
         if exp_datetime < datetime.now(timezone.utc):
+            logger.info("Token expired")
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail=f"token has expired",
@@ -255,6 +257,7 @@ async def get_token_from_cookie_or_header(request: Request) -> str:
     token = request.cookies.get("access_token")
     if not token:
         authorization_header = request.headers.get("Authorization")
+        logger.info(f"Header: {authorization_header}")
         if authorization_header:
             token = authorization_header.replace("Bearer ", "")
         else:

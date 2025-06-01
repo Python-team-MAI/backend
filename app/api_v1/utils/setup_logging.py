@@ -38,39 +38,31 @@ class CustomJsonFormatter(jsonlogger.JsonFormatter):
 
 
 def setup_logging(name: str) -> logging.Logger:
-    """
-    Настройка логирования для отправки в Loki
-
-    Args:
-        name: Имя логгера
-
-    Returns:
-        Настроенный логгер
-    """
-
-    # Создаем логгер
-    logger = logging.getLogger()
+    logger = logging.getLogger(name)
     logger.setLevel(logging.INFO)
+    logger.handlers.clear()
 
-    # Убираем существующие обработчики
-    for handler in logger.handlers[:]:
-        logger.removeHandler(handler)
-
-    # Создаем обработчик для stdout
-    handler = logging.StreamHandler(sys.stdout)
-    handler.setLevel(logging.DEBUG)
-
-    # Устанавливаем JSON форматтер
-    formatter = CustomJsonFormatter(
+    # JSON handler (stdout → Promtail/Loki)
+    json_handler = logging.StreamHandler(sys.stdout)
+    json_handler.setLevel(logging.INFO)
+    json_formatter = CustomJsonFormatter(
         fmt="%(timestamp)s %(level)s %(logger)s %(msg)s %(file)s %(function)s",
         json_ensure_ascii=False,
     )
-    handler.setFormatter(formatter)
+    json_handler.setFormatter(json_formatter)
 
-    # Добавляем обработчик к логгеру
-    logger.addHandler(handler)
+    # Console handler (читаемый формат)
+    console_handler = logging.StreamHandler(sys.stderr)
+    console_handler.setLevel(logging.INFO)
+    console_formatter = logging.Formatter(
+        "[%(asctime)s] [%(levelname)s] %(name)s - %(message)s (%(filename)s:%(lineno)d)",
+        datefmt="%Y-%m-%d %H:%M:%S",
+    )
+    console_handler.setFormatter(console_formatter)
 
-    # Отключаем распространение логов вверх по иерархии
+    logger.addHandler(json_handler)
+    logger.addHandler(console_handler)
     logger.propagate = False
 
     return logger
+
