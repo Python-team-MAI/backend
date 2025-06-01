@@ -20,13 +20,13 @@ from app.api_v1.auth.validation import (
     require_role,
     require_condition,
     get_current_auth_user,
-    require_superuser,
+    require_superuser,get_current_user_id
 )
 from typing import Annotated
 import logging
 
 
-router = APIRouter(tags=["AssistantChats"])
+router = APIRouter(tags=["AssistantChats"], dependencies=[Depends(get_current_auth_user)])
 logger = logging.getLogger(__name__)
 PAGE_SIZE = 100
 
@@ -44,19 +44,20 @@ async def get_assistant_chats(
 
 @router.get("/me", response_model=list[AssistantChatRead])
 async def get_assistant_chats(
-    user: UserRead = Depends(get_current_auth_user), session: AsyncSession = SessionDep
+    user_id: str = Depends(lambda request: request.state.user_id),
+    session: AsyncSession = SessionDep
 ):
     return await assistant_chats_service.find_all(
-        session=session, filters=AssistantChatFilter(user_id=user.id)
+        session=session, filters=AssistantChatFilter(user_id=user_id)
     )
 
 
 @router.get("/messages/me", response_model=list[AssistantMessageRead])
 async def get_assistant_chats(
-    user: UserRead = Depends(get_current_auth_user), session: AsyncSession = SessionDep
+    user_id = Depends(get_current_user_id), session: AsyncSession = SessionDep
 ):
     return await assistant_messages_service.find_all(
-        session=session, filters=AssistantMessageFilter(user_id=user.id)
+        session=session, filters=AssistantMessageFilter(user_id=user_id)
     )
 
 

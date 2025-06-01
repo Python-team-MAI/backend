@@ -296,6 +296,10 @@ async def get_current_user_role(
     return role
 
 
+async def get_current_user_id(request: Request) -> int:
+    """Возвращает user_id из состояния запроса"""
+    return request.state.user_id
+
 def get_auth_user_from_token_of_type(token_type: str):
     async def get_current_auth_user_from_token(
         request: Request,

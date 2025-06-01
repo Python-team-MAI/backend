@@ -101,9 +101,7 @@ class YandexService:
     async def get_indexes(self) -> list:
         indexes = []
         try:
-            generator = self.sdk.search_indexes.list()
-            logger.info(f"Genetator: {generator}")
-            async for index in generator:
+            async for index in self.sdk.search_indexes.list():
                 logger.info(f"Find index with id: {index.id}")
                 if index:
                     indexes.append(index.id)

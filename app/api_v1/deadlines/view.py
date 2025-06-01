@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, status, Depends
+from fastapi import APIRouter, HTTPException, status, Depends, Request
 from app.core.session_manager import SessionDep, TransactionSessionDep
 from .schemas import (
     PersonalDeadlineCreate,
@@ -17,7 +17,7 @@ from .dependencies import (
     deadline_by_group_id,
     deadlines_by_author_id,
 )
-from app.api_v1.auth.validation import require_condition, get_current_auth_user
+from app.api_v1.auth.validation import require_condition, get_current_auth_user, get_current_user_id
 import logging
 
 logger = logging.getLogger(__name__)
@@ -34,6 +34,14 @@ async def get_deadlines(
     session: AsyncSession = SessionDep,
 ):
     return await deadlines_service.find_all(session=session)
+
+@router.get("/me", response_model=list[DeadlineRead])
+async def get_me_deadlines(
+    user_id = Depends(get_current_user_id), 
+    session: AsyncSession = SessionDep,
+):
+
+    return await deadlines_service.find_all(session=session, filters=DeadlineFilter(author_id=user_id))
 
 
 @router.get("/{deadline_id}", response_model=DeadlineRead)
