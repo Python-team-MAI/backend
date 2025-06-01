@@ -37,11 +37,11 @@ async def get_deadlines(
 
 @router.get("/me", response_model=list[DeadlineRead])
 async def get_me_deadlines(
-    user_id = Depends(get_current_user_id), 
+    user = Depends(get_current_auth_user), 
     session: AsyncSession = SessionDep,
 ):
 
-    return await deadlines_service.find_all(session=session, filters=DeadlineFilter(author_id=user_id))
+    return await deadlines_service.find_all(session=session, filters=DeadlineFilter(author_id=user.id))
 
 
 @router.get("/{deadline_id}", response_model=DeadlineRead)
