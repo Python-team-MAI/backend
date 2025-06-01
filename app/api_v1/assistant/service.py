@@ -80,6 +80,7 @@ class YandexService:
                     chunk_overlap_tokens=300,
                 )
             ),
+        ttl_days=3
         )
         search_index = await operation
         logger.info(f"Создали индекс: {search_index}")
