@@ -54,10 +54,10 @@ async def get_assistant_chats(
 
 @router.get("/messages/me", response_model=list[AssistantMessageRead])
 async def get_assistant_chats(
-    user_id = Depends(get_current_user_id), session: AsyncSession = SessionDep
+    user = Depends(get_current_auth_user), session: AsyncSession = SessionDep
 ):
     return await assistant_messages_service.find_all(
-        session=session, filters=AssistantMessageFilter(user_id=user_id)
+        session=session, filters=AssistantMessageFilter(user_id=user.id)
     )
 
 
