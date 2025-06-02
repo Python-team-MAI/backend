@@ -218,7 +218,7 @@ def require_condition(required_role: str | None = None, allow_superuser: bool = 
 # Для проверки суперпользователя
 def require_superuser():
     async def checker(user: UserRead = Depends(get_current_auth_user)):
-        if not user.is_superuser:
+        if not user.is_superuser and not (str(user.role) == "admin"):
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Access denied. Superuser required",

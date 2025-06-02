@@ -20,3 +20,18 @@ async def group_by_id(
     raise HTTPException(
         status_code=status.HTTP_404_NOT_FOUND, detail=f"Group {group_id} not found"
     )
+
+
+async def group_by_name(
+    name: Annotated[int, Path],
+    session: AsyncSession = SessionDep,
+) -> GroupsOrm:
+    group = await groups_service.find_one_or_none(
+        session=session, filters=GroupFilter(name=name)
+    )
+    if group is not None:
+        return group
+
+    raise HTTPException(
+        status_code=status.HTTP_404_NOT_FOUND, detail=f"Group {name} not found"
+    )

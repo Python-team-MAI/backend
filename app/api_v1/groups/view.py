@@ -3,7 +3,7 @@ from app.core.session_manager import SessionDep, TransactionSessionDep
 from .schemas import GroupCreate, GroupRead, GroupFilter, GroupUpdate
 from .service import groups_service
 from sqlalchemy.ext.asyncio import AsyncSession
-from .dependencies import group_by_id
+from .dependencies import group_by_id, group_by_name
 from app.api_v1.auth.validation import require_role
 
 
@@ -27,6 +27,11 @@ async def create_group(
 
 @router.get("/{group_id}", response_model=GroupRead)
 async def get_groups(group=Depends(group_by_id)):
+    return group
+
+
+@router.get("/{name}", response_model=GroupRead)
+async def get_groups(group=Depends(group_by_name)):
     return group
 
 

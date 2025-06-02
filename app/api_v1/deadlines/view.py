@@ -49,6 +49,8 @@ async def get_deadlines_by_author_id(deadline=Depends(deadline_by_id)):
     return deadline
 
 
+
+
 @router.get("/user/{user_id}", response_model=list[DeadlineRead])
 async def get_deadlines_by_author_id(deadlines=Depends(deadlines_by_author_id)):
     return deadlines
