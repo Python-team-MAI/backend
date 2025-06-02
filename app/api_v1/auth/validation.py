@@ -201,7 +201,7 @@ async def validate_user_email_and_password(user: UserLogin, session: AsyncSessio
 
 def require_condition(required_role: str | None = None, allow_superuser: bool = True):
     async def checker(user: UserRead = Depends(get_current_auth_user)):
-        if allow_superuser and user.is_superuser:
+        if allow_superuser and (user.is_superuser or str(user.role) == "admin"):
             return user
 
         if required_role and user.role != required_role:
