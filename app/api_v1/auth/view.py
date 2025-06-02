@@ -276,7 +276,7 @@ async def auth_user_issue_jwt(
     return TokenInfo(access_token=access_token, refresh_token=refresh_token)
 
 
-@router.get("/tg-auth", response_model=TokenInfo)
+@router.post("/tg-auth", response_model=TokenInfo)
 async def auth_user_issue_jwt(
     tg_id: str = Query(), user_in=UserLogin, session: AsyncSession = SessionDep
 ):

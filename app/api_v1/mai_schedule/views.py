@@ -31,7 +31,7 @@ async def get_schedule(
 
     try:
         schedule_data = await fetch_schedule_from_mai(group_hash)
-
+        logger.info(f"Schedule: {schedule_data}")
         if not schedule_data:
             logger.info(f"Расписание для {group_name} не найдено на сервере МАИ.")
             raise HTTPException(
