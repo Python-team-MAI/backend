@@ -313,6 +313,7 @@ async def auth_user_issue_jwt(
         ) as response:
             ans = await response.text()
     logger.info(f"Ans: {ans}")
+    return {"success": True}
 
 
 @router.get("/me", response_model=UserRead)
