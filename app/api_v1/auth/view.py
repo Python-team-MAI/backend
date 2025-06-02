@@ -313,7 +313,6 @@ async def auth_user_issue_jwt(
         ) as response:
             ans = await response.text()
     logger.info(f"Ans: {ans}")
-    return RedirectResponse(f"https://t.me/{settings.hosts.BOT_TOKEN}?start=auth_done")
 
 
 @router.get("/me", response_model=UserRead)
