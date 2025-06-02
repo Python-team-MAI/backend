@@ -29,6 +29,7 @@ import dns.resolver
 from sqlalchemy.ext.asyncio import AsyncSession
 from datetime import timedelta, datetime, timezone
 import logging
+from app.api_v1.users.models import Role
 import re
 from app.api_v1.utils.setup_logging import setup_logging
 
@@ -201,7 +202,7 @@ async def validate_user_email_and_password(user: UserLogin, session: AsyncSessio
 
 def require_condition(required_role: str | None = None, allow_superuser: bool = True):
     async def checker(user: UserRead = Depends(get_current_auth_user)):
-        if allow_superuser and (user.is_superuser or str(user.role) == "admin"):
+        if allow_superuser and (user.is_superuser or user.role == Role.admin):
             return user
 
         if required_role and user.role != required_role:
@@ -219,7 +220,7 @@ def require_condition(required_role: str | None = None, allow_superuser: bool = 
 def require_superuser():
     async def checker(user: UserRead = Depends(get_current_auth_user)):
         logger.info(f"User role: {str(user.role)} User is superuser: {user.is_superuser}")
-        if not user.is_superuser and not (str(user.role) == "admin"):
+        if not user.is_superuser and not (user.role == Role.admin):
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Access denied. Superuser required",
