@@ -276,7 +276,7 @@ async def auth_user_issue_jwt(
     return TokenInfo(access_token=access_token, refresh_token=refresh_token)
 
 
-@router.post("/tg-auth", response_model=TokenInfo)
+@router.post("/tg-auth")
 async def auth_user_issue_jwt(
     tg_id: str = Query(), user_in: UserLogin = Body(), session: AsyncSession = SessionDep
 ):
@@ -313,7 +313,7 @@ async def auth_user_issue_jwt(
         ) as response:
             ans = await response.text()
     logger.info(f"Ans: {ans}")
-    return {"success": True}
+    return JSONResponse(content={"success": True}, status_code=200)
 
 
 @router.get("/me", response_model=UserRead)
