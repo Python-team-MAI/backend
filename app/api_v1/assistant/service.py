@@ -129,9 +129,21 @@ class YandexService:
         return await self.sdk.assistants.get(assistant_id=assistant_id)
 
     def get_instruction(self):
-        with open("instructions.md", "r", encoding="utf-8") as f:
+        with open("instructio2.md", "r", encoding="utf-8") as f:
             instruction = f.read()
         return instruction
+    
+    async def delete_files(self):
+        try:
+            res = 0
+            async for file in self.sdk.files.list():
+                await file.delete()
+                res += 1
+                logger.info(f"Delete {file.name}")
+            return res
+        except Exception as e:
+            logger.error(f"Exception: {e}")
+
 
     def update_index(self, index_id: str, document_paths: list[str]):
         pass

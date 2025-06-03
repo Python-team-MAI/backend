@@ -13,6 +13,7 @@ from app.api_v1.assistant.assistant_view import router as assistant_router
 from app.api_v1.nodes.view import router as nodes_router
 from app.api_v1.assistant_chats.view import router as assistant_chats_router
 from app.api_v1.assistant_messages.view import router as assistant_messages_router
+from app.api_v1.assistant.indexes_view import router as indexes_router
 
 router = APIRouter()
 router.include_router(router=demo_jwt_auth_router)
@@ -29,3 +30,4 @@ router.include_router(router=assistant_router, prefix="/assistant")
 router.include_router(router=nodes_router, prefix="/nodes")
 router.include_router(router=assistant_chats_router, prefix="/assistant-chats")
 router.include_router(router=assistant_messages_router, prefix="/assistant-messages")
+router.include_router(router=indexes_router, prefix="/indexes")

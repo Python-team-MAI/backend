@@ -16,6 +16,8 @@ from app.api_v1.minio.manager import storage_manager
 from app.api_v1.auth.validation import require_superuser
 import uuid
 from app.api_v1.utils.setup_logging import setup_logging
+import io
+import zipfile
 
 logger = setup_logging(__name__)
 
@@ -51,15 +53,43 @@ async def get_task_status(snapshot_id: int, session: AsyncSession = SessionDep):
 @router.post("/snapshot")
 async def create_snapshot(
     webhook_url: str = Form(None),
-    files: list[UploadFile] = File(...),
+    archive: UploadFile = File(..., description="Zip-архив с файлами"),
     session: AsyncSession = TransactionSessionDep,
 ):
-    uploaded_files = await storage_manager.upload_files(files)
-    # Создаем запись о снапшоте
-    snapshot = KnowledgeSnapshotCreate(document_paths=uploaded_files)
-    snapshot = await snapshots_service.add(session=session, values=snapshot)
+    try:
 
-    return {"snapshot_id": snapshot.id}
+        archive_content = await archive.read()
+        
+        with zipfile.ZipFile(io.BytesIO(archive_content)) as zip_file:
+            if not zip_file.namelist():
+                raise HTTPException(status_code=400, detail="Архив пустой")
+
+            extracted_files = []
+            for file_info in zip_file.infolist():
+       
+                if file_info.is_dir():
+                    continue
+                
+                with zip_file.open(file_info) as file:
+                    file_content = file.read()
+                    filename = file_info.filename.split("/")[1]
+                    extracted_file = UploadFile(
+                        filename=filename,
+                        file=io.BytesIO(file_content),
+                        size=file_info.file_size
+                    )
+                    extracted_files.append(extracted_file)
+            
+            uploaded_files = await storage_manager.upload_files(extracted_files)
+            snapshot = KnowledgeSnapshotCreate(document_paths=uploaded_files)
+            snapshot = await snapshots_service.add(session=session, values=snapshot)
+            
+            return {"snapshot_id": snapshot.id}
+    
+    except zipfile.BadZipFile:
+        raise HTTPException(status_code=400, detail="Некорректный ZIP-архив")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Ошибка обработки архива: {str(e)}")
 
 
 @router.post("/inheritance/{snapshot_id}")
