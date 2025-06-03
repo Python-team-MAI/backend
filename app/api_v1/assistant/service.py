@@ -129,7 +129,7 @@ class YandexService:
         return await self.sdk.assistants.get(assistant_id=assistant_id)
 
     def get_instruction(self):
-        with open("instruction2.md", "r", encoding="utf-8") as f:
+        with open("instructions.md", "r", encoding="utf-8") as f:
             instruction = f.read()
         return instruction
     

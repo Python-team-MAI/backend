@@ -48,39 +48,62 @@ async def get_task_status(snapshot_id: int, session: AsyncSession = SessionDep):
         "snapshot_status": snapshot.status,
         "index_id": snapshot.index_id,
     }
+async def process_markdown_files(files: list[UploadFile]):
+    """Обработка MD файлов с проверкой кодировки"""
+    processed_files = []
+    for file in files:
+        content = await file.read()
+        for encoding in ['utf-8', 'cp1251', 'iso-8859-1']:
+            try:
+                text_content = content.decode(encoding)
+                break
+            except UnicodeDecodeError:
+                continue
+        else:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Не удалось декодировать файл {file.filename}"
+            )
+        
+        processed_file = UploadFile(
+            filename=file.filename,
+            file=io.BytesIO(text_content.encode('utf-8')),
+            size=len(text_content)
+        )
+        processed_files.append(processed_file)
+    
+    return processed_files
 
 
 @router.post("/snapshot")
 async def create_snapshot(
     webhook_url: str = Form(None),
-    archive: UploadFile = File(..., description="Zip-архив с файлами"),
+    archive: UploadFile = File(..., description="ZIP-архив с MD-файлами"),
     session: AsyncSession = TransactionSessionDep,
 ):
     try:
-
         archive_content = await archive.read()
         
         with zipfile.ZipFile(io.BytesIO(archive_content)) as zip_file:
             if not zip_file.namelist():
                 raise HTTPException(status_code=400, detail="Архив пустой")
-
+            
             extracted_files = []
             for file_info in zip_file.infolist():
-       
-                if file_info.is_dir():
+                if file_info.is_dir() or not file_info.filename.lower().endswith('.md'):
                     continue
                 
                 with zip_file.open(file_info) as file:
                     file_content = file.read()
-                    filename = file_info.filename.split("/")[1]
                     extracted_file = UploadFile(
-                        filename=filename,
+                        filename=file_info.filename,
                         file=io.BytesIO(file_content),
                         size=file_info.file_size
                     )
                     extracted_files.append(extracted_file)
             
-            uploaded_files = await storage_manager.upload_files(extracted_files)
+            processed_files = await process_markdown_files(extracted_files)
+            uploaded_files = await storage_manager.upload_files(processed_files)
             snapshot = KnowledgeSnapshotCreate(document_paths=uploaded_files)
             snapshot = await snapshots_service.add(session=session, values=snapshot)
             
@@ -89,7 +112,10 @@ async def create_snapshot(
     except zipfile.BadZipFile:
         raise HTTPException(status_code=400, detail="Некорректный ZIP-архив")
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Ошибка обработки архива: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Ошибка обработки MD-архива: {str(e)}"
+        )
 
 
 @router.post("/inheritance/{snapshot_id}")
@@ -107,7 +133,6 @@ async def create_snapshot(
 
     current_paths = snapshot.document_paths or []
     uploaded_files = await storage_manager.upload_files(files, current_paths)
-    # Создаем запись о снапшоте
     logger.info(f"Current: {current_paths}. Uploaded: {uploaded_files}")
     snapshot = KnowledgeSnapshotCreate(document_paths=uploaded_files)
     snapshot = await snapshots_service.add(session=session, values=snapshot)
